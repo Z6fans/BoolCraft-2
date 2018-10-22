@@ -13,8 +13,6 @@ import javax.imageio.ImageIO;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.util.MathHelper;
-
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
