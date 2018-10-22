@@ -1,0 +1,61 @@
+---- Minecraft Crash Report ----
+// I bet Cylons wouldn't have this problem.
+
+Time: 8/13/17 9:06 PM
+Description: Ticking memory connection
+
+java.lang.IndexOutOfBoundsException: Index: 36, Size: 9
+	at java.util.ArrayList.RangeCheck(ArrayList.java:547)
+	at java.util.ArrayList.get(ArrayList.java:322)
+	at net.minecraft.inventory.Container.getSlot(Container.java:90)
+	at net.minecraft.inventory.Container.putStackInSlot(Container.java:473)
+	at net.minecraft.network.NetHandlerPlayServer.processCreativeInventoryAction(NetHandlerPlayServer.java:676)
+	at net.minecraft.network.play.client.C10PacketCreativeInventoryAction.processPacket(C10PacketCreativeInventoryAction.java:25)
+	at net.minecraft.network.play.client.C10PacketCreativeInventoryAction.processPacket(C10PacketCreativeInventoryAction.java:43)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:243)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:129)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:481)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:431)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:78)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:324)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:497)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at java.util.ArrayList.RangeCheck(ArrayList.java:547)
+	at java.util.ArrayList.get(ArrayList.java:322)
+	at net.minecraft.inventory.Container.getSlot(Container.java:90)
+	at net.minecraft.inventory.Container.putStackInSlot(Container.java:473)
+	at net.minecraft.network.NetHandlerPlayServer.processCreativeInventoryAction(NetHandlerPlayServer.java:676)
+	at net.minecraft.network.play.client.C10PacketCreativeInventoryAction.processPacket(C10PacketCreativeInventoryAction.java:25)
+	at net.minecraft.network.play.client.C10PacketCreativeInventoryAction.processPacket(C10PacketCreativeInventoryAction.java:43)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:243)
+
+-- Ticking connection --
+Details:
+	Connection: net.minecraft.network.NetworkManager@4a005364
+Stacktrace:
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:129)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:481)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:431)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:78)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:324)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:497)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 928857136 bytes (885 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Eigenstate 3', x=5.35, y=5.00, z=-10.29]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Hell yes

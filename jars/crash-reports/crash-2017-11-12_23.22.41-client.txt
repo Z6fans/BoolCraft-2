@@ -1,0 +1,46 @@
+---- Minecraft Crash Report ----
+Description: Unexpected error
+
+java.lang.ArrayIndexOutOfBoundsException: 4
+	at net.minecraft.client.gui.GuiIngame.renderGameOverlay(GuiIngame.java:66)
+	at net.minecraft.client.renderer.EntityRenderer.updateCameraAndRender(EntityRenderer.java:236)
+	at net.minecraft.client.Minecraft.runGameLoop(Minecraft.java:644)
+	at net.minecraft.client.Minecraft.run(Minecraft.java:569)
+	at net.minecraft.client.main.Main.main(Main.java:42)
+	at Start.main(Start.java:11)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.client.gui.GuiIngame.renderGameOverlay(GuiIngame.java:66)
+
+-- Affected level --
+Details:
+	Level name: MpServer
+	All players: 1 total; [EntityClientPlayerMP[''/, l='MpServer', x=15.01, y=6.62, z=3.78]]
+	Chunk stats: MultiplayerChunkCache: 5, 5
+	Level spawn location: World: (0,4,0), Chunk: (at 0,0,0 in 0,0; contains blocks 0,0,0 to 15,255,15), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,0,0 to 511,255,511)
+	Level time: 38051 game time
+	Forced entities: 1 total; [EntityClientPlayerMP[''/, l='MpServer', x=15.01, y=6.62, z=3.78]]
+	Retry entities: 0 total; []
+	Server type: Integrated singleplayer server
+Stacktrace:
+	at net.minecraft.client.multiplayer.WorldClient.addWorldInfoToCrashReport(WorldClient.java:232)
+	at net.minecraft.client.Minecraft.addGraphicsAndWorldToCrashReport(Minecraft.java:1343)
+	at net.minecraft.client.Minecraft.run(Minecraft.java:594)
+	at net.minecraft.client.main.Main.main(Main.java:42)
+	at Start.main(Start.java:11)
+
+-- System Details --
+Details:
+	LWJGL: 2.9.1
+	OpenGL: NVIDIA GeForce GT 750M OpenGL Engine GL version 2.1 NVIDIA-10.4.2 310.41.35f01, NVIDIA Corporation
+	GL Caps: Using GL 1.3 multitexturing.
+Using framebuffer objects because ARB_framebuffer_object is supported and separate blending is supported.
+Shaders are available because OpenGL 2.1 is supported.
+
+	Type: Client (map_client.txt)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used

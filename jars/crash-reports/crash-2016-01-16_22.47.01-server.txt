@@ -1,0 +1,53 @@
+---- Minecraft Crash Report ----
+// There are four lights!
+
+Time: 1/16/16 10:47 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The import net.minecraft.block.BlockHopper cannot be resolved
+	The import net.minecraft.block.BlockLiquid cannot be resolved
+	The import net.minecraft.block.BlockSnow cannot be resolved
+	The import net.minecraft.block.BlockStairs cannot be resolved
+	The method dropBlockAsItem(World, int, int, int, int, int) is undefined for the type Block
+	The method playRecord(String, int, int, int) is undefined for the type IWorldAccess
+	fire cannot be resolved or is not a field
+	flowing_lava cannot be resolved or is not a field
+	lava cannot be resolved or is not a field
+	BlockLiquid cannot be resolved
+	fire cannot be resolved or is not a field
+	BlockStairs cannot be resolved to a type
+	BlockHopper cannot be resolved to a type
+	BlockSnow cannot be resolved to a type
+	water cannot be resolved or is not a field
+	flowing_water cannot be resolved or is not a field
+	snow_layer cannot be resolved or is not a field
+	anvil cannot be resolved or is not a field
+	unpowered_comparator cannot be resolved or is not a field
+	unpowered_comparator cannot be resolved or is not a field
+
+	at net.minecraft.world.World.<init>(World.java:14)
+	at net.minecraft.world.WorldServer.<init>(WorldServer.java:89)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:81)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:110)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:449)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1027074472 bytes (979 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

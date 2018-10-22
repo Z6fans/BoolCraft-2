@@ -1,0 +1,110 @@
+---- Minecraft Crash Report ----
+// Hey, that tickles! Hehehe!
+
+Time: 1/16/16 11:41 PM
+Description: Unexpected error
+
+java.lang.Error: Unresolved compilation problems: 
+	The import net.minecraft.entity.IMerchant cannot be resolved
+	The import net.minecraft.entity.NpcMerchant cannot be resolved
+	The import net.minecraft.entity.effect cannot be resolved
+	The import net.minecraft.entity.item.EntityBoat cannot be resolved
+	The import net.minecraft.entity.item.EntityEnderCrystal cannot be resolved
+	The import net.minecraft.entity.item.EntityEnderEye cannot be resolved
+	The import net.minecraft.entity.item.EntityEnderPearl cannot be resolved
+	The import net.minecraft.entity.item.EntityExpBottle cannot be resolved
+	The import net.minecraft.entity.item.EntityFallingBlock cannot be resolved
+	The import net.minecraft.entity.item.EntityFireworkRocket cannot be resolved
+	The import net.minecraft.entity.item.EntityItemFrame cannot be resolved
+	The import net.minecraft.entity.item.EntityMinecart cannot be resolved
+	The import net.minecraft.entity.item.EntityPainting cannot be resolved
+	The import net.minecraft.entity.item.EntityTNTPrimed cannot be resolved
+	The import net.minecraft.entity.item.EntityXPOrb cannot be resolved
+	The import net.minecraft.entity.passive cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.item.ItemMap cannot be resolved
+	EntityMinecart cannot be resolved
+	EntityFishHook cannot be resolved to a type
+	EntityArrow cannot be resolved to a type
+	EntitySnowball cannot be resolved to a type
+	EntityItemFrame cannot be resolved to a type
+	EntityEnderPearl cannot be resolved to a type
+	EntityEnderEye cannot be resolved to a type
+	EntityFireworkRocket cannot be resolved to a type
+	EntityLargeFireball cannot be resolved to a type
+	EntitySmallFireball cannot be resolved to a type
+	EntityWitherSkull cannot be resolved to a type
+	EntityEgg cannot be resolved to a type
+	EntityPotion cannot be resolved to a type
+	EntityExpBottle cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityTNTPrimed cannot be resolved to a type
+	EntityEnderCrystal cannot be resolved to a type
+	EntityFallingBlock cannot be resolved to a type
+	EntityArrow cannot be resolved to a type
+	EntityArrow cannot be resolved to a type
+	EntityXPOrb cannot be resolved to a type
+	EntityXPOrb cannot be resolved to a type
+	EntityLightningBolt cannot be resolved to a type
+	EntityLightningBolt cannot be resolved to a type
+	EntityPainting cannot be resolved to a type
+	EntityPainting cannot be resolved to a type
+	EntityXPOrb cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	EntityBoat cannot be resolved to a type
+	NpcMerchant cannot be resolved to a type
+	EntityHorse cannot be resolved to a type
+	The method displayGUIHorse(EntityHorse, IInventory) from the type EntityPlayerSP refers to the missing type EntityHorse
+	EntityHorse cannot be resolved to a type
+	IMerchant cannot be resolved to a type
+	The method func_147035_g() from the type GuiMerchant refers to the missing type IMerchant
+
+	at net.minecraft.client.network.NetHandlerPlayClient.<init>(NetHandlerPlayClient.java:52)
+	at net.minecraft.client.network.NetHandlerLoginClient.onConnectionStateTransition(NetHandlerLoginClient.java:81)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:240)
+	at net.minecraft.client.Minecraft.runTick(Minecraft.java:2117)
+	at net.minecraft.client.Minecraft.runGameLoop(Minecraft.java:1014)
+	at net.minecraft.client.Minecraft.run(Minecraft.java:937)
+	at net.minecraft.client.main.Main.main(Main.java:161)
+	at Start.main(Start.java:11)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 953088976 bytes (908 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Launched Version: mcp
+	LWJGL: 2.9.1
+	OpenGL: NVIDIA GeForce GT 750M OpenGL Engine GL version 2.1 NVIDIA-10.4.2 310.41.35f01, NVIDIA Corporation
+	GL Caps: Using GL 1.3 multitexturing.
+Using framebuffer objects because ARB_framebuffer_object is supported and separate blending is supported.
+Anisotropic filtering is supported and maximum anisotropy is 16.
+Shaders are available because OpenGL 2.1 is supported.
+
+	Is Modded: Very likely; Jar signature invalidated
+	Type: Client (map_client.txt)
+	Resource Packs: []
+	Current Language: English (US)
+	Profiler Position: N/A (disabled)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Anisotropic Filtering: Off (1)

@@ -1,0 +1,60 @@
+---- Minecraft Crash Report ----
+// This doesn't make any sense!
+
+Time: 1/16/16 11:35 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The import net.minecraft.entity.IMerchant cannot be resolved
+	The import net.minecraft.entity.item.EntityMinecartHopper cannot be resolved
+	The import net.minecraft.entity.passive cannot be resolved
+	The import net.minecraft.entity.projectile cannot be resolved
+	The import net.minecraft.item.ItemMapBase cannot be resolved
+	ItemMapBase cannot be resolved to a type
+	ItemMapBase cannot be resolved to a type
+	field_150961_L cannot be resolved or is not a field
+	field_150961_L cannot be resolved or is not a field
+	field_150961_L cannot be resolved or is not a field
+	field_150961_L cannot be resolved or is not a field
+	field_150961_L cannot be resolved or is not a field
+	EntityArrow cannot be resolved to a type
+	EntityArrow cannot be resolved to a type
+	EntityArrow cannot be resolved to a type
+	theEnd2 cannot be resolved or is not a field
+	theEnd cannot be resolved or is not a field
+	portal cannot be resolved or is not a field
+	EntityMinecartHopper cannot be resolved to a type
+	IMerchant cannot be resolved to a type
+	EntityHorse cannot be resolved to a type
+
+	at net.minecraft.entity.player.EntityPlayerMP.<init>(EntityPlayerMP.java:18)
+	at net.minecraft.server.management.ServerConfigurationManager.func_148545_a(ServerConfigurationManager.java:357)
+	at net.minecraft.server.network.NetHandlerLoginServer.func_147326_c(NetHandlerLoginServer.java:87)
+	at net.minecraft.server.network.NetHandlerLoginServer.onNetworkTick(NetHandlerLoginServer.java:59)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:254)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:699)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:605)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:132)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:488)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 951670552 bytes (907 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

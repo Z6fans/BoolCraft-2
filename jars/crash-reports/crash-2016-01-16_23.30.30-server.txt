@@ -1,0 +1,62 @@
+---- Minecraft Crash Report ----
+// There are four lights!
+
+Time: 1/16/16 11:30 PM
+Description: Exception ticking world
+
+java.lang.Error: Unresolved compilation problem: 
+	The method values() is undefined for the type EnumCreatureType
+
+	at net.minecraft.world.SpawnerAnimals.findChunksForSpawning(SpawnerAnimals.java:79)
+	at net.minecraft.world.WorldServer.tick(WorldServer.java:152)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:668)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:605)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:132)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:488)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.world.SpawnerAnimals.findChunksForSpawning(SpawnerAnimals.java:79)
+	at net.minecraft.world.WorldServer.tick(WorldServer.java:152)
+
+-- Affected level --
+Details:
+	Level name: Test
+	All players: 0 total; []
+	Chunk stats: ServerChunkCache: 625 Drop: 0
+	Level seed: 2603186
+	Level generator: ID 01 - flat, ver 0. Features enabled: false
+	Level generator options: 2;7,3x1,52x24;2;
+	Level spawn location: World: (-839,4,540), Chunk: (at 9,0,12 in -53,33; contains blocks -848,0,528 to -833,255,543), Region: (-2,1; contains chunks -64,32 to -33,63, blocks -1024,0,512 to -513,255,1023)
+	Level time: 1765 game time, 1765 day time
+	Level dimension: 0
+	Level storage version: 0x04ABD - Anvil
+	Level weather: Rain time: 139133 (now: false), thunder time: 110401 (now: false)
+	Level game mode: Game mode: creative (ID 1). Hardcore: false. Cheats: true
+Stacktrace:
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:668)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:605)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:132)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:488)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 960254112 bytes (915 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

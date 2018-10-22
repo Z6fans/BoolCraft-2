@@ -1,0 +1,141 @@
+---- Minecraft Crash Report ----
+// Why did you do that?
+
+Time: 1/17/16 1:42 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	The import net.minecraft.world.gen.feature cannot be resolved
+	WorldGenerator cannot be resolved to a type
+	WorldGenClay cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenSand cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenSand cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenMinable cannot be resolved to a type
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenBigMushroom cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenReed cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenCactus cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenWaterlily cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenAbstractTree cannot be resolved to a type
+	The method func_150567_a(Random) is undefined for the type BiomeGenBase
+	WorldGenerator cannot be resolved to a type
+	BlockFlower cannot be resolved to a type
+	BlockFlower cannot be resolved
+	WorldGenFlowers cannot be resolved to a type
+	BlockFlower cannot be resolved
+	WorldGenFlowers cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	The method getRandomWorldGenForGrass(Random) is undefined for the type BiomeGenBase
+	WorldGenDeadBush cannot be resolved to a type
+	WorldGenDeadBush cannot be resolved to a type
+	deadbush cannot be resolved or is not a field
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenPumpkin cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenLiquids cannot be resolved to a type
+	WorldGenLiquids cannot be resolved to a type
+	flowing_water cannot be resolved or is not a field
+	WorldGenLiquids cannot be resolved to a type
+	WorldGenLiquids cannot be resolved to a type
+	flowing_lava cannot be resolved or is not a field
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+	WorldGenerator cannot be resolved to a type
+
+	at net.minecraft.world.biome.BiomeDecorator.<init>(BiomeDecorator.java:7)
+	at net.minecraft.world.biome.BiomeGenBase.createBiomeDecorator(BiomeGenBase.java:182)
+	at net.minecraft.world.biome.BiomeGenBase.<init>(BiomeGenBase.java:174)
+	at net.minecraft.world.biome.BiomeGenOcean.<init>(BiomeGenOcean.java:13)
+	at net.minecraft.world.biome.BiomeGenBase.<clinit>(BiomeGenBase.java:42)
+	at net.minecraft.world.gen.FlatGeneratorInfo.createFlatGeneratorFromString(FlatGeneratorInfo.java:253)
+	at net.minecraft.world.WorldProvider.registerWorldChunkManager(WorldProvider.java:80)
+	at net.minecraft.world.WorldProvider.registerWorld(WorldProvider.java:55)
+	at net.minecraft.world.World.<init>(World.java:253)
+	at net.minecraft.world.WorldServer.<init>(WorldServer.java:87)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:81)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:110)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:449)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:716)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1022901200 bytes (975 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

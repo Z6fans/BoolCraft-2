@@ -1,0 +1,71 @@
+---- Minecraft Crash Report ----
+// This doesn't make any sense!
+
+Time: 1/24/16 7:31 PM
+Description: Ticking player
+
+java.lang.Error: Unresolved compilation problem: 
+	The method attackEntityFrom(DamageSource, float) is undefined for the type EntityPlayer
+
+	at net.minecraft.util.FoodStats.onUpdate(FoodStats.java:74)
+	at net.minecraft.entity.player.EntityPlayer.onUpdate(EntityPlayer.java:303)
+	at net.minecraft.entity.player.EntityPlayerMP.onUpdateEntity(EntityPlayerMP.java:304)
+	at net.minecraft.network.NetHandlerPlayServer.processPlayer(NetHandlerPlayServer.java:262)
+	at net.minecraft.network.play.client.C03PacketPlayer.processPacket(C03PacketPlayer.java:31)
+	at net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook.processPacket(C03PacketPlayer.java:232)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:633)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.util.FoodStats.onUpdate(FoodStats.java:74)
+	at net.minecraft.entity.player.EntityPlayer.onUpdate(EntityPlayer.java:303)
+
+-- Player being ticked --
+Details:
+	Entity Type: null (net.minecraft.entity.player.EntityPlayerMP)
+	Entity ID: 0
+	Entity Name: DeezNutz
+	Entity's Exact location: 573.27, 56.00, -405.82
+	Entity's Block location: World: (573,56,-406), Chunk: (at 13,3,10 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+	Entity's Momentum: 0.00, -0.08, 0.00
+Stacktrace:
+	at net.minecraft.entity.player.EntityPlayerMP.onUpdateEntity(EntityPlayerMP.java:304)
+	at net.minecraft.network.NetHandlerPlayServer.processPlayer(NetHandlerPlayServer.java:262)
+	at net.minecraft.network.play.client.C03PacketPlayer.processPacket(C03PacketPlayer.java:31)
+	at net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook.processPacket(C03PacketPlayer.java:232)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+
+-- Ticking connection --
+Details:
+	Connection: net.minecraft.network.NetworkManager@87e05c4
+Stacktrace:
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:633)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 997141096 bytes (950 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=573.27, y=56.00, z=-405.82]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

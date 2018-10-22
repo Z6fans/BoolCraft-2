@@ -1,0 +1,37 @@
+---- Minecraft Crash Report ----
+// Surprise! Haha. Well, this is awkward.
+
+Time: 1/24/16 4:26 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	Syntax error, insert "VariableDeclarators" to complete LocalVariableDeclaration
+	Syntax error, insert ";" to complete BlockStatements
+	deez cannot be resolved to a type
+
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:113)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:633)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 914395568 bytes (872 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=570.66, y=56.00, z=-407.42]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

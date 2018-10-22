@@ -1,0 +1,40 @@
+---- Minecraft Crash Report ----
+// You should try our sister game, Minceraft!
+
+Time: 1/17/16 4:37 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The method initializeAllBiomeGenerators(long, WorldType) is undefined for the type GenLayer
+	BiomeGenBase cannot be resolved to a type
+	BiomeGenBase cannot be resolved
+
+	at net.minecraft.world.biome.WorldChunkManager.<init>(WorldChunkManager.java:34)
+	at net.minecraft.world.biome.WorldChunkManager.<init>(WorldChunkManager.java:41)
+	at net.minecraft.world.WorldProvider.registerWorldChunkManager(WorldProvider.java:84)
+	at net.minecraft.world.WorldProvider.registerWorld(WorldProvider.java:54)
+	at net.minecraft.world.World.<init>(World.java:220)
+	at net.minecraft.world.WorldServer.<init>(WorldServer.java:86)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:81)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:110)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:449)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:716)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 962876672 bytes (918 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

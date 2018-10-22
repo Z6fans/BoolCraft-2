@@ -1,0 +1,35 @@
+---- Minecraft Crash Report ----
+// You should try our sister game, Minceraft!
+
+Time: 1/17/16 1:41 PM
+Description: Exception in server tick loop
+
+java.lang.NullPointerException: Exception in server tick loop
+	at net.minecraft.world.gen.FlatGeneratorInfo.createFlatGeneratorFromString(FlatGeneratorInfo.java:253)
+	at net.minecraft.world.WorldProvider.registerWorldChunkManager(WorldProvider.java:80)
+	at net.minecraft.world.WorldProvider.registerWorld(WorldProvider.java:55)
+	at net.minecraft.world.World.<init>(World.java:253)
+	at net.minecraft.world.WorldServer.<init>(WorldServer.java:87)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:81)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:110)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:449)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:716)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1023626672 bytes (976 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

@@ -1,0 +1,45 @@
+---- Minecraft Crash Report ----
+// Who set us up the TNT?
+
+Time: 1/16/16 11:29 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The import net.minecraft.block.BlockFalling cannot be resolved
+	end_stone cannot be resolved or is not a field
+	end_stone cannot be resolved or is not a field
+	end_stone cannot be resolved or is not a field
+	end_stone cannot be resolved or is not a field
+	BlockFalling cannot be resolved to a variable
+	BlockFalling cannot be resolved to a variable
+
+	at net.minecraft.world.gen.ChunkProviderEnd.<init>(ChunkProviderEnd.java:6)
+	at net.minecraft.world.WorldProviderEnd.createChunkGenerator(WorldProviderEnd.java:30)
+	at net.minecraft.world.WorldServer.createChunkProvider(WorldServer.java:630)
+	at net.minecraft.world.World.<init>(World.java:254)
+	at net.minecraft.world.WorldServer.<init>(WorldServer.java:89)
+	at net.minecraft.world.WorldServerMulti.<init>(WorldServerMulti.java:14)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:86)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:110)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:449)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1025676968 bytes (978 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

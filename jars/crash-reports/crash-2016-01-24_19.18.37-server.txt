@@ -1,0 +1,77 @@
+---- Minecraft Crash Report ----
+// You should try our sister game, Minceraft!
+
+Time: 1/24/16 7:18 PM
+Description: Ticking entity
+
+java.lang.Error: Unresolved compilation problems: 
+	hurtResistantTime cannot be resolved or is not a field
+	hurtResistantTime cannot be resolved or is not a field
+
+	at net.minecraft.entity.player.EntityPlayerMP.onUpdate(EntityPlayerMP.java:223)
+	at net.minecraft.world.World.updateEntityWithOptionalForce(World.java:1915)
+	at net.minecraft.world.World.updateEntity(World.java:1890)
+	at net.minecraft.world.World.updateEntities(World.java:1786)
+	at net.minecraft.world.WorldServer.updateEntities(WorldServer.java:360)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:620)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.entity.player.EntityPlayerMP.onUpdate(EntityPlayerMP.java:223)
+	at net.minecraft.world.World.updateEntityWithOptionalForce(World.java:1915)
+	at net.minecraft.world.World.updateEntity(World.java:1890)
+
+-- Entity being ticked --
+Details:
+	Entity Type: null (net.minecraft.entity.player.EntityPlayerMP)
+	Entity ID: 0
+	Entity Name: DeezNutz
+	Entity's Exact location: 573.27, 56.00, -405.82
+	Entity's Block location: World: (573,56,-406), Chunk: (at 13,3,10 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+	Entity's Momentum: 0.00, -0.08, 0.00
+Stacktrace:
+	at net.minecraft.world.World.updateEntities(World.java:1786)
+	at net.minecraft.world.WorldServer.updateEntities(WorldServer.java:360)
+
+-- Affected level --
+Details:
+	Level name: Test 2
+	All players: 1 total; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=573.27, y=56.00, z=-405.82]]
+	Chunk stats: ServerChunkCache: 625 Drop: 0
+	Level seed: -1793304508
+	Level generator: ID 01 - flat, ver 0. Features enabled: false
+	Level generator options: 2;7,55x1;2;
+	Level spawn location: World: (570,4,-407), Chunk: (at 10,0,9 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+	Level time: 33966 game time, 38460 day time
+	Level dimension: 0
+	Level storage version: 0x04ABD - Anvil
+	Level weather: Rain time: 118260 (now: false), thunder time: 27144 (now: false)
+	Level game mode: Game mode: creative (ID 1). Hardcore: false. Cheats: true
+Stacktrace:
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:620)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 949149360 bytes (905 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=573.27, y=56.00, z=-405.82]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

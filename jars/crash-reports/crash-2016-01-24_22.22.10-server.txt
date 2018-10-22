@@ -1,0 +1,38 @@
+---- Minecraft Crash Report ----
+// Hi. I'm Minecraft, and I'm a crashaholic.
+
+Time: 1/24/16 10:22 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	The method isCreative() is undefined for the type ItemInWorldManager
+	The method isCreative() is undefined for the type ItemInWorldManager
+
+	at net.minecraft.network.NetHandlerPlayServer.processPlayer(NetHandlerPlayServer.java:309)
+	at net.minecraft.network.play.client.C03PacketPlayer.processPacket(C03PacketPlayer.java:31)
+	at net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook.processPacket(C03PacketPlayer.java:232)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:615)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:555)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:121)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:443)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:636)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1015833584 bytes (968 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Oba Loba', x=-68.50, y=1.00, z=-182.50]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

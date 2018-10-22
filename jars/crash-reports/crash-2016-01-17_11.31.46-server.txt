@@ -1,0 +1,127 @@
+---- Minecraft Crash Report ----
+// Hey, that tickles! Hehehe!
+
+Time: 1/17/16 11:31 AM
+Description: Exception while updating neighbours
+
+java.lang.Error: Unresolved compilation problem: 
+	The method dropBlockAsItem(World, int, int, int, int, int) is undefined for the type BlockRedstoneDiode
+
+	at net.minecraft.block.BlockRedstoneDiode.onNeighborBlockChange(BlockRedstoneDiode.java:121)
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:658)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.world.World.notifyBlockChange(World.java:615)
+	at net.minecraft.world.World.setBlockMetadataWithNotify(World.java:555)
+	at net.minecraft.block.BlockLever.onBlockActivated(BlockLever.java:279)
+	at net.minecraft.server.management.ItemInWorldManager.activateBlockOrUseItem(ItemInWorldManager.java:335)
+	at net.minecraft.network.NetHandlerPlayServer.processPlayerBlockPlacement(NetHandlerPlayServer.java:533)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:68)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:113)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:699)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:605)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:132)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:488)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.block.BlockRedstoneDiode.onNeighborBlockChange(BlockRedstoneDiode.java:121)
+
+-- Block being updated --
+Details:
+	Source block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block type: ID #93 (tile.diode // net.minecraft.block.BlockRedstoneRepeater)
+	Block data value: 2 / 0x2 / 0b0010
+	Block location: World: (565,56,-406), Chunk: (at 5,3,10 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+Stacktrace:
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:658)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+
+-- Block being updated --
+Details:
+	Source block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block data value: 13 / 0xD / 0b1101
+	Block location: World: (566,56,-407), Chunk: (at 6,3,9 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+Stacktrace:
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+
+-- Block being updated --
+Details:
+	Source block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block data value: 14 / 0xE / 0b1110
+	Block location: World: (567,56,-407), Chunk: (at 7,3,9 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+Stacktrace:
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.block.BlockRedstoneWire.func_150177_e(BlockRedstoneWire.java:85)
+	at net.minecraft.block.BlockRedstoneWire.onNeighborBlockChange(BlockRedstoneWire.java:322)
+
+-- Block being updated --
+Details:
+	Source block type: ID #69 (tile.lever // net.minecraft.block.BlockLever)
+	Block type: ID #55 (tile.redstoneDust // net.minecraft.block.BlockRedstoneWire)
+	Block data value: 15 / 0xF / 0b1111
+	Block location: World: (568,56,-407), Chunk: (at 8,3,9 in 35,-26; contains blocks 560,0,-416 to 575,255,-401), Region: (1,-1; contains chunks 32,-32 to 63,-1, blocks 512,0,-512 to 1023,255,-1)
+Stacktrace:
+	at net.minecraft.world.World.func_147460_e(World.java:702)
+	at net.minecraft.world.World.notifyBlocksOfNeighborChange(World.java:653)
+	at net.minecraft.world.World.notifyBlockChange(World.java:615)
+	at net.minecraft.world.World.setBlockMetadataWithNotify(World.java:555)
+	at net.minecraft.block.BlockLever.onBlockActivated(BlockLever.java:279)
+	at net.minecraft.server.management.ItemInWorldManager.activateBlockOrUseItem(ItemInWorldManager.java:335)
+	at net.minecraft.network.NetHandlerPlayServer.processPlayerBlockPlacement(NetHandlerPlayServer.java:533)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:68)
+	at net.minecraft.network.play.client.C08PacketPlayerBlockPlacement.processPacket(C08PacketPlayerBlockPlacement.java:113)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+
+-- Ticking connection --
+Details:
+	Connection: net.minecraft.network.NetworkManager@63bed674
+Stacktrace:
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:699)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:605)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:132)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:488)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:724)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 911344328 bytes (869 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	IntCache: cache: 0, tcache: 0, allocated: 0, tallocated: 0
+	Profiler Position: N/A (disabled)
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=571.12, y=56.00, z=-406.47]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

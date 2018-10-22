@@ -1,0 +1,33 @@
+---- Minecraft Crash Report ----
+// Who set us up the TNT?
+
+Time: 1/25/16 4:49 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	worldScoreboard cannot be resolved or is not a field
+	The method getScoreboard() is undefined for the type WorldServer
+
+	at net.minecraft.world.WorldServerMulti.<init>(WorldServerMulti.java:15)
+	at net.minecraft.server.integrated.IntegratedServer.loadAllWorlds(IntegratedServer.java:74)
+	at net.minecraft.server.integrated.IntegratedServer.startServer(IntegratedServer.java:98)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:403)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:628)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 1027157144 bytes (979 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 0 / 8; []
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

@@ -1,0 +1,40 @@
+---- Minecraft Crash Report ----
+// Surprise! Haha. Well, this is awkward.
+
+Time: 1/24/16 7:28 PM
+Description: Exception in server tick loop
+
+java.lang.Error: Unresolved compilation problems: 
+	ridingEntity cannot be resolved or is not a field
+	ridingEntity cannot be resolved or is not a field
+	ridingEntity cannot be resolved or is not a field
+	ridingEntity cannot be resolved or is not a field
+
+	at net.minecraft.network.NetHandlerPlayServer.processPlayer(NetHandlerPlayServer.java:210)
+	at net.minecraft.network.play.client.C03PacketPlayer.processPacket(C03PacketPlayer.java:31)
+	at net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook.processPacket(C03PacketPlayer.java:232)
+	at net.minecraft.network.NetworkManager.processReceivedPackets(NetworkManager.java:251)
+	at net.minecraft.network.NetworkSystem.networkTick(NetworkSystem.java:181)
+	at net.minecraft.server.MinecraftServer.updateTimeLightAndEntities(MinecraftServer.java:633)
+	at net.minecraft.server.MinecraftServer.tick(MinecraftServer.java:573)
+	at net.minecraft.server.integrated.IntegratedServer.tick(IntegratedServer.java:123)
+	at net.minecraft.server.MinecraftServer.run(MinecraftServer.java:461)
+	at net.minecraft.server.MinecraftServer$2.run(MinecraftServer.java:654)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 979491560 bytes (934 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Player Count: 1 / 8; [EntityPlayerMP['DeezNutz'/0, l='Test 2', x=573.27, y=56.00, z=-405.82]]
+	Type: Integrated Server (map_client.txt)
+	Is Modded: Very likely; Jar signature invalidated

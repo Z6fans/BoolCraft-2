@@ -1,0 +1,53 @@
+---- Minecraft Crash Report ----
+// You're mean.
+
+Time: 1/25/16 4:38 PM
+Description: Initializing game
+
+java.lang.Error: Unresolved compilation problem: 
+
+	at net.minecraft.entity.player.EntityPlayer$EnumChatVisibility.getEnumChatVisibility(EntityPlayer.java:1351)
+	at net.minecraft.client.settings.GameSettings.loadOptions(GameSettings.java:871)
+	at net.minecraft.client.settings.GameSettings.<init>(GameSettings.java:252)
+	at net.minecraft.client.Minecraft.startGame(Minecraft.java:411)
+	at net.minecraft.client.Minecraft.run(Minecraft.java:882)
+	at net.minecraft.client.main.Main.main(Main.java:160)
+	at Start.main(Start.java:11)
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Stacktrace:
+	at net.minecraft.entity.player.EntityPlayer$EnumChatVisibility.getEnumChatVisibility(EntityPlayer.java:1351)
+	at net.minecraft.client.settings.GameSettings.loadOptions(GameSettings.java:871)
+	at net.minecraft.client.settings.GameSettings.<init>(GameSettings.java:252)
+	at net.minecraft.client.Minecraft.startGame(Minecraft.java:411)
+
+-- Initialization --
+Details:
+Stacktrace:
+	at net.minecraft.client.Minecraft.run(Minecraft.java:882)
+	at net.minecraft.client.main.Main.main(Main.java:160)
+	at Start.main(Start.java:11)
+
+-- System Details --
+Details:
+	Minecraft Version: 1.7.10
+	Operating System: Mac OS X (x86_64) version 10.10.5
+	Java Version: 1.6.0_65, Apple Inc.
+	Java VM Version: Java HotSpot(TM) 64-Bit Server VM (mixed mode), Apple Inc.
+	Memory: 988128984 bytes (942 MB) / 1060372480 bytes (1011 MB) up to 1060372480 bytes (1011 MB)
+	JVM Flags: 3 total; -Xincgc -Xmx1024M -Xms1024M
+	AABB Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Launched Version: mcp
+	LWJGL: 2.9.1
+	OpenGL: ~~ERROR~~ RuntimeException: No OpenGL context found in the current thread.
+	GL Caps: 
+	Is Modded: Very likely; Jar signature invalidated
+	Type: Client (map_client.txt)
+	Resource Packs: ~~ERROR~~ NullPointerException: null
+	Current Language: ~~ERROR~~ NullPointerException: null
+	Vec3 Pool Size: 0 (0 bytes; 0 MB) allocated, 0 (0 bytes; 0 MB) used
+	Anisotropic Filtering: ~~ERROR~~ NullPointerException: null
