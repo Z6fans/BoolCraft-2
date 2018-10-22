@@ -45,10 +45,9 @@ public class EntityPlayerMP extends EntityPlayer
                     if (this.minecraft.worldServer.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                     {
                         Chunk chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
-
+                        
                         if (chunk.getLoaded())
                         {
-                        	System.out.println("EntityPlayerMP.onUpdate: adding chunk to chunksToSend");
                             chunksToSend.add(chunk);
                             chunkIterator.remove();
                         }

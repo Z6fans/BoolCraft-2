@@ -282,7 +282,7 @@ public class Chunk<Entity extends EntityPlayer>
 
     public boolean getLoaded()
     {
-        return this.isLoaded && this.isTerrainPopulated;
+        return this.isLoaded;
     }
 
     /**

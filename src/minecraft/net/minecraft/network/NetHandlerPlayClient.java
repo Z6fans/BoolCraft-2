@@ -48,7 +48,7 @@ public class NetHandlerPlayClient
                 this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), false);
                 return;
             }
-
+            
             this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), true);
         }
 
@@ -68,7 +68,6 @@ public class NetHandlerPlayClient
         {
             int chunkX = packetMapChunkBulk.getChunkX(i);
             int chunkZ = packetMapChunkBulk.getChunkZ(i);
-            System.out.println("NetHandlerPlayClient.handleMapChunkBulk: calling worldClient.doPreChunk");
             this.worldClient.doPreChunk(chunkX, chunkZ, true);
             Chunk<EntityPlayerSP> chunk = this.worldClient.provideChunk(chunkX, chunkZ);
             chunk.fillChunk(packetMapChunkBulk.func_149256_c(i), packetMapChunkBulk.func_149252_e()[i], packetMapChunkBulk.func_149257_f()[i], true);

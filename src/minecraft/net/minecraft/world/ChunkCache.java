@@ -84,8 +84,6 @@ public class ChunkCache implements IBlockAccess
                 }
             }
         }
-        
-        System.out.println("ChunkCache.getBlock: block is null? " + (var4 == null));
 
         return var4;
     }

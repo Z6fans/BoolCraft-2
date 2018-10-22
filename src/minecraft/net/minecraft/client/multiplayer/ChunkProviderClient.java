@@ -70,7 +70,6 @@ public class ChunkProviderClient implements IChunkProvider
     public Chunk<EntityPlayerSP> loadChunk(int x, int z)
     {
         Chunk<EntityPlayerSP> chunk = new Chunk<EntityPlayerSP>(this.worldObj, x, z);
-        System.out.println("ChunkProviderClient.loadChunk: adding chunk to chunkMapping");
         this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
         this.chunkListing.add(chunk);
         return chunk;
@@ -83,7 +82,6 @@ public class ChunkProviderClient implements IChunkProvider
     public Chunk<EntityPlayerSP> provideChunk(int x, int z)
     {
         Chunk<EntityPlayerSP> chunk = (Chunk<EntityPlayerSP>)this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
-        System.out.println("ChunkProviderClient.provideChunk: chunk is null?" + (chunk == null));
         return chunk == null ? this.blankChunk : chunk;
     }
 

@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,12 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.MinecraftException;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
@@ -94,7 +90,6 @@ public class ChunkProviderServer implements IChunkProvider
             	try
                 {
                 	newChunk = new Chunk(this.worldObj, x, z);
-                	System.out.println("creating new chunk in ChunkProviderServer.loadChunk");
 
                     for (int y = 0; y < 5; ++y)
                     {
@@ -147,6 +142,7 @@ public class ChunkProviderServer implements IChunkProvider
     {
         if (this.currentChunkLoader == null)
         {
+        	System.out.println("ChunkProviderServer.safeLoadChunk: currentChunkLoader is null");
             return null;
         }
         else
@@ -155,9 +151,9 @@ public class ChunkProviderServer implements IChunkProvider
             {
                 return this.currentChunkLoader.loadChunk(this.worldObj, p_73239_1_, p_73239_2_);
             }
-            catch (Exception var4)
+            catch (Exception e)
             {
-                logger.error("Couldn\'t load chunk", var4);
+                logger.error("Couldn\'t load chunk", e);
                 return null;
             }
         }
