@@ -15,8 +15,7 @@ public class EntityPlayerMP extends EntityPlayer
 	private Minecraft minecraft;
 
     /** LinkedList that holds the loaded chunks. */
-    public final List loadedChunks = new LinkedList();
-    private static final String __OBFID = "CL_00001440";
+    public final List<ChunkCoordIntPair> loadedChunks = new LinkedList<ChunkCoordIntPair>();
 
     public EntityPlayerMP(Minecraft mc)
     {
@@ -33,8 +32,8 @@ public class EntityPlayerMP extends EntityPlayer
     {
     	if (this.addedToChunk && !this.loadedChunks.isEmpty())
         {
-    		ArrayList chunksToSend = new ArrayList();
-            Iterator chunkIterator = this.loadedChunks.iterator();
+    		ArrayList<Chunk<EntityPlayerMP>> chunksToSend = new ArrayList<Chunk<EntityPlayerMP>>();
+            Iterator<ChunkCoordIntPair> chunkIterator = this.loadedChunks.iterator();
 
             while (chunkIterator.hasNext() && chunksToSend.size() < S26PacketMapChunkBulk.maxChunks())
             {
@@ -44,7 +43,7 @@ public class EntityPlayerMP extends EntityPlayer
                 {
                     if (this.minecraft.worldServer.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                     {
-                        Chunk chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
+                        Chunk<EntityPlayerMP> chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
                         
                         if (chunk.getLoaded())
                         {

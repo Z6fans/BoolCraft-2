@@ -6,8 +6,6 @@ import net.minecraft.player.EntityPlayerSP;
 
 public class EmptyChunk extends Chunk<EntityPlayerSP>
 {
-    private static final String __OBFID = "CL_00000372";
-
     public EmptyChunk(WorldClient world)
     {
         super(world, 0, 0);

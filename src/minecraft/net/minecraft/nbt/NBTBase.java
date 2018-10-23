@@ -6,9 +6,7 @@ import java.io.IOException;
 
 public abstract class NBTBase
 {
-   private static final String __OBFID = "CL_00001229";
-
-    /**
+	/**
      * Write the actual data contents of the tag, implemented in NBT extension classes
      */
     abstract void write(DataOutput p_74734_1_) throws IOException;
@@ -77,8 +75,6 @@ public abstract class NBTBase
 
     public abstract static class NBTPrimitive extends NBTBase
     {
-        private static final String __OBFID = "CL_00001230";
-
         public abstract long func_150291_c();
 
         public abstract int func_150287_d();

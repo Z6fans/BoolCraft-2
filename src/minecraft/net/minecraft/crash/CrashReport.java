@@ -11,7 +11,6 @@ public class CrashReport
 
     /** The Throwable that is the "cause" for this crash and Crash Report. */
     private final Throwable cause;
-    private static final String __OBFID = "CL_00000990";
 
     public CrashReport(String p_i1348_1_, Throwable p_i1348_2_)
     {

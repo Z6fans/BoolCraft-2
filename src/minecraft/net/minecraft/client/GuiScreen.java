@@ -40,7 +40,6 @@ public class GuiScreen
     
     private boolean isLaunched = false;
     private float scrollPos;
-    private static final String __OBFID = "CL_00000710";
 
     /**
      * Draws the screen and all the components in it.
@@ -292,7 +291,6 @@ public class GuiScreen
 
         /** Current Y coordinate at which to draw the next character. */
         private float posY;
-        private static final String __OBFID = "CL_00000660";
 
         public FontRenderer()
         {
@@ -382,7 +380,6 @@ public class GuiScreen
         private class Texture
         {
             private int glTextureId = -1;
-            private static final String __OBFID = "CL_00001047";
             
             public Texture(int page) throws IOException
             {

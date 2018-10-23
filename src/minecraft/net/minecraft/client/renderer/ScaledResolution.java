@@ -4,7 +4,6 @@ public class ScaledResolution
 {
     private int scaledWidth;
     private int scaledHeight;
-    private static final String __OBFID = "CL_00000666";
 
     public ScaledResolution(int w, int h)
     {

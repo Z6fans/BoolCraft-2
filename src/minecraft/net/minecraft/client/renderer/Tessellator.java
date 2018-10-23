@@ -31,12 +31,6 @@ public class Tessellator
      * The number of vertices to be drawn in the next draw call. Reset to 0 between draw calls.
      */
     private int vertexCount;
-
-    /** The first coordinate to be used for the texture. */
-    private double textureU;
-
-    /** The second coordinate to be used for the texture. */
-    private double textureV;
     private int brightness;
 
     /** The color (RGBA) value to be used for the following draw call. */
@@ -55,12 +49,6 @@ public class Tessellator
 
     /** The index into the raw buffer to be used for the next data. */
     private int rawBufferIndex;
-
-    /**
-     * The number of vertices manually added to the given draw call. This differs from vertexCount because it adds extra
-     * vertices when converting quads to triangles.
-     */
-    private int addedVertices;
 
     /** Disables all color information for the following draw call. */
     private boolean isColorDisabled;
@@ -94,7 +82,6 @@ public class Tessellator
 
     /** The size of the buffers used (in integers). */
     private int bufferSize;
-    private static final String __OBFID = "CL_00000960";
 
     private Tessellator(int p_i1250_1_)
     {
@@ -182,7 +169,7 @@ public class Tessellator
     public TesselatorVertexState getVertexState(float p_147564_1_, float p_147564_2_, float p_147564_3_)
     {
         int[] var4 = new int[this.rawBufferIndex];
-        PriorityQueue var5 = new PriorityQueue(this.rawBufferIndex, new QuadComparator(this.rawBuffer, p_147564_1_ + (float)this.xOffset, p_147564_2_ + (float)this.yOffset, p_147564_3_ + (float)this.zOffset));
+        PriorityQueue<Integer> var5 = new PriorityQueue<Integer>(this.rawBufferIndex, new QuadComparator(this.rawBuffer, p_147564_1_ + (float)this.xOffset, p_147564_2_ + (float)this.yOffset, p_147564_3_ + (float)this.zOffset));
         byte var6 = 32;
         int var7;
 
@@ -223,7 +210,6 @@ public class Tessellator
         this.vertexCount = 0;
         this.byteBuffer.clear();
         this.rawBufferIndex = 0;
-        this.addedVertices = 0;
     }
 
     /**
@@ -267,8 +253,6 @@ public class Tessellator
      */
     public void addVertex(double p_78377_1_, double p_78377_3_, double p_78377_5_)
     {
-        ++this.addedVertices;
-
         if (this.hasBrightness)
         {
             this.rawBuffer[this.rawBufferIndex + 7] = this.brightness;
@@ -330,13 +314,12 @@ public class Tessellator
         this.zOffset = p_78373_5_;
     }
     
-    private class QuadComparator implements Comparator
+    private class QuadComparator implements Comparator<Integer>
     {
         private float field_147630_a;
         private float field_147628_b;
         private float field_147629_c;
         private int[] field_147627_d;
-        private static final String __OBFID = "CL_00000958";
 
         public QuadComparator(int[] p_i45077_1_, float p_i45077_2_, float p_i45077_3_, float p_i45077_4_)
         {
@@ -346,7 +329,7 @@ public class Tessellator
             this.field_147629_c = p_i45077_4_;
         }
 
-        private int compare(Integer p_compare_1_, Integer p_compare_2_)
+        public int compare(Integer p_compare_1_, Integer p_compare_2_)
         {
             float var3 = Float.intBitsToFloat(this.field_147627_d[p_compare_1_.intValue()]) - this.field_147630_a;
             float var4 = Float.intBitsToFloat(this.field_147627_d[p_compare_1_.intValue() + 1]) - this.field_147628_b;
@@ -381,11 +364,6 @@ public class Tessellator
             float var33 = var27 * var27 + var28 * var28 + var29 * var29;
             float var34 = var30 * var30 + var31 * var31 + var32 * var32;
             return Float.compare(var34, var33);
-        }
-
-        public int compare(Object p_compare_1_, Object p_compare_2_)
-        {
-            return this.compare((Integer)p_compare_1_, (Integer)p_compare_2_);
         }
     }
 }

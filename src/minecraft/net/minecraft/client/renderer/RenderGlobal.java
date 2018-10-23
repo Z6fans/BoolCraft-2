@@ -1,39 +1,22 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.Maps;
-
-import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.Callable;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.ARBOcclusionQuery;
 import org.lwjgl.opengl.GL11;
 
 public class RenderGlobal
 {
     private WorldClient theWorld;
-    private List worldRenderersToUpdate = new ArrayList();
+    private List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
     private WorldRenderer[] sortedWorldRenderers;
     private WorldRenderer[] worldRenderers;
     private int renderChunksWide;
@@ -64,23 +47,11 @@ public class RenderGlobal
     /** Maximum block Z */
     private int maxBlockZ;
 
-    /** How many renderers are loaded this frame that try to be rendered */
-    private int renderersLoaded;
-
-    /** How many renderers are being clipped by the frustrum this frame */
-    private int renderersBeingClipped;
-
-    /** How many renderers are actually being rendered this frame */
-    private int renderersBeingRendered;
-
-    /** How many renderers are skipping rendering due to not having a render pass this frame */
-    private int renderersSkippingRenderPass;
-
     /** World renderers check index */
     private int worldRenderersCheckIndex;
 
     /** List of OpenGL lists for the current render pass */
-    private List glRenderLists = new ArrayList();
+    private List<WorldRenderer> glRenderLists = new ArrayList<WorldRenderer>();
 
     /** All render lists (fixed length 4) */
     private RenderList[] allRenderLists = new RenderList[] {new RenderList(), new RenderList(), new RenderList(), new RenderList()};
@@ -113,7 +84,6 @@ public class RenderGlobal
      * The offset used to determine if a renderer is one of the sixteenth that are being updated this frame
      */
     private int frustumCheckOffset;
-    private static final String __OBFID = "CL_00000954";
 
     public RenderGlobal(Minecraft minecraft)
     {
@@ -184,7 +154,7 @@ public class RenderGlobal
 
             for (var4 = 0; var4 < this.worldRenderersToUpdate.size(); ++var4)
             {
-                ((WorldRenderer)this.worldRenderersToUpdate.get(var4)).needsUpdate = false;
+                this.worldRenderersToUpdate.get(var4).needsUpdate = false;
             }
 
             this.worldRenderersToUpdate.clear();
@@ -324,18 +294,7 @@ public class RenderGlobal
                 this.worldRenderersToUpdate.add(var6);
             }
         }
-
-        if (p_72719_2_ == 0)
-        {
-            this.renderersLoaded = 0;
-            this.renderersBeingClipped = 0;
-            this.renderersBeingRendered = 0;
-            this.renderersSkippingRenderPass = 0;
-        }
-
-        double var39 = p_72719_1_.lastTickPosX + (p_72719_1_.posX - p_72719_1_.lastTickPosX) * p_72719_3_;
-        double var7 = p_72719_1_.lastTickPosY + (p_72719_1_.posY - p_72719_1_.lastTickPosY) * p_72719_3_;
-        double var9 = p_72719_1_.lastTickPosZ + (p_72719_1_.posZ - p_72719_1_.lastTickPosZ) * p_72719_3_;
+        
         double var11 = p_72719_1_.posX - this.prevSortX;
         double var13 = p_72719_1_.posY - this.prevSortY;
         double var15 = p_72719_1_.posZ - this.prevSortZ;
@@ -394,24 +353,6 @@ public class RenderGlobal
 
         for (int var10 = var7; var10 != var8; var10 += var9)
         {
-            if (p_72724_3_ == 0)
-            {
-                ++this.renderersLoaded;
-
-                if (this.sortedWorldRenderers[var10].skipRenderPass[p_72724_3_])
-                {
-                    ++this.renderersSkippingRenderPass;
-                }
-                else if (!this.sortedWorldRenderers[var10].isInFrustum)
-                {
-                    ++this.renderersBeingClipped;
-                }
-                else
-                {
-                    ++this.renderersBeingRendered;
-                }
-            }
-
             if (!this.sortedWorldRenderers[var10].skipRenderPass[p_72724_3_] && this.sortedWorldRenderers[var10].isInFrustum)
             {
                 int var11 = this.sortedWorldRenderers[var10].getGLCallListForPass(p_72724_3_);
@@ -483,7 +424,7 @@ public class RenderGlobal
         byte var3 = 2;
         RenderSorter var4 = new RenderSorter(player);
         WorldRenderer[] var5 = new WorldRenderer[var3];
-        ArrayList var6 = null;
+        ArrayList<WorldRenderer> var6 = null;
         int var7 = this.worldRenderersToUpdate.size();
         int var8 = 0;
         int var9;
@@ -530,12 +471,12 @@ public class RenderGlobal
 
                 if (var6 == null)
                 {
-                    var6 = new ArrayList();
+                    var6 = new ArrayList<WorldRenderer>();
                 }
 
                 ++var8;
                 var6.add(var10);
-                this.worldRenderersToUpdate.set(var9, (Object)null);
+                this.worldRenderersToUpdate.set(var9, (WorldRenderer)null);
             }
         }
 

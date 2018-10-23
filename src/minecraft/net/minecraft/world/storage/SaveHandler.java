@@ -25,7 +25,6 @@ public class SaveHandler
      * The time in milliseconds when this field was initialized. Stored in the session lock file.
      */
     private final long initializationTime = System.currentTimeMillis();
-    private static final String __OBFID = "CL_00000585";
 
     public SaveHandler(File file, String name, boolean hasPlayerData)
     {

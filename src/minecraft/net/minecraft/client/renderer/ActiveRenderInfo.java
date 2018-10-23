@@ -2,14 +2,6 @@ package net.minecraft.client.renderer;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-
-import net.minecraft.block.Block;
-import net.minecraft.player.EntityPlayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.World;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
@@ -26,7 +18,6 @@ public class ActiveRenderInfo
 
     /** The computed view object coordinates */
     private static FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
-    private static final String __OBFID = "CL_00000626";
 
     /**
      * Updates the current render info and camera location based on entity look angles and 1st/3rd person view mode

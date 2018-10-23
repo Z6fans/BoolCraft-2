@@ -35,7 +35,6 @@ public class ExtendedBlockStorage
      * Stores the metadata associated with blocks in this ExtendedBlockStorage.
      */
     private NibbleArray blockMetadataArray;
-    private static final String __OBFID = "CL_00000375";
 
     public ExtendedBlockStorage(int baseY)
     {

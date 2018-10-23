@@ -6,34 +6,28 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class NBTTagCompound extends NBTBase
 {
     /**
      * The key-value pairs for the tag. Each key is a UTF string, each value is a tag.
      */
-    private Map tagMap = new HashMap();
-    private static final String __OBFID = "CL_00001215";
+    private Map<String, NBTBase> tagMap = new HashMap<String, NBTBase>();
 
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes
      */
     void write(DataOutput p_74734_1_) throws IOException
     {
-        Iterator var2 = this.tagMap.keySet().iterator();
+        Iterator<String> var2 = this.tagMap.keySet().iterator();
 
         while (var2.hasNext())
         {
-            String var3 = (String)var2.next();
-            NBTBase var4 = (NBTBase)this.tagMap.get(var3);
+            String var3 = var2.next();
+            NBTBase var4 = this.tagMap.get(var3);
             func_150298_a(var3, var4, p_74734_1_);
         }
 
@@ -244,9 +238,9 @@ public class NBTTagCompound extends NBTBase
         String var1 = "{";
         String var3;
 
-        for (Iterator var2 = this.tagMap.keySet().iterator(); var2.hasNext(); var1 = var1 + var3 + ':' + this.tagMap.get(var3) + ',')
+        for (Iterator<String> var2 = this.tagMap.keySet().iterator(); var2.hasNext(); var1 = var1 + var3 + ':' + this.tagMap.get(var3) + ',')
         {
-            var3 = (String)var2.next();
+            var3 = var2.next();
         }
 
         return var1 + "}";
@@ -266,12 +260,12 @@ public class NBTTagCompound extends NBTBase
     public NBTBase copy()
     {
         NBTTagCompound var1 = new NBTTagCompound();
-        Iterator var2 = this.tagMap.keySet().iterator();
+        Iterator<String> var2 = this.tagMap.keySet().iterator();
 
         while (var2.hasNext())
         {
-            String var3 = (String)var2.next();
-            var1.setTag(var3, ((NBTBase)this.tagMap.get(var3)).copy());
+            String var3 = var2.next();
+            var1.setTag(var3, this.tagMap.get(var3).copy());
         }
 
         return var1;

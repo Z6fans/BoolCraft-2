@@ -8,7 +8,6 @@ public class Frustrum
     private double xPosition;
     private double yPosition;
     private double zPosition;
-    private static final String __OBFID = "CL_00000976";
 
     public void setPosition(double p_78547_1_, double p_78547_3_, double p_78547_5_)
     {

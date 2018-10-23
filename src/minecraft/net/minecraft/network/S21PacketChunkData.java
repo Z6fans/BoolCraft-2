@@ -1,10 +1,7 @@
 package net.minecraft.network;
 
-import java.io.IOException;
-import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
-
+import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -18,13 +15,11 @@ public class S21PacketChunkData
     private byte[] field_149281_e;
     private byte[] field_149278_f;
     private boolean field_149279_g;
-    private int field_149285_h;
     private static byte[] field_149286_i = new byte[196864];
-    private static final String __OBFID = "CL_00001304";
 
     public S21PacketChunkData() {}
 
-    public S21PacketChunkData(Chunk chunk, boolean p_i45196_2_, int flags)
+    public S21PacketChunkData(Chunk<EntityPlayerMP> chunk, boolean p_i45196_2_, int flags)
     {
         this.chunkX = chunk.xPosition;
         this.chunkZ = chunk.zPosition;
@@ -40,7 +35,7 @@ public class S21PacketChunkData
             var5.setInput(extracted.field_150282_a, 0, extracted.field_150282_a.length);
             var5.finish();
             this.field_149281_e = new byte[extracted.field_150282_a.length];
-            this.field_149285_h = var5.deflate(this.field_149281_e);
+            var5.deflate(this.field_149281_e);
         }
         finally
         {
@@ -56,7 +51,7 @@ public class S21PacketChunkData
         return this.field_149278_f;
     }
 
-    public static S21PacketChunkData.Extracted func_149269_a(Chunk chunk, boolean p_149269_1_, int flags)
+    public static S21PacketChunkData.Extracted func_149269_a(Chunk<EntityPlayerMP> chunk, boolean p_149269_1_, int flags)
     {
         int var3 = 0;
         ExtendedBlockStorage[] storageArray = chunk.getBlockStorageArray();
@@ -149,6 +144,5 @@ public class S21PacketChunkData
         public byte[] field_150282_a;
         public int field_150280_b;
         public int field_150281_c;
-        private static final String __OBFID = "CL_00001305";
     }
 }

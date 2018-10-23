@@ -1,27 +1,12 @@
 package net.minecraft.world.chunk;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.Callable;
-
 import net.minecraft.block.Block;
 import net.minecraft.player.EntityPlayer;
-import net.minecraft.player.EntityPlayerSP;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Chunk<Entity extends EntityPlayer>
 {
@@ -49,7 +34,6 @@ public class Chunk<Entity extends EntityPlayer>
      * Set to true if the chunk has been modified and needs to be updated internally.
      */
     public boolean isModified;
-    private static final String __OBFID = "CL_00000373";
 
     public Chunk(World<Entity> world, int x, int y)
     {

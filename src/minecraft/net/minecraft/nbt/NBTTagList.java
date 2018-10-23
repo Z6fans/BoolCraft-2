@@ -10,13 +10,12 @@ import java.util.List;
 public class NBTTagList extends NBTBase
 {
     /** The array list containing the tags encapsulated in this list. */
-    private List tagList = new ArrayList();
+    private List<NBTBase> tagList = new ArrayList<NBTBase>();
 
     /**
      * The type byte for the tags in the list - they must all be of the same type.
      */
     private byte tagType = 0;
-    private static final String __OBFID = "CL_00001224";
 
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes
@@ -25,7 +24,7 @@ public class NBTTagList extends NBTBase
     {
         if (!this.tagList.isEmpty())
         {
-            this.tagType = ((NBTBase)this.tagList.get(0)).getId();
+            this.tagType = this.tagList.get(0).getId();
         }
         else
         {
@@ -37,7 +36,7 @@ public class NBTTagList extends NBTBase
 
         for (int var2 = 0; var2 < this.tagList.size(); ++var2)
         {
-            ((NBTBase)this.tagList.get(var2)).write(p_74734_1_);
+            this.tagList.get(var2).write(p_74734_1_);
         }
     }
 
@@ -45,7 +44,7 @@ public class NBTTagList extends NBTBase
     {
     	this.tagType = p_152446_1_.readByte();
         int var4 = p_152446_1_.readInt();
-        this.tagList = new ArrayList();
+        this.tagList = new ArrayList<NBTBase>();
 
         for (int var5 = 0; var5 < var4; ++var5)
         {
@@ -68,9 +67,9 @@ public class NBTTagList extends NBTBase
         String var1 = "[";
         int var2 = 0;
 
-        for (Iterator var3 = this.tagList.iterator(); var3.hasNext(); ++var2)
+        for (Iterator<NBTBase> var3 = this.tagList.iterator(); var3.hasNext(); ++var2)
         {
-            NBTBase var4 = (NBTBase)var3.next();
+            NBTBase var4 = var3.next();
             var1 = var1 + "" + var2 + ':' + var4 + ',';
         }
 
@@ -127,11 +126,11 @@ public class NBTTagList extends NBTBase
     {
         NBTTagList var1 = new NBTTagList();
         var1.tagType = this.tagType;
-        Iterator var2 = this.tagList.iterator();
+        Iterator<NBTBase> var2 = this.tagList.iterator();
 
         while (var2.hasNext())
         {
-            NBTBase var3 = (NBTBase)var2.next();
+            NBTBase var3 = var2.next();
             NBTBase var4 = var3.copy();
             var1.tagList.add(var4);
         }

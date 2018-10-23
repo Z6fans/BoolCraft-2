@@ -127,8 +127,6 @@ public class Minecraft
      * Delays the first damage on the block after the first click on the block
      */
     private int blockHitDelay;
-    
-    private static final String __OBFID = "CL_00000631";
 
     public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
     {

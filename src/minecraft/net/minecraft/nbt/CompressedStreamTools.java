@@ -9,8 +9,6 @@ import net.minecraft.crash.ReportedException;
 
 public class CompressedStreamTools
 {
-    private static final String __OBFID = "CL_00001226";
-
     /**
      * Reads from a CompressedStream.
      */

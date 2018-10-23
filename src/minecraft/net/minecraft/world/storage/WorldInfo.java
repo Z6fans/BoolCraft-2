@@ -7,7 +7,6 @@ public class WorldInfo
     /** Total time for this world. */
     private long totalTime;
     private boolean initialized;
-    private static final String __OBFID = "CL_00000587";
 
     public WorldInfo(NBTTagCompound tag)
     {

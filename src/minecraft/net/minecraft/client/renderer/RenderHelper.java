@@ -4,8 +4,6 @@ import org.lwjgl.opengl.GL11;
 
 public class RenderHelper
 {
-    private static final String __OBFID = "CL_00000629";
-
     /**
      * Disables the OpenGL lighting properties enabled by enableStandardItemLighting
      */

@@ -10,7 +10,6 @@ public class WorldClient extends World<EntityPlayerSP>
     /** The ChunkProviderClient instance */
     private ChunkProviderClient clientChunkProvider;
     private RenderGlobal renderer;
-    private static final String __OBFID = "CL_00000882";
 
     public WorldClient()
     {

@@ -1,11 +1,9 @@
 package net.minecraft.network;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.Inflater;
 
+import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.chunk.Chunk;
 
 public class S26PacketMapChunkBulk
@@ -16,13 +14,11 @@ public class S26PacketMapChunkBulk
     private int[] field_149262_d;
     private byte[] field_149263_e;
     private byte[][] field_149260_f;
-    private int field_149261_g;
     private static byte[] field_149268_i = new byte[0];
-    private static final String __OBFID = "CL_00001306";
 
     public S26PacketMapChunkBulk() {}
 
-    public S26PacketMapChunkBulk(List chunks)
+    public S26PacketMapChunkBulk(List<Chunk<EntityPlayerMP>> chunks)
     {
         int numChunks = chunks.size();
         this.chunkXList = new int[numChunks];
@@ -34,7 +30,7 @@ public class S26PacketMapChunkBulk
 
         for (int i = 0; i < numChunks; ++i)
         {
-            Chunk chunk = (Chunk)chunks.get(i);
+            Chunk<EntityPlayerMP> chunk = chunks.get(i);
             S21PacketChunkData.Extracted extracted = S21PacketChunkData.func_149269_a(chunk, true, 65535);
 
             if (field_149268_i.length < var3 + extracted.field_150282_a.length)
@@ -60,7 +56,7 @@ public class S26PacketMapChunkBulk
             deflater.setInput(field_149268_i, 0, var3);
             deflater.finish();
             this.field_149263_e = new byte[var3];
-            this.field_149261_g = deflater.deflate(this.field_149263_e);
+            deflater.deflate(this.field_149263_e);
         }
         finally
         {

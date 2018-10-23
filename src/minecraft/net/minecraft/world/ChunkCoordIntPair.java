@@ -7,7 +7,6 @@ public class ChunkCoordIntPair
 
     /** The Z position of this Chunk Coordinate Pair */
     public final int chunkZPos;
-    private static final String __OBFID = "CL_00000133";
 
     public ChunkCoordIntPair(int p_i1947_1_, int p_i1947_2_)
     {

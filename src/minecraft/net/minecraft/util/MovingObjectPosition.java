@@ -16,7 +16,6 @@ public class MovingObjectPosition
      * = 3, North = 4, South = 5.
      */
     public int sideHit;
-    private static final String __OBFID = "CL_00000610";
 
     public MovingObjectPosition(int p_i45481_1_, int p_i45481_2_, int p_i45481_3_, int p_i45481_4_)
     {

@@ -16,29 +16,15 @@ import java.util.zip.InflaterInputStream;
 public class RegionFile
 {
     private static final byte[] emptySector = new byte[4096];
-    private final File fileName;
     private RandomAccessFile dataFile;
     private final int[] offsets = new int[1024];
     private final int[] chunkTimestamps = new int[1024];
-    private ArrayList sectorFree;
-
-    /** McRegion sizeDelta */
-    private int sizeDelta;
-    private long lastModified;
-    private static final String __OBFID = "CL_00000381";
+    private ArrayList<Boolean> sectorFree;
 
     public RegionFile(File file)
     {
-        this.fileName = file;
-        this.sizeDelta = 0;
-
         try
         {
-            if (file.exists())
-            {
-                this.lastModified = file.lastModified();
-            }
-
             this.dataFile = new RandomAccessFile(file, "rw");
             int var2;
 
@@ -53,8 +39,6 @@ public class RegionFile
                 {
                     this.dataFile.writeInt(0);
                 }
-
-                this.sizeDelta += 8192;
             }
 
             if ((this.dataFile.length() & 4095L) != 0L)
@@ -66,7 +50,7 @@ public class RegionFile
             }
 
             var2 = (int)this.dataFile.length() / 4096;
-            this.sectorFree = new ArrayList(var2);
+            this.sectorFree = new ArrayList<Boolean>(var2);
             int var3;
 
             for (var3 = 0; var3 < var2; ++var3)
@@ -271,7 +255,6 @@ public class RegionFile
                         this.sectorFree.add(Boolean.valueOf(false));
                     }
 
-                    this.sizeDelta += 4096 * var8;
                     this.write(var6, p_76706_3_, p_76706_4_);
                     this.setOffset(p_76706_1_, p_76706_2_, var6 << 8 | var8);
                 }
@@ -347,7 +330,6 @@ public class RegionFile
     {
         private int chunkX;
         private int chunkZ;
-        private static final String __OBFID = "CL_00000382";
 
         private ChunkBuffer(int x, int z)
         {

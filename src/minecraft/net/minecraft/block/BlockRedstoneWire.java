@@ -2,10 +2,10 @@ package net.minecraft.block;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.ChunkPosition;
@@ -16,8 +16,7 @@ import net.minecraft.world.WorldServer;
 public class BlockRedstoneWire extends Block
 {
     private boolean isCheckingForPower = false;
-    private Set field_150179_b = new HashSet();
-    private static final String __OBFID = "CL_00000295";
+    private Set<ChunkPosition> field_150179_b = new HashSet<ChunkPosition>();
 
     public BlockRedstoneWire()
     {
@@ -63,12 +62,12 @@ public class BlockRedstoneWire extends Block
         return (int)(0x39 * var12) << 16 | (int)(0xEE * var12) << 8 | (int)(0xEE * var12);
     }
 
-    protected boolean canPlaceBlockAt(World p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
         return World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_);
     }
 
-    private void func_150177_e(World world, int x, int y, int z)
+    private <E extends EntityPlayer> void func_150177_e(World<E> world, int x, int y, int z)
     {
         int prevPower = world.getBlockMetadata(x, y, z);
         int currentPower = this.maxRedstonePowerAt(world, x, y, z, 0);
@@ -150,7 +149,7 @@ public class BlockRedstoneWire extends Block
             this.field_150179_b.add(new ChunkPosition(x, y, z - 1));
             this.field_150179_b.add(new ChunkPosition(x, y, z + 1));
         }
-        ArrayList var5 = new ArrayList(this.field_150179_b);
+        ArrayList<ChunkPosition> var5 = new ArrayList<ChunkPosition>(this.field_150179_b);
         this.field_150179_b.clear();
 
         for (int var6 = 0; var6 < var5.size(); ++var6)
@@ -160,7 +159,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private int maxRedstonePowerAt(World world, int x, int y, int z, int other)
+    private <E extends EntityPlayer> int maxRedstonePowerAt(World<E> world, int x, int y, int z, int other)
     {
         if (world.getBlock(x, y, z) != this)
         {
@@ -172,7 +171,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private void func_150172_m(World world, int x, int y, int z)
+    private <E extends EntityPlayer> void func_150172_m(World<E> world, int x, int y, int z)
     {
         if (world.getBlock(x, y, z) == this)
         {
@@ -296,12 +295,12 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public int isProvidingStrongPower(World p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+    public <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
     {
         return this.isCheckingForPower ? 0 : this.isProvidingWeakPower(p_149748_1_, p_149748_2_, p_149748_3_, p_149748_4_, p_149748_5_);
     }
 
-    public int isProvidingWeakPower(World world, int x, int y, int z, int side)
+    public <E extends EntityPlayer> int isProvidingWeakPower(World<E> world, int x, int y, int z, int side)
     {
         if (this.isCheckingForPower)
         {
@@ -373,7 +372,7 @@ public class BlockRedstoneWire extends Block
 		return false;
 	}
 
-	public int onBlockPlaced(World world, int x, int y, int z, int side)
+	public <E extends EntityPlayer> int onBlockPlaced(World<E> world, int x, int y, int z, int side)
 	{
 		return 0;
 	}

@@ -1,20 +1,15 @@
 package net.minecraft.server;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.S21PacketChunkData;
 import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class PlayerChunkLoadManager
 {
@@ -32,16 +27,16 @@ public class PlayerChunkLoadManager
     /**
      * A map of chunk position (two ints concatenated into a long) to PlayerInstance
      */
-    private final LongHashMap playerInstances = new LongHashMap();
+    private final LongHashMap<PlayerInstance> playerInstances = new LongHashMap<PlayerInstance>();
 
     /**
      * contains a PlayerInstance for every chunk they can see. the "player instance" cotains a list of all players who
      * can also that chunk
      */
-    private final List chunkWatcherWithPlayers = new ArrayList();
+    private final List<PlayerInstance> chunkWatcherWithPlayers = new ArrayList<PlayerInstance>();
 
     /** This field is using when chunk should be processed (every 8000 ticks) */
-    private final List playerInstanceList = new ArrayList();
+    private final List<PlayerInstance> playerInstanceList = new ArrayList<PlayerInstance>();
 
     /**
      * Number of chunks the server sends to the client. Valid 3<=x<=15. In server.properties.
@@ -53,7 +48,6 @@ public class PlayerChunkLoadManager
 
     /** x, z direction vectors: east, south, west, north */
     private final int[][] xzDirectionsConst = new int[][] {{1, 0}, {0, 1}, { -1, 0}, {0, -1}};
-    private static final String __OBFID = "CL_00001434";
 
     public PlayerChunkLoadManager(WorldServer p_i1176_1_)
     {
@@ -157,7 +151,7 @@ public class PlayerChunkLoadManager
      */
     private void filterChunkLoadQueue(EntityPlayerMP p_72691_1_)
     {
-        ArrayList var2 = new ArrayList(p_72691_1_.loadedChunks);
+        ArrayList<ChunkCoordIntPair> var2 = new ArrayList<ChunkCoordIntPair>(p_72691_1_.loadedChunks);
         int var3 = 0;
         int var4 = this.playerViewRadius;
         int var5 = (int)p_72691_1_.posX >> 4;
@@ -304,7 +298,6 @@ public class PlayerChunkLoadManager
         private short[] tilesToUpdate = new short[64];
         private int numberOfTilesToUpdate;
         private int flagsYAreasToUpdate;
-        private static final String __OBFID = "CL_00001435";
 
         private PlayerInstance(int chunkX, int chunkZ)
         {
@@ -325,7 +318,7 @@ public class PlayerChunkLoadManager
         {
             if (this.playerWatchingChunk != null)
             {
-                Chunk chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+                Chunk<EntityPlayerMP> chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
 
                 if (chunk.getLoaded())
                 {

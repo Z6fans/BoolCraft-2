@@ -1,29 +1,12 @@
 package net.minecraft.client.renderer;
 
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Callable;
-
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.player.EntityPlayerSP;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.Project;
 
 public class EntityRenderer
@@ -33,8 +16,6 @@ public class EntityRenderer
 
     /** Previous frame time in milliseconds */
     private long prevFrameTime;
-    
-    private static final String __OBFID = "CL_00000947";
 
     public EntityRenderer(Minecraft p_i45076_1_)
     {

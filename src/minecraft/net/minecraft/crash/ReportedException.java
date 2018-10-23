@@ -2,9 +2,10 @@ package net.minecraft.crash;
 
 public class ReportedException extends RuntimeException
 {
-    /** Instance of CrashReport. */
+	private static final long serialVersionUID = 6623792971934986491L;
+	
+	/** Instance of CrashReport. */
     private final CrashReport theReportedExceptionCrashReport;
-    private static final String __OBFID = "CL_00001579";
 
     public ReportedException(CrashReport cr)
     {

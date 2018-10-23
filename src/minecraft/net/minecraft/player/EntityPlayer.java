@@ -17,8 +17,6 @@ public abstract class EntityPlayer
     public int chunkCoordY;
     public int chunkCoordZ;
 
-    private static final String __OBFID = "CL_00001533";
-
     /**
      * Called to update the entity's position/logic.
      */

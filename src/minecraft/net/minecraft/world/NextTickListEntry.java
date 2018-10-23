@@ -2,7 +2,7 @@ package net.minecraft.world;
 
 import net.minecraft.block.Block;
 
-public class NextTickListEntry implements Comparable
+public class NextTickListEntry implements Comparable<NextTickListEntry>
 {
     /** The id number for the next tick entry */
     private static long nextTickEntryID;
@@ -23,7 +23,6 @@ public class NextTickListEntry implements Comparable
 
     /** The id of the tick entry */
     private long tickEntryID;
-    private static final String __OBFID = "CL_00000156";
 
     public NextTickListEntry(int x, int y, int z, Block b)
     {
@@ -66,7 +65,7 @@ public class NextTickListEntry implements Comparable
         this.priority = p;
     }
 
-    private int compareTo(NextTickListEntry other)
+    public int compareTo(NextTickListEntry other)
     {
         return this.scheduledTime < other.scheduledTime ? -1 : (this.scheduledTime > other.scheduledTime ? 1 : (this.priority != other.priority ? this.priority - other.priority : (this.tickEntryID < other.tickEntryID ? -1 : (this.tickEntryID > other.tickEntryID ? 1 : 0))));
     }
@@ -79,10 +78,5 @@ public class NextTickListEntry implements Comparable
     public Block getBlock()
     {
         return this.block;
-    }
-
-    public int compareTo(Object other)
-    {
-        return this.compareTo((NextTickListEntry)other);
     }
 }

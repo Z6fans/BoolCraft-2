@@ -6,7 +6,6 @@ public class MathHelper
      * A table of sin values computed from 0 (inclusive) to 2*pi (exclusive), with steps of 2*PI / 65536.
      */
     private static float[] SIN_TABLE = new float[65536];
-    private static final String __OBFID = "CL_00001496";
 
     /**
      * sin looked up in a table

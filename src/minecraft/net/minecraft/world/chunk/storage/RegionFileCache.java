@@ -9,14 +9,13 @@ import java.util.Map;
 public class RegionFileCache
 {
     /** A map containing Files as keys and RegionFiles as values */
-    private static final Map regionsByFilename = new HashMap();
-    private static final String __OBFID = "CL_00000383";
+    private static final Map<File, RegionFile> regionsByFilename = new HashMap<File, RegionFile>();
 
     public static synchronized RegionFile createOrLoadRegionFile(File chunkSaveLocation, int chunkX, int chunkZ)
     {
         File regionDir = new File(chunkSaveLocation, "region");
         File regionFileName = new File(regionDir, "r." + (chunkX >> 5) + "." + (chunkZ >> 5) + ".mca");
-        RegionFile regionFile = (RegionFile)regionsByFilename.get(regionFileName);
+        RegionFile regionFile = regionsByFilename.get(regionFileName);
 
         if (regionFile != null)
         {
@@ -45,11 +44,11 @@ public class RegionFileCache
      */
     public static synchronized void clearRegionFileReferences()
     {
-        Iterator regionFileIterator = regionsByFilename.values().iterator();
+        Iterator<RegionFile> regionFileIterator = regionsByFilename.values().iterator();
 
         while (regionFileIterator.hasNext())
         {
-            RegionFile regionFile = (RegionFile)regionFileIterator.next();
+            RegionFile regionFile = regionFileIterator.next();
 
             try
             {

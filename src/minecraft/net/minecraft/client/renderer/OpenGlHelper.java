@@ -24,7 +24,6 @@ public class OpenGlHelper
     private static boolean field_153215_z;
     private static boolean openGL14;
     private static boolean field_153211_u;
-    private static final String __OBFID = "CL_00001179";
 
     /**
      * Initializes the texture constants to be used when rendering lightmap values

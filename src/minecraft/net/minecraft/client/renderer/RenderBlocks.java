@@ -27,7 +27,6 @@ public class RenderBlocks
 
     /** The maximum Z value for rendering (default 1.0). */
     private double renderMaxZ;
-    private static final String __OBFID = "CL_00000940";
 
     public RenderBlocks(ChunkCache p_i1251_1_)
     {
@@ -115,9 +114,6 @@ public class RenderBlocks
     private boolean renderBlockRedstoneWire(Block p_147788_1_, int p_147788_2_, int p_147788_3_, int p_147788_4_)
     {
         Tessellator var5 = Tessellator.instance;
-        int var6 = this.chunkCache.getBlockMetadata(p_147788_2_, p_147788_3_, p_147788_4_);
-        double var15 = 0.015625D;
-        double var17 = 0.015625D;
         boolean var19 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ - 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ - 1, p_147788_3_ - 1, p_147788_4_, false);
         boolean var20 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ + 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ + 1, p_147788_3_ - 1, p_147788_4_, false);
         boolean var21 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ - 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ - 1, false);
@@ -150,32 +146,10 @@ public class RenderBlocks
         float var24 = (float)(p_147788_2_ + 1);
         float var25 = (float)(p_147788_4_ + 0);
         float var26 = (float)(p_147788_4_ + 1);
-        int var27 = 0;
-
-        if ((var19 || var20) && !var21 && !var22)
-        {
-            var27 = 1;
-        }
-
-        if ((var21 || var22) && !var20 && !var19)
-        {
-            var27 = 2;
-        }
-
-        int var28 = 0;
-        int var29 = 0;
-        int var30 = 16;
-        int var31 = 16;
-        boolean var32 = true;
 
         if (!var19)
         {
             var23 += 0.3125F;
-        }
-
-        if (!var19)
-        {
-            var28 += 5;
         }
 
         if (!var20)
@@ -183,29 +157,14 @@ public class RenderBlocks
             var24 -= 0.3125F;
         }
 
-        if (!var20)
-        {
-            var30 -= 5;
-        }
-
         if (!var21)
         {
             var25 += 0.3125F;
         }
 
-        if (!var21)
-        {
-            var29 += 5;
-        }
-
         if (!var22)
         {
             var26 -= 0.3125F;
-        }
-
-        if (!var22)
-        {
-            var31 -= 5;
         }
 
         var5.addVertex((double)var24, (double)p_147788_3_ + 0.015625D, (double)var26);
@@ -215,8 +174,6 @@ public class RenderBlocks
 
         if (!this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_).isSolid())
         {
-            float var33 = 0.021875F;
-
             if (this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_ + 1, p_147788_4_) == Block.redstone_wire)
             {
                 var5.addVertex((double)p_147788_2_ + 0.015625D, (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 1 - 0.3125F));
@@ -255,7 +212,6 @@ public class RenderBlocks
 
     private boolean renderStandardBlock(Block p_147736_1_, int p_147736_2_, int p_147736_3_, int p_147736_4_, boolean renderAllFaces)
     {
-        Tessellator var8 = Tessellator.instance;
         boolean var9 = false;
 
         if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_, p_147736_3_ - 1, p_147736_4_, 0))

@@ -1,10 +1,8 @@
 package net.minecraft.network;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.player.EntityPlayerSP;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
@@ -14,14 +12,13 @@ public class NetHandlerPlayClient
      * Reference to the current ClientWorld instance, which many handler methods operate on
      */
     private WorldClient worldClient;
-    private static final String __OBFID = "CL_00000878";
 
     public void setWorld(WorldClient wc)
     {
         this.worldClient = wc;
     }
     
-    public void handleMultiBlockChange(int numTiles, short[] localKeyArray, Chunk chunk)
+    public void handleMultiBlockChange(int numTiles, short[] localKeyArray, Chunk<EntityPlayerMP> chunk)
     {
         int baseX = chunk.xPosition * 16;
         int baseZ = chunk.zPosition * 16;

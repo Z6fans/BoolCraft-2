@@ -14,38 +14,31 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.server.PlayerChunkLoadManager;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkProviderServer;
-import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.SaveHandler;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class WorldServer extends World<EntityPlayerMP>
 {
     private final PlayerChunkLoadManager thePlayerManager;
-    private Set pendingTickListEntriesHashSet;
+    private Set<NextTickListEntry> pendingTickListEntriesHashSet;
 
     /** All work to do in future ticks. */
-    private TreeSet pendingTickListEntriesTreeSet;
+    private TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet;
     public ChunkProviderServer theChunkProviderServer;
 
     /** Whether or not level saving is enabled */
     public boolean levelSaving;
     private int updateEntityTick;
-    private List pendingTickListEntriesThisTick = new ArrayList();
+    private List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
     /** Positions to update */
-    private Set activeChunkSet = new HashSet();
+    private Set<ChunkCoordIntPair> activeChunkSet = new HashSet<ChunkCoordIntPair>();
     
     /**
      * Contains the current Linear Congruential Generator seed for block updates. Used with an A value of 3 and a C
@@ -54,7 +47,6 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     private int updateLCG = (new Random()).nextInt();
     private final SaveHandler saveHandler;
-    private static final String __OBFID = "CL_00001437";
 
     public WorldServer(SaveHandler sh)
     {
@@ -66,12 +58,12 @@ public class WorldServer extends World<EntityPlayerMP>
 
         if (this.pendingTickListEntriesHashSet == null)
         {
-            this.pendingTickListEntriesHashSet = new HashSet();
+            this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
         }
 
         if (this.pendingTickListEntriesTreeSet == null)
         {
-            this.pendingTickListEntriesTreeSet = new TreeSet();
+            this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
         }
     }
 
@@ -110,7 +102,7 @@ public class WorldServer extends World<EntityPlayerMP>
                 this.pendingTickListEntriesThisTick.add(entry);
             }
             
-            Iterator entryListIterator = this.pendingTickListEntriesThisTick.iterator();
+            Iterator<NextTickListEntry> entryListIterator = this.pendingTickListEntriesThisTick.iterator();
 
             while (entryListIterator.hasNext())
             {
@@ -157,10 +149,7 @@ public class WorldServer extends World<EntityPlayerMP>
                 }
             }
         }
-        
-        int var1 = 0;
-        int var2 = 0;
-        Iterator var3 = this.activeChunkSet.iterator();
+        Iterator<ChunkCoordIntPair> var3 = this.activeChunkSet.iterator();
 
         while (var3.hasNext())
         {
@@ -189,12 +178,10 @@ public class WorldServer extends World<EntityPlayerMP>
                         int var14 = var13 & 15;
                         int var15 = var13 >> 8 & 15;
                         int var16 = var13 >> 16 & 15;
-                        ++var2;
                         Block var17 = storage.getBlock(var14, var16, var15);
 
                         if (var17.getTickRandomly())
                         {
-                            ++var1;
                             var17.updateTick(this, var14 + var5, var16 + storage.getYLocation(), var15 + var6);
                         }
                     }
@@ -264,7 +251,7 @@ public class WorldServer extends World<EntityPlayerMP>
         super.updateEntities();
     }
 
-    public List getPendingBlockUpdates(Chunk<EntityPlayerMP> chunk)
+    public List<NextTickListEntry> getPendingBlockUpdates(Chunk<EntityPlayerMP> chunk)
     {
         ChunkCoordIntPair chunkCoords = chunk.getChunkCoordIntPair();
         int xmin = (chunkCoords.chunkXPos << 4) - 2;
@@ -272,11 +259,11 @@ public class WorldServer extends World<EntityPlayerMP>
         int zmin = (chunkCoords.chunkZPos << 4) - 2;
         int zmax = zmin + 16 + 2;
         
-        ArrayList updateList = new ArrayList();
+        ArrayList<NextTickListEntry> updateList = new ArrayList<NextTickListEntry>();
 
         for (int i = 0; i < 2; ++i)
         {
-            Iterator iter;
+            Iterator<NextTickListEntry> iter;
 
             if (i == 0)
             {
@@ -305,12 +292,12 @@ public class WorldServer extends World<EntityPlayerMP>
     {
         if (this.pendingTickListEntriesHashSet == null)
         {
-            this.pendingTickListEntriesHashSet = new HashSet();
+            this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
         }
 
         if (this.pendingTickListEntriesTreeSet == null)
         {
-            this.pendingTickListEntriesTreeSet = new TreeSet();
+            this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
         }
 
         super.initialize();
@@ -327,12 +314,11 @@ public class WorldServer extends World<EntityPlayerMP>
             this.saveHandler.saveWorldInfo(this.worldInfo);
 
             this.theChunkProviderServer.saveChunks(true);
-            ArrayList var3 = Lists.newArrayList(this.theChunkProviderServer.func_152380_a());
-            Iterator var4 = var3.iterator();
+            Iterator<Chunk<EntityPlayerMP>> var4 = Lists.newArrayList(this.theChunkProviderServer.func_152380_a()).iterator();
 
             while (var4.hasNext())
             {
-                Chunk<EntityPlayerMP> chunk = (Chunk<EntityPlayerMP>)var4.next();
+                Chunk<EntityPlayerMP> chunk = var4.next();
 
                 if (chunk != null && !this.thePlayerManager.doesPlayerInstanceExist(chunk.xPosition, chunk.zPosition))
                 {

@@ -1,8 +1,6 @@
 package net.minecraft.block;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import com.google.common.collect.HashBiMap;
 
@@ -12,7 +10,6 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -47,7 +44,6 @@ public abstract class Block
     private double maxX;
     private double maxY;
     private double maxZ;
-    private static final String __OBFID = "CL_00000199";
     
     public static int getIdFromBlock(Block block)
     {
@@ -76,7 +72,7 @@ public abstract class Block
         return side == 0 && this.minY > 0.0D ? true : (side == 1 && this.maxY < 1.0D ? true : (side == 2 && this.minZ > 0.0D ? true : (side == 3 && this.maxZ < 1.0D ? true : (side == 4 && this.minX > 0.0D ? true : (side == 5 && this.maxX < 1.0D ? true : !cc.getBlock(x, y, z).isSolid())))));
     }
 
-    public final void addCollisionBoxesToList(int x, int y, int z, AxisAlignedBB otherAABB, List list)
+    public final void addCollisionBoxesToList(int x, int y, int z, AxisAlignedBB otherAABB, List<AxisAlignedBB> list)
     {
         AxisAlignedBB thisAABB = this.getCollisionBoundingBoxFromPool(x, y, z);
 
@@ -233,12 +229,12 @@ public abstract class Block
     /**
      * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
      */
-    public boolean canPlaceBlockOnSide(World p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
+    public <E extends EntityPlayer> boolean canPlaceBlockOnSide(World<E> p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
     {
         return this.canPlaceBlockAt(p_149707_1_, p_149707_2_, p_149707_3_, p_149707_4_);
     }
 
-    protected boolean canPlaceBlockAt(World p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
     	return p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_).isReplaceable();
     }
@@ -298,7 +294,7 @@ public abstract class Block
     /**
      * called when the block is placed, returns meta for new block
      */
-    public abstract int onBlockPlaced(World world, int x, int y, int z, int side);
+    public abstract <E extends EntityPlayer> int onBlockPlaced(World<E> world, int x, int y, int z, int side);
 
     /**
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
@@ -306,12 +302,12 @@ public abstract class Block
      */
     public abstract int colorMultiplier(ChunkCache cc, int x, int y, int z);
 
-    public abstract int isProvidingWeakPower(World p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
+    public abstract <E extends EntityPlayer> int isProvidingWeakPower(World<E> p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 
     /**
      * Can this block provide power. Only wire currently seems to have this change based on its state.
      */
     public abstract boolean canProvidePower();
 
-    public abstract int isProvidingStrongPower(World p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_);
+    public abstract <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_);
 }

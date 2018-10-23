@@ -1,19 +1,10 @@
 package net.minecraft.client.renderer;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 
 import org.lwjgl.opengl.GL11;
 
@@ -69,7 +60,6 @@ public class WorldRenderer
     /** Chunk index */
     public int chunkIndex;
     private boolean isInitialized;
-    private static final String __OBFID = "CL_00000942";
 
     public WorldRenderer(WorldClient p_i1240_1_, int p_i1240_3_, int p_i1240_4_, int p_i1240_5_, int p_i1240_6_)
     {
@@ -157,13 +147,7 @@ public class WorldRenderer
                 this.skipRenderPass[var8] = true;
             }
             
-            Minecraft mc = Minecraft.getMinecraft();
-            EntityPlayerSP var10 = mc.renderViewEntity;
-            int var11 = MathHelper.floor_double(var10.posX);
-            int var12 = MathHelper.floor_double(var10.posY);
-            int var13 = MathHelper.floor_double(var10.posZ);
-            byte var14 = 1;
-            ChunkCache cache = new ChunkCache(this.worldObj, var2 - var14, var3 - var14, var4 - var14, var5 + var14, var6 + var14, var7 + var14, var14);
+            ChunkCache cache = new ChunkCache(this.worldObj, var2 - 1, var3 - 1, var4 - 1, var5 + 1, var6 + 1, var7 + 1, 1);
 
             if (!cache.extendedLevelsInChunkCache())
             {

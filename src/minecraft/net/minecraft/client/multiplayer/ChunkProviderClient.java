@@ -7,16 +7,11 @@ import java.util.List;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 import net.minecraft.world.chunk.IChunkProvider;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-public class ChunkProviderClient implements IChunkProvider
+public class ChunkProviderClient implements IChunkProvider<EntityPlayerSP>
 {
     /**
      * The completely empty chunk used by ChunkProviderClient when chunkMapping doesn't contain the requested
@@ -27,17 +22,16 @@ public class ChunkProviderClient implements IChunkProvider
     /**
      * The mapping between ChunkCoordinates and Chunks that ChunkProviderClient maintains.
      */
-    private LongHashMap chunkMapping = new LongHashMap();
+    private LongHashMap<Chunk<EntityPlayerSP>> chunkMapping = new LongHashMap<Chunk<EntityPlayerSP>>();
 
     /**
      * This may have been intended to be an iterable version of all currently loaded chunks (MultiplayerChunkCache),
      * with identical contents to chunkMapping's values. However it is never actually added to.
      */
-    private List chunkListing = new ArrayList();
+    private List<Chunk<EntityPlayerSP>> chunkListing = new ArrayList<Chunk<EntityPlayerSP>>();
 
     /** Reference to the World object. */
     private WorldClient worldObj;
-    private static final String __OBFID = "CL_00000880";
 
     public ChunkProviderClient(WorldClient world)
     {
@@ -81,7 +75,7 @@ public class ChunkProviderClient implements IChunkProvider
      */
     public Chunk<EntityPlayerSP> provideChunk(int x, int z)
     {
-        Chunk<EntityPlayerSP> chunk = (Chunk<EntityPlayerSP>)this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        Chunk<EntityPlayerSP> chunk = this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
         return chunk == null ? this.blankChunk : chunk;
     }
 

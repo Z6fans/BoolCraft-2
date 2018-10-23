@@ -14,6 +14,7 @@ import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
@@ -28,13 +29,12 @@ import org.apache.logging.log4j.Logger;
 public class AnvilChunkLoader
 {
     private static final Logger logger = LogManager.getLogger();
-    private List chunksToRemove = new ArrayList();
-    private Set pendingAnvilChunksCoordinates = new HashSet();
+    private List<AnvilChunkLoader.PendingChunk> chunksToRemove = new ArrayList<AnvilChunkLoader.PendingChunk>();
+    private Set<ChunkCoordIntPair> pendingAnvilChunksCoordinates = new HashSet<ChunkCoordIntPair>();
     private Object syncLockObject = new Object();
 
     /** Save directory for chunks using the Anvil format */
     private final File chunkSaveLocation;
-    private static final String __OBFID = "CL_00000384";
 
     public AnvilChunkLoader(File file)
     {
@@ -44,11 +44,12 @@ public class AnvilChunkLoader
     /**
      * Loads the specified(XZ) chunk into the specified world.
      */
-    public Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
+    public Chunk<EntityPlayerMP> loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
     {
         NBTTagCompound tag = null;
         ChunkCoordIntPair coords = new ChunkCoordIntPair(chunkX, chunkZ);
-        Object o = this.syncLockObject;
+        @SuppressWarnings("unused")
+		Object o = this.syncLockObject;
 
         synchronized (this.syncLockObject)
         {
@@ -89,7 +90,7 @@ public class AnvilChunkLoader
         }
         else
         {
-            Chunk chunk = this.readChunkFromNBT(world, tag.getCompoundTag("Level"));
+            Chunk<EntityPlayerMP> chunk = this.readChunkFromNBT(world, tag.getCompoundTag("Level"));
 
             if (!chunk.isAtLocation(chunkX, chunkZ))
             {
@@ -103,7 +104,7 @@ public class AnvilChunkLoader
         }
     }
 
-    public void saveChunk(WorldServer world, Chunk chunk) throws MinecraftException, IOException
+    public void saveChunk(WorldServer world, Chunk<EntityPlayerMP> chunk) throws MinecraftException, IOException
     {
         world.checkSessionLock();
 
@@ -123,7 +124,8 @@ public class AnvilChunkLoader
 
     private void addChunkToPending(ChunkCoordIntPair coords, NBTTagCompound tag)
     {
-        Object o = this.syncLockObject;
+        @SuppressWarnings("unused")
+		Object o = this.syncLockObject;
 
         synchronized (this.syncLockObject)
         {
@@ -151,7 +153,8 @@ public class AnvilChunkLoader
     public boolean writeNextIO()
     {
         AnvilChunkLoader.PendingChunk pendingChunk = null;
-        Object o = this.syncLockObject;
+        @SuppressWarnings("unused")
+		Object o = this.syncLockObject;
 
         synchronized (this.syncLockObject)
         {
@@ -190,7 +193,7 @@ public class AnvilChunkLoader
      * Writes the Chunk passed as an argument to the NBTTagCompound also passed, using the World argument to retrieve
      * the Chunk's last update time.
      */
-    private void writeChunkToNBT(Chunk chunk, WorldServer world, NBTTagCompound tag)
+    private void writeChunkToNBT(Chunk<EntityPlayerMP> chunk, WorldServer world, NBTTagCompound tag)
     {
         tag.setInteger("xPos", chunk.xPosition);
         tag.setInteger("zPos", chunk.zPosition);
@@ -223,13 +226,13 @@ public class AnvilChunkLoader
         }
 
         tag.setTag("Sections", sectionsTagList);
-        List pendingUpdates = world.getPendingBlockUpdates(chunk);
+        List<NextTickListEntry> pendingUpdates = world.getPendingBlockUpdates(chunk);
 
         if (!pendingUpdates.isEmpty())
         {
             long time = world.getTotalWorldTime();
             NBTTagList tickTagList = new NBTTagList();
-            Iterator updates = pendingUpdates.iterator();
+            Iterator<NextTickListEntry> updates = pendingUpdates.iterator();
 
             while (updates.hasNext())
             {
@@ -252,11 +255,11 @@ public class AnvilChunkLoader
      * Reads the data stored in the passed NBTTagCompound and creates a Chunk with that data in the passed World.
      * Returns the created Chunk.
      */
-    private Chunk readChunkFromNBT(WorldServer world, NBTTagCompound tag)
+    private Chunk<EntityPlayerMP> readChunkFromNBT(WorldServer world, NBTTagCompound tag)
     {
         int chunkX = tag.getInteger("xPos");
         int chunkZ = tag.getInteger("zPos");
-        Chunk chunk = new Chunk(world, chunkX, chunkZ);
+        Chunk<EntityPlayerMP> chunk = new Chunk<EntityPlayerMP>(world, chunkX, chunkZ);
         chunk.isTerrainPopulated = tag.getBoolean("TerrainPopulated");
         chunk.isLightPopulated = tag.getBoolean("LightPopulated");
         NBTTagList sections = tag.getTagList("Sections", 10);
@@ -302,7 +305,6 @@ public class AnvilChunkLoader
     {
         private final ChunkCoordIntPair chunkCoordinate;
         private final NBTTagCompound nbtTags;
-        private static final String __OBFID = "CL_00000385";
 
         private PendingChunk(ChunkCoordIntPair coord, NBTTagCompound tag)
         {

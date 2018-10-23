@@ -1,9 +1,6 @@
 package net.minecraft.client.renderer;
 
 import java.nio.FloatBuffer;
-
-import net.minecraft.util.MathHelper;
-
 import org.lwjgl.opengl.GL11;
 
 public class ClippingHelper
@@ -15,7 +12,6 @@ public class ClippingHelper
     private float[] clippingMatrix = new float[16];
     private FloatBuffer projectionMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
     private FloatBuffer modelviewMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
-    private static final String __OBFID = "CL_00000975";
 
     /**
      * Initialises the ClippingHelper object then returns an instance of it.

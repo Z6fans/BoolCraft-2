@@ -7,8 +7,8 @@ import java.util.List;
 
 public class KeyBinding
 {
-    private static final List keybindArray = new ArrayList();
-    private static final HashMap<Integer, KeyBinding> map = new HashMap();
+    private static final List<KeyBinding> keybindArray = new ArrayList<KeyBinding>();
+    private static final HashMap<Integer, KeyBinding> map = new HashMap<Integer, KeyBinding>();
     public static final KeyBinding keyBindForward = new KeyBinding(17);
     public static final KeyBinding keyBindLeft = new KeyBinding(30);
     public static final KeyBinding keyBindBack = new KeyBinding(31);
@@ -50,11 +50,11 @@ public class KeyBinding
 
     public static void unPressAllKeys()
     {
-        Iterator var0 = keybindArray.iterator();
+        Iterator<KeyBinding> var0 = keybindArray.iterator();
 
         while (var0.hasNext())
         {
-            KeyBinding var1 = (KeyBinding)var0.next();
+            KeyBinding var1 = var0.next();
             var1.presses = 0;
             var1.pressed = false;
         }

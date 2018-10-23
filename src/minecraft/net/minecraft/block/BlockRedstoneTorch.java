@@ -4,31 +4,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneTorch extends Block
 {
     private boolean isLit;
-    private static Map field_150112_b = new HashMap();
-    private static final String __OBFID = "CL_00000298";
+    private static Map<WorldServer, List<Toggle>> field_150112_b = new HashMap<WorldServer, List<Toggle>>();
 
-    private boolean func_150111_a(World p_150111_1_, int p_150111_2_, int p_150111_3_, int p_150111_4_, boolean p_150111_5_)
+    private boolean func_150111_a(WorldServer p_150111_1_, int p_150111_2_, int p_150111_3_, int p_150111_4_, boolean p_150111_5_)
     {
         if (!field_150112_b.containsKey(p_150111_1_))
         {
-            field_150112_b.put(p_150111_1_, new ArrayList());
+            field_150112_b.put(p_150111_1_, new ArrayList<Toggle>());
         }
 
-        List var6 = (List)field_150112_b.get(p_150111_1_);
+        List<Toggle> var6 = field_150112_b.get(p_150111_1_);
 
         if (p_150111_5_)
         {
@@ -115,7 +113,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public int isProvidingWeakPower(World p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
+    public <E extends EntityPlayer> int isProvidingWeakPower(World<E> p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
     {
         if (!this.isLit)
         {
@@ -140,7 +138,7 @@ public class BlockRedstoneTorch extends Block
     public void updateTick(WorldServer world, int x, int y, int z)
     {
         boolean var6 = this.func_150110_m(world, x, y, z);
-        List var7 = (List)field_150112_b.get(world);
+        List<Toggle> var7 = field_150112_b.get(world);
 
         while (var7 != null && !var7.isEmpty() && world.getTotalWorldTime() - ((BlockRedstoneTorch.Toggle)var7.get(0)).field_150844_d > 60L)
         {
@@ -173,7 +171,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public int isProvidingStrongPower(World p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+    public <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
     {
         return p_149748_5_ == 0 ? this.isProvidingWeakPower(p_149748_1_, p_149748_2_, p_149748_3_, p_149748_4_, p_149748_5_) : 0;
     }
@@ -206,12 +204,12 @@ public class BlockRedstoneTorch extends Block
         return 12;
     }
 
-    protected boolean canPlaceBlockAt(World p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
         return p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ - 1, p_149742_3_, p_149742_4_, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ + 1, p_149742_3_, p_149742_4_, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ - 1, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ + 1, true) ? true : World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_))));
     }
 
-    public int onBlockPlaced(World p_149660_1_, int p_149660_2_, int p_149660_3_, int p_149660_4_, int p_149660_5_)
+    public <E extends EntityPlayer> int onBlockPlaced(World<E> p_149660_1_, int p_149660_2_, int p_149660_3_, int p_149660_4_, int p_149660_5_)
     {
         int var10 = 0;
 
@@ -291,7 +289,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    private boolean func_150109_e(World p_150109_1_, int p_150109_2_, int p_150109_3_, int p_150109_4_)
+    private <E extends EntityPlayer> boolean func_150109_e(World<E> p_150109_1_, int p_150109_2_, int p_150109_3_, int p_150109_4_)
     {
         if (!this.canPlaceBlockAt(p_150109_1_, p_150109_2_, p_150109_3_, p_150109_4_))
         {
@@ -365,7 +363,6 @@ public class BlockRedstoneTorch extends Block
         private int field_150845_b;
         private int field_150846_c;
         private long field_150844_d;
-        private static final String __OBFID = "CL_00000299";
 
         private Toggle(int p_i45422_1_, int p_i45422_2_, int p_i45422_3_, long p_i45422_4_)
         {

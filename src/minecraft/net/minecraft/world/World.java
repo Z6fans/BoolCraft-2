@@ -1,22 +1,13 @@
 package net.minecraft.world;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
-import java.util.Set;
-
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 
 public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
@@ -28,13 +19,12 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
     protected Random rand = new Random();
 
     /** Handles chunk operations and caching */
-    protected IChunkProvider chunkProvider;
+    protected IChunkProvider<Entity> chunkProvider;
 
     /**
      * holds information about a world (size on disk, time, spawn point, seed, ...)
      */
     protected WorldInfo worldInfo;
-    private static final String __OBFID = "CL_00000140";
 
     protected World(WorldInfo wi)
     {
@@ -303,7 +293,7 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
     /**
      * Returns true if the block at the given coordinate has a solid (buildable) top surface.
      */
-    public static boolean doesBlockHaveSolidTopSurface(World world, int x, int y, int z)
+    public static <E extends EntityPlayer> boolean doesBlockHaveSolidTopSurface(World<E> world, int x, int y, int z)
     {
         return world.getBlock(x, y, z).isSolid();
     }

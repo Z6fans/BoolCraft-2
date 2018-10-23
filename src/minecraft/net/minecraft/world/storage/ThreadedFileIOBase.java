@@ -10,11 +10,10 @@ public class ThreadedFileIOBase implements Runnable
 {
     /** Instance of ThreadedFileIOBase */
     public static final ThreadedFileIOBase threadedIOInstance = new ThreadedFileIOBase();
-    private List<AnvilChunkLoader> threadedIOQueue = Collections.synchronizedList(new ArrayList());
+    private List<AnvilChunkLoader> threadedIOQueue = Collections.synchronizedList(new ArrayList<AnvilChunkLoader>());
     private volatile long writeQueuedCounter;
     private volatile long savedIOCounter;
     private volatile boolean isThreadWaiting;
-    private static final String __OBFID = "CL_00000605";
 
     private ThreadedFileIOBase()
     {

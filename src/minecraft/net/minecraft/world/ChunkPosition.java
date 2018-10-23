@@ -5,7 +5,6 @@ public class ChunkPosition
     public final int xCoord;
     public final int yCoord;
     public final int zCoord;
-    private static final String __OBFID = "CL_00000132";
 
     public ChunkPosition(int x, int y, int z)
     {

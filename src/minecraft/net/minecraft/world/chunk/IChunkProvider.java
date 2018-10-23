@@ -1,6 +1,8 @@
 package net.minecraft.world.chunk;
 
-public interface IChunkProvider
+import net.minecraft.player.EntityPlayer;
+
+public interface IChunkProvider<Entity extends EntityPlayer>
 {
     /**
      * Checks to see if a chunk exists at x, y
@@ -11,12 +13,12 @@ public interface IChunkProvider
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
      * specified chunk from the map seed and chunk seed
      */
-    Chunk provideChunk(int x, int y);
+    Chunk<Entity> provideChunk(int x, int y);
 
     /**
      * loads or generates the chunk at the chunk location specified
      */
-    Chunk loadChunk(int p_73158_1_, int p_73158_2_);
+    Chunk<Entity> loadChunk(int p_73158_1_, int p_73158_2_);
 
     /**
      * Unloads chunks that are marked to be unloaded. This is not guaranteed to unload every such chunk.

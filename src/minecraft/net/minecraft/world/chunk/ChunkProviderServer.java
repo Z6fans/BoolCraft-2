@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
+import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.MinecraftException;
@@ -22,7 +23,7 @@ import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ChunkProviderServer implements IChunkProvider
+public class ChunkProviderServer implements IChunkProvider<EntityPlayerMP>
 {
     private static final Logger logger = LogManager.getLogger();
 
@@ -30,12 +31,11 @@ public class ChunkProviderServer implements IChunkProvider
      * used by unload100OldestChunks to iterate the loadedChunkHashMap for unload (underlying assumption, first in,
      * first out)
      */
-    private Set chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap());
+    private Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     private AnvilChunkLoader currentChunkLoader;
-    private LongHashMap loadedChunkHashMap = new LongHashMap();
-    private List loadedChunks = new ArrayList();
+    private LongHashMap<Chunk<EntityPlayerMP>> loadedChunkHashMap = new LongHashMap<Chunk<EntityPlayerMP>>();
+    private List<Chunk<EntityPlayerMP>> loadedChunks = new ArrayList<Chunk<EntityPlayerMP>>();
     private WorldServer worldObj;
-    private static final String __OBFID = "CL_00001436";
 
     public ChunkProviderServer(WorldServer p_i1520_1_, AnvilChunkLoader p_i1520_2_)
     {
@@ -51,7 +51,7 @@ public class ChunkProviderServer implements IChunkProvider
         return this.loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
     }
 
-    public List func_152380_a()
+    public List<Chunk<EntityPlayerMP>> func_152380_a()
     {
         return this.loadedChunks;
     }
@@ -75,11 +75,11 @@ public class ChunkProviderServer implements IChunkProvider
     /**
      * loads or generates the chunk at the chunk location specified
      */
-    public Chunk loadChunk(int x, int z)
+    public Chunk<EntityPlayerMP> loadChunk(int x, int z)
     {
         long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
         this.chunksToUnload.remove(Long.valueOf(posHash));
-        Chunk newChunk = (Chunk)this.loadedChunkHashMap.getValueByKey(posHash);
+        Chunk<EntityPlayerMP> newChunk = this.loadedChunkHashMap.getValueByKey(posHash);
 
         if (newChunk == null)
         {
@@ -89,7 +89,7 @@ public class ChunkProviderServer implements IChunkProvider
             {
             	try
                 {
-                	newChunk = new Chunk(this.worldObj, x, z);
+                	newChunk = new Chunk<EntityPlayerMP>(this.worldObj, x, z);
 
                     for (int y = 0; y < 5; ++y)
                     {
@@ -129,16 +129,16 @@ public class ChunkProviderServer implements IChunkProvider
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
      * specified chunk from the map seed and chunk seed
      */
-    public Chunk provideChunk(int p_73154_1_, int p_73154_2_)
+    public Chunk<EntityPlayerMP> provideChunk(int p_73154_1_, int p_73154_2_)
     {
-        Chunk var3 = (Chunk)this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
+        Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
         return var3 == null ? this.loadChunk(p_73154_1_, p_73154_2_) : var3;
     }
 
     /**
      * used by loadChunk, but catches any exceptions if the load fails.
      */
-    private Chunk safeLoadChunk(int p_73239_1_, int p_73239_2_)
+    private Chunk<EntityPlayerMP> safeLoadChunk(int p_73239_1_, int p_73239_2_)
     {
         if (this.currentChunkLoader == null)
         {
@@ -162,7 +162,7 @@ public class ChunkProviderServer implements IChunkProvider
     /**
      * used by saveChunks, but catches any exceptions if the save fails.
      */
-    private void safeSaveChunk(Chunk p_73242_1_)
+    private void safeSaveChunk(Chunk<EntityPlayerMP> p_73242_1_)
     {
         if (this.currentChunkLoader != null)
         {
@@ -186,7 +186,7 @@ public class ChunkProviderServer implements IChunkProvider
      */
     public void populate(int p_73153_2_, int p_73153_3_)
     {
-        Chunk chunk = this.provideChunk(p_73153_2_, p_73153_3_);
+        Chunk<EntityPlayerMP> chunk = this.provideChunk(p_73153_2_, p_73153_3_);
 
         if (!chunk.isTerrainPopulated)
         {
@@ -201,11 +201,11 @@ public class ChunkProviderServer implements IChunkProvider
     public boolean saveChunks(boolean p_73151_1_)
     {
         int var3 = 0;
-        ArrayList var4 = Lists.newArrayList(this.loadedChunks);
+        ArrayList<Chunk<EntityPlayerMP>> var4 = Lists.newArrayList(this.loadedChunks);
 
         for (int var5 = 0; var5 < var4.size(); ++var5)
         {
-            Chunk var6 = (Chunk)var4.get(var5);
+            Chunk<EntityPlayerMP> var6 = var4.get(var5);
 
             if (var6.needsSaving())
             {
@@ -235,7 +235,7 @@ public class ChunkProviderServer implements IChunkProvider
                 if (!this.chunksToUnload.isEmpty())
                 {
                     Long var2 = (Long)this.chunksToUnload.iterator().next();
-                    Chunk var3 = (Chunk)this.loadedChunkHashMap.getValueByKey(var2.longValue());
+                    Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
 
                     if (var3 != null)
                     {

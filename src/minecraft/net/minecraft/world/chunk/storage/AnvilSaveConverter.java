@@ -1,27 +1,9 @@
 package net.minecraft.world.chunk.storage;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.storage.SaveHandler;
-import net.minecraft.world.storage.SaveHandler;
-import net.minecraft.world.storage.WorldInfo;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class AnvilSaveConverter
 {
@@ -29,8 +11,6 @@ public class AnvilSaveConverter
      * Reference to the File object representing the directory for the world saves
      */
     private final File savesDirectory;
-    private static final Logger logger = LogManager.getLogger();
-    private static final String __OBFID = "CL_00000582";
 
     public AnvilSaveConverter(File p_i2144_1_)
     {

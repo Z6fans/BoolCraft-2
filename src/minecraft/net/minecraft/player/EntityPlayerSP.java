@@ -1,23 +1,16 @@
 package net.minecraft.player;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.collect.Sets;
-
 import net.minecraft.block.Block;
-import net.minecraft.client.GuiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.network.NetHandlerPlayClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
 
 public class EntityPlayerSP extends EntityPlayer
 {
@@ -47,7 +40,6 @@ public class EntityPlayerSP extends EntityPlayer
     private boolean isJumping;
     private float moveStrafing;
     private float moveForward;
-    private boolean firstUpdate;
 
     /**
      * Counter used to ensure that the server sends a move packet (Packet11, 12 or 13) to the client at least once a
@@ -91,7 +83,6 @@ public class EntityPlayerSP extends EntityPlayer
      * The entity's Z coordinate at the previous tick, used to calculate position during rendering routines
      */
     public double lastTickPosZ;
-    private static final String __OBFID = "CL_00000938";
 
     public EntityPlayerSP(WorldClient p_i1238_2_)
     {
@@ -101,7 +92,6 @@ public class EntityPlayerSP extends EntityPlayer
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.width = 0.6F;
         this.height = 1.8F;
-        this.firstUpdate = true;
         this.setPosition(0.0D, 0.0D, 0.0D);
         this.setPosition(this.posX, this.posY, this.posZ);
         this.ySize = 0.0F;
@@ -220,7 +210,6 @@ public class EntityPlayerSP extends EntityPlayer
         this.prevPosZ = this.posZ;
         this.prevRotationPitch = this.rotationPitch;
         this.prevRotationYaw = this.rotationYaw;
-        this.firstUpdate = false;
         this.prevRotationYaw = this.rotationYaw;
         this.prevRotationPitch = this.rotationPitch;
     }
@@ -332,11 +321,11 @@ public class EntityPlayerSP extends EntityPlayer
         double var15 = y;
         double var17 = z;
 
-        List var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(x, y, z));
+        List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(x, y, z));
 
         for (int var22 = 0; var22 < var36.size(); ++var22)
         {
-            y = ((AxisAlignedBB)var36.get(var22)).calculateYOffset(this.boundingBox, y);
+            y = var36.get(var22).calculateYOffset(this.boundingBox, y);
         }
 
         this.boundingBox.offset(0.0D, y, 0.0D);
@@ -344,14 +333,14 @@ public class EntityPlayerSP extends EntityPlayer
 
         for (var23 = 0; var23 < var36.size(); ++var23)
         {
-            x = ((AxisAlignedBB)var36.get(var23)).calculateXOffset(this.boundingBox, x);
+            x = var36.get(var23).calculateXOffset(this.boundingBox, x);
         }
 
         this.boundingBox.offset(x, 0.0D, 0.0D);
 
         for (var23 = 0; var23 < var36.size(); ++var23)
         {
-            z = ((AxisAlignedBB)var36.get(var23)).calculateZOffset(this.boundingBox, z);
+            z = var36.get(var23).calculateZOffset(this.boundingBox, z);
         }
 
         this.boundingBox.offset(0.0D, 0.0D, z);
@@ -482,7 +471,6 @@ public class EntityPlayerSP extends EntityPlayer
     	
         if (0.6F != this.width || 1.8F != this.height)
         {
-            float oldWidth = this.width;
             this.width = 0.6F;
             this.height = 1.8F;
             this.boundingBox.maxX = this.boundingBox.minX + (double)this.width;
@@ -621,7 +609,6 @@ public class EntityPlayerSP extends EntityPlayer
                         var27 = (var21 - v1.z) / var33;
                     }
 
-                    boolean var35 = false;
                     byte var42;
 
                     if (var23 < var25 && var23 < var27)
@@ -800,9 +787,9 @@ public class EntityPlayerSP extends EntityPlayer
      * Returns a list of bounding boxes that collide with aabb excluding the passed in entity's collision. Args: entity,
      * aabb
      */
-    private List getCollidingBoundingBoxes(AxisAlignedBB aabb)
+    private List<AxisAlignedBB> getCollidingBoundingBoxes(AxisAlignedBB aabb)
     {
-        ArrayList collidingBoundingBoxes = new ArrayList();
+        ArrayList<AxisAlignedBB> collidingBoundingBoxes = new ArrayList<AxisAlignedBB>();
         int minx = MathHelper.floor_double(aabb.minX);
         int maxx = MathHelper.floor_double(aabb.maxX + 1.0D);
         int miny = MathHelper.floor_double(aabb.minY);
