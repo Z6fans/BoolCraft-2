@@ -236,26 +236,26 @@ public class Chunk<Entity extends EntityPlayer>
         return false;
     }
 
-    public void populateChunk(ChunkProviderServer provider, int chunkX, int chunkZ)
+    public void populateChunk(WorldServer world, int chunkX, int chunkZ)
     {
-        if (!this.isTerrainPopulated && provider.chunkExists(chunkX + 1, chunkZ + 1) && provider.chunkExists(chunkX, chunkZ + 1) && provider.chunkExists(chunkX + 1, chunkZ))
+        if (!this.isTerrainPopulated && world.chunkExists(chunkX + 1, chunkZ + 1) && world.chunkExists(chunkX, chunkZ + 1) && world.chunkExists(chunkX + 1, chunkZ))
         {
-            provider.populate(chunkX, chunkZ);
+            world.populate(chunkX, chunkZ);
         }
 
-        if (provider.chunkExists(chunkX - 1, chunkZ) && !provider.provideChunk(chunkX - 1, chunkZ).isTerrainPopulated && provider.chunkExists(chunkX - 1, chunkZ + 1) && provider.chunkExists(chunkX, chunkZ + 1) && provider.chunkExists(chunkX - 1, chunkZ + 1))
+        if (world.chunkExists(chunkX - 1, chunkZ) && !world.provideChunk(chunkX - 1, chunkZ).isTerrainPopulated && world.chunkExists(chunkX - 1, chunkZ + 1) && world.chunkExists(chunkX, chunkZ + 1) && world.chunkExists(chunkX - 1, chunkZ + 1))
         {
-            provider.populate(chunkX - 1, chunkZ);
+            world.populate(chunkX - 1, chunkZ);
         }
 
-        if (provider.chunkExists(chunkX, chunkZ - 1) && !provider.provideChunk(chunkX, chunkZ - 1).isTerrainPopulated && provider.chunkExists(chunkX + 1, chunkZ - 1) && provider.chunkExists(chunkX + 1, chunkZ - 1) && provider.chunkExists(chunkX + 1, chunkZ))
+        if (world.chunkExists(chunkX, chunkZ - 1) && !world.provideChunk(chunkX, chunkZ - 1).isTerrainPopulated && world.chunkExists(chunkX + 1, chunkZ - 1) && world.chunkExists(chunkX + 1, chunkZ - 1) && world.chunkExists(chunkX + 1, chunkZ))
         {
-            provider.populate(chunkX, chunkZ - 1);
+            world.populate(chunkX, chunkZ - 1);
         }
 
-        if (provider.chunkExists(chunkX - 1, chunkZ - 1) && !provider.provideChunk(chunkX - 1, chunkZ - 1).isTerrainPopulated && provider.chunkExists(chunkX, chunkZ - 1) && provider.chunkExists(chunkX - 1, chunkZ))
+        if (world.chunkExists(chunkX - 1, chunkZ - 1) && !world.provideChunk(chunkX - 1, chunkZ - 1).isTerrainPopulated && world.chunkExists(chunkX, chunkZ - 1) && world.chunkExists(chunkX - 1, chunkZ))
         {
-            provider.populate(chunkX - 1, chunkZ - 1);
+            world.populate(chunkX - 1, chunkZ - 1);
         }
     }
 

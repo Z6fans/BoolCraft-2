@@ -1,21 +1,43 @@
 package net.minecraft.client.multiplayer;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.player.EntityPlayerSP;
+import net.minecraft.util.LongHashMap;
+import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.EmptyChunk;
 
 public class WorldClient extends World<EntityPlayerSP>
 {
-    /** The ChunkProviderClient instance */
-    private ChunkProviderClient clientChunkProvider;
     private RenderGlobal renderer;
+    
+    /**
+     * The completely empty chunk used by ChunkProviderClient when chunkMapping doesn't contain the requested
+     * coordinates.
+     */
+    private Chunk<EntityPlayerSP> blankChunk;
+
+    /**
+     * The mapping between ChunkCoordinates and Chunks that ChunkProviderClient maintains.
+     */
+    private LongHashMap<Chunk<EntityPlayerSP>> chunkMapping = new LongHashMap<Chunk<EntityPlayerSP>>();
+
+    /**
+     * This may have been intended to be an iterable version of all currently loaded chunks (MultiplayerChunkCache),
+     * with identical contents to chunkMapping's values. However it is never actually added to.
+     */
+    private List<Chunk<EntityPlayerSP>> chunkListing = new ArrayList<Chunk<EntityPlayerSP>>();
 
     public WorldClient()
     {
         super(null);
-        this.clientChunkProvider = new ChunkProviderClient(this);
-        this.chunkProvider = this.clientChunkProvider;
+        this.blankChunk = new EmptyChunk(this);
     }
 
     /**
@@ -24,19 +46,28 @@ public class WorldClient extends World<EntityPlayerSP>
     public void tick()
     {
         this.incrementTotalWorldTime(this.getTotalWorldTime() + 1L);
-        this.clientChunkProvider.unloadQueuedChunks();
+        Iterator<Chunk<EntityPlayerSP>> chunks = this.chunkListing.iterator();
+
+        while (chunks.hasNext())
+        {
+            chunks.next().setLoaded();
+        }
     }
 
-    public void doPreChunk(int chunkX, int chunkZ, boolean doLoad)
+    public void doPreChunk(int x, int z, boolean doLoad)
     {
         if (doLoad)
         {
-            this.clientChunkProvider.loadChunk(chunkX, chunkZ);
+        	Chunk<EntityPlayerSP> chunk = new Chunk<EntityPlayerSP>(this, x, z);
+            this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
+            this.chunkListing.add(chunk);
         }
         else
         {
-            this.clientChunkProvider.unloadChunk(chunkX, chunkZ);
-            this.markBlockRangeForRenderUpdate(chunkX * 16, 0, chunkZ * 16, chunkX * 16 + 15, 256, chunkZ * 16 + 15);
+        	Chunk<EntityPlayerSP> chunk = this.provideChunk(x, z);
+            this.chunkMapping.remove(ChunkCoordIntPair.chunkXZ2Int(x, z));
+            this.chunkListing.remove(chunk);
+            this.markBlockRangeForRenderUpdate(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15);
         }
     }
     
@@ -62,4 +93,19 @@ public class WorldClient extends World<EntityPlayerSP>
     }
 
 	public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block){}
+
+	public boolean chunkExists(int x, int z)
+	{
+		return true;
+	}
+
+    /**
+     * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
+     * specified chunk from the map seed and chunk seed
+     */
+    public Chunk<EntityPlayerSP> provideChunk(int x, int z)
+    {
+        Chunk<EntityPlayerSP> chunk = this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        return chunk == null ? this.blankChunk : chunk;
+    }
 }

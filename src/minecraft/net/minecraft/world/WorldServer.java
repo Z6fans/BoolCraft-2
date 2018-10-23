@@ -2,13 +2,19 @@ package net.minecraft.world;
 
 import com.google.common.collect.Lists;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -16,9 +22,9 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.server.PlayerChunkLoadManager;
+import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkProviderServer;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.SaveHandler;
@@ -30,10 +36,9 @@ public class WorldServer extends World<EntityPlayerMP>
 
     /** All work to do in future ticks. */
     private TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet;
-    public ChunkProviderServer theChunkProviderServer;
 
     /** Whether or not level saving is enabled */
-    public boolean levelSaving;
+    private boolean levelSaving;
     private int updateEntityTick;
     private List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
@@ -47,13 +52,23 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     private int updateLCG = (new Random()).nextInt();
     private final SaveHandler saveHandler;
+    
+    private static final Logger logger = LogManager.getLogger();
+
+    /**
+     * used by unload100OldestChunks to iterate the loadedChunkHashMap for unload (underlying assumption, first in,
+     * first out)
+     */
+    private Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
+    private AnvilChunkLoader currentChunkLoader;
+    private LongHashMap<Chunk<EntityPlayerMP>> loadedChunkHashMap = new LongHashMap<Chunk<EntityPlayerMP>>();
+    private List<Chunk<EntityPlayerMP>> loadedChunks = new ArrayList<Chunk<EntityPlayerMP>>();
 
     public WorldServer(SaveHandler sh)
     {
         super(sh.loadWorldInfo());
         this.saveHandler = sh;
-        this.theChunkProviderServer = new ChunkProviderServer(this, new AnvilChunkLoader(this.saveHandler.getWorldDirectory()));
-        this.chunkProvider = this.theChunkProviderServer;
+        this.currentChunkLoader =new AnvilChunkLoader(this.saveHandler.getWorldDirectory());
         this.thePlayerManager = new PlayerChunkLoadManager(this);
 
         if (this.pendingTickListEntriesHashSet == null)
@@ -72,7 +87,27 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     public void tick()
     {
-        this.theChunkProviderServer.unloadQueuedChunks();
+    	if (!this.levelSaving)
+        {
+            for (int var1 = 0; var1 < 100; ++var1)
+            {
+                if (!this.chunksToUnload.isEmpty())
+                {
+                    Long var2 = (Long)this.chunksToUnload.iterator().next();
+                    Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
+
+                    if (var3 != null)
+                    {
+                        this.safeSaveChunk(var3);
+                        this.loadedChunks.remove(var3);
+                    }
+
+                    this.chunksToUnload.remove(var2);
+                    this.loadedChunkHashMap.remove(var2.longValue());
+                }
+            }
+        }
+    	
         this.worldInfo.incrementTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
         
         int numEntries = this.pendingTickListEntriesTreeSet.size();
@@ -308,13 +343,25 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     public void saveAllChunks() throws MinecraftException
     {
-        if (this.theChunkProviderServer.canSave())
+        if (!this.levelSaving)
         {
         	this.checkSessionLock();
             this.saveHandler.saveWorldInfo(this.worldInfo);
 
-            this.theChunkProviderServer.saveChunks(true);
-            Iterator<Chunk<EntityPlayerMP>> var4 = Lists.newArrayList(this.theChunkProviderServer.func_152380_a()).iterator();
+            ArrayList<Chunk<EntityPlayerMP>> chunkList = Lists.newArrayList(this.loadedChunks);
+
+            for (int i = 0; i < chunkList.size(); ++i)
+            {
+                Chunk<EntityPlayerMP> chunk = chunkList.get(i);
+
+                if (chunk.needsSaving())
+                {
+                    this.safeSaveChunk(chunk);
+                    chunk.isModified = false;
+                }
+            }
+            
+            Iterator<Chunk<EntityPlayerMP>> var4 = Lists.newArrayList(this.getLoadedChunks()).iterator();
 
             while (var4.hasNext())
             {
@@ -322,7 +369,7 @@ public class WorldServer extends World<EntityPlayerMP>
 
                 if (chunk != null && !this.thePlayerManager.doesPlayerInstanceExist(chunk.xPosition, chunk.zPosition))
                 {
-                    this.theChunkProviderServer.unloadChunksIfNotNearSpawn(chunk.xPosition, chunk.zPosition);
+                    this.unloadChunksIfNotNearSpawn(chunk.xPosition, chunk.zPosition);
                 }
             }
         }
@@ -348,15 +395,13 @@ public class WorldServer extends World<EntityPlayerMP>
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)
     {
-		Block block = this.getBlock(x, y, z);
-
-        try
+		try
         {
-            block.onNeighborBlockChange(this, x, y, z, neighborBlock);
+        	this.getBlock(x, y, z).onNeighborBlockChange(this, x, y, z, neighborBlock);
         }
         catch (Throwable t)
         {
-            throw new ReportedException(CrashReport.makeCrashReport(t, "Exception while updating neighbours"));
+            throw new ReportedException(CrashReport.makeCrashReport(t, "Exception while updating neighbors"));
         }
     }
 	
@@ -392,7 +437,7 @@ public class WorldServer extends World<EntityPlayerMP>
     	EntityPlayerMP player = new EntityPlayerMP(mc);
     	this.spawnEntityInWorld(player);
     	this.getPlayerManager().addPlayer(player);
-        this.theChunkProviderServer.loadChunk((int)player.posX >> 4, (int)player.posZ >> 4);
+        this.loadChunk((int)player.posX >> 4, (int)player.posZ >> 4);
     }
     
     public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block)
@@ -403,5 +448,141 @@ public class WorldServer extends World<EntityPlayerMP>
         this.notifyBlockOfNeighborChange(x, y + 1, z, block);
         this.notifyBlockOfNeighborChange(x, y, z - 1, block);
         this.notifyBlockOfNeighborChange(x, y, z + 1, block);
+    }
+    
+    /**
+     * Populates chunk with ores etc etc
+     */
+    public void populate(int x, int z)
+    {
+        Chunk<EntityPlayerMP> chunk = this.provideChunk(x, z);
+
+        if (!chunk.isTerrainPopulated)
+        {
+            chunk.setChunkModified();
+        }
+    }
+	
+	/**
+     * Checks to see if a chunk exists at x, y
+     */
+    public boolean chunkExists(int p_73149_1_, int p_73149_2_)
+    {
+        return this.loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
+    }
+
+    public List<Chunk<EntityPlayerMP>> getLoadedChunks()
+    {
+        return this.loadedChunks;
+    }
+
+    /**
+     * marks chunk for unload by "unload100OldestChunks"  if there is no spawn point, or if the center of the chunk is
+     * outside 200 blocks (x or z) of the spawn
+     */
+    public void unloadChunksIfNotNearSpawn(int chunkX, int chunkZ)
+    {
+        int x = chunkX * 16 + 8;
+        int z = chunkZ * 16 + 8;
+
+        if (x < -128 || x > 128 || z < -128 || z > 128)
+        {
+            this.chunksToUnload.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ)));
+        }
+    }
+
+    /**
+     * loads or generates the chunk at the chunk location specified
+     */
+    public Chunk<EntityPlayerMP> loadChunk(int x, int z)
+    {
+        long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
+        this.chunksToUnload.remove(Long.valueOf(posHash));
+        Chunk<EntityPlayerMP> newChunk = this.loadedChunkHashMap.getValueByKey(posHash);
+
+        if (newChunk == null)
+        {
+        	if(this.currentChunkLoader != null)
+        	{
+        		try
+        		{
+        			newChunk = this.currentChunkLoader.loadChunk(this, x, z);
+        		}
+                catch (Exception e)
+                {
+                    logger.error("Couldn\'t load chunk", e);
+                }
+        	}
+
+            if (newChunk == null)
+            {
+            	try
+                {
+                	newChunk = new Chunk<EntityPlayerMP>(this, x, z);
+
+                    for (int y = 0; y < 5; ++y)
+                    {
+                        ExtendedBlockStorage storage = newChunk.getBlockStorageArray()[0];
+
+                        if (storage == null)
+                        {
+                            storage = new ExtendedBlockStorage(y);
+                            newChunk.getBlockStorageArray()[0] = storage;
+                        }
+
+                        for (int localX = 0; localX < 16; ++localX)
+                        {
+                            for (int localZ = 0; localZ < 16; ++localZ)
+                            {
+                                storage.setBlock(localX, y, localZ, Block.stone);
+                                storage.setExtBlockMetadata(localX, y, localZ, 0);
+                            }
+                        }
+                    }
+                }
+                catch (Throwable t)
+                {
+                    throw new ReportedException(CrashReport.makeCrashReport(t, "Exception generating new chunk at " + x + ", " + z));
+                }
+            }
+
+            this.loadedChunkHashMap.add(posHash, newChunk);
+            this.loadedChunks.add(newChunk);
+            newChunk.populateChunk(this, x, z);
+        }
+
+        return newChunk;
+    }
+
+    /**
+     * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
+     * specified chunk from the map seed and chunk seed
+     */
+    public Chunk<EntityPlayerMP> provideChunk(int p_73154_1_, int p_73154_2_)
+    {
+        Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
+        return var3 == null ? this.loadChunk(p_73154_1_, p_73154_2_) : var3;
+    }
+
+    /**
+     * used by saveChunks, but catches any exceptions if the save fails.
+     */
+    private void safeSaveChunk(Chunk<EntityPlayerMP> chunk)
+    {
+        if (this.currentChunkLoader != null)
+        {
+            try
+            {
+                this.currentChunkLoader.saveChunk(this, chunk);
+            }
+            catch (IOException var3)
+            {
+                logger.error("Couldn\'t save chunk", var3);
+            }
+            catch (MinecraftException var4)
+            {
+                logger.error("Couldn\'t save chunk; already in use by another instance of Minecraft?", var4);
+            }
+        }
     }
 }

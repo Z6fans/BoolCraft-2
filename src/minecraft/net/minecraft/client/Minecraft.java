@@ -864,7 +864,7 @@ public class Minecraft
             {
                 for (int var12 = -192; var12 <= 192 && this.serverRunning; var12 += 16)
                 {
-                    this.worldServer.theChunkProviderServer.loadChunk(var11 >> 4, var12 >> 4);
+                    this.worldServer.loadChunk(var11 >> 4, var12 >> 4);
                 }
             }
             

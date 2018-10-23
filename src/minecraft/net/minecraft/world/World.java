@@ -7,7 +7,6 @@ import net.minecraft.crash.ReportedException;
 import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.storage.WorldInfo;
 
 public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
@@ -17,9 +16,6 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
 
     /** RNG for World. */
     protected Random rand = new Random();
-
-    /** Handles chunk operations and caching */
-    protected IChunkProvider<Entity> chunkProvider;
 
     /**
      * holds information about a world (size on disk, time, spawn point, seed, ...)
@@ -81,10 +77,7 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
     /**
      * Returns whether a block exists at world coordinates x, y, z
      */
-    public final boolean chunkExists(int x, int z)
-    {
-        return this.chunkProvider.chunkExists(x, z);
-    }
+    public abstract boolean chunkExists(int x, int z);
 
     /**
      * Checks between a min and max all the chunks inbetween actually exist. Args: minX, minY, minZ, maxX, maxY, maxZ
@@ -118,12 +111,9 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
     }
 
     /**
-     * Returns back a chunk looked up by chunk coordinates Args: x, y
+     * Returns back a chunk looked up by chunk coordinates Args: x, z
      */
-    public final Chunk<Entity> provideChunk(int x, int y)
-    {
-        return this.chunkProvider.provideChunk(x, y);
-    }
+    public abstract Chunk<Entity> provideChunk(int x, int z);
 
     /**
      * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block ID, new metadata, flags. Flag 1 will
@@ -306,7 +296,7 @@ public abstract class World<Entity extends EntityPlayer> implements IBlockAccess
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
         {
-            Chunk<Entity> chunk = this.chunkProvider.provideChunk(x >> 4, z >> 4);
+            Chunk<Entity> chunk = this.provideChunk(x >> 4, z >> 4);
 
             if (chunk != null && !chunk.isEmpty())
             {

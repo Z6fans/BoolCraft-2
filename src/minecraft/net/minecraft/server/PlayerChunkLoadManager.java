@@ -302,7 +302,7 @@ public class PlayerChunkLoadManager
         private PlayerInstance(int chunkX, int chunkZ)
         {
             this.chunkLocation = new ChunkCoordIntPair(chunkX, chunkZ);
-            PlayerChunkLoadManager.this.getWorldServer().theChunkProviderServer.loadChunk(chunkX, chunkZ);
+            PlayerChunkLoadManager.this.getWorldServer().loadChunk(chunkX, chunkZ);
         }
 
         private void addPlayer(EntityPlayerMP player)
@@ -337,7 +337,7 @@ public class PlayerChunkLoadManager
                     PlayerChunkLoadManager.this.chunkWatcherWithPlayers.remove(this);
                 }
 
-                PlayerChunkLoadManager.this.getWorldServer().theChunkProviderServer.unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+                PlayerChunkLoadManager.this.getWorldServer().unloadChunksIfNotNearSpawn(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
             }
         }
 
