@@ -1,10 +1,8 @@
 package net.minecraft.block;
 
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockAir extends Block
@@ -47,12 +45,12 @@ public class BlockAir extends Block
 		return 0;
 	}
 
-	public <E extends EntityPlayer>int isProvidingWeakPower(World<E> p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
+	public int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
 	{
 		return 0;
 	}
 
-	public <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+	public int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
 	{
 		return 0;
 	}
@@ -62,7 +60,7 @@ public class BlockAir extends Block
 		return false;
 	}
 
-	public <E extends EntityPlayer> int onBlockPlaced(World<E> world, int x, int y, int z, int side)
+	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
 	{
 		return 0;
 	}

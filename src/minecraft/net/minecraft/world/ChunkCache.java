@@ -5,7 +5,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.world.chunk.Chunk;
 
-public class ChunkCache implements IBlockAccess
+public class ChunkCache
 {
     private int chunkX;
     private int chunkZ;
@@ -62,47 +62,41 @@ public class ChunkCache implements IBlockAccess
         return this.isEmpty;
     }
 
-    public Block getBlock(int p_147439_1_, int p_147439_2_, int p_147439_3_)
+    public Block getBlock(int x, int y, int z)
     {
-        Block var4 = Block.air;
+        Block block = Block.air;
 
-        if (p_147439_2_ >= 0 && p_147439_2_ < 256)
+        if (y >= 0 && y < 256)
         {
-            int var5 = (p_147439_1_ >> 4) - this.chunkX;
-            int var6 = (p_147439_3_ >> 4) - this.chunkZ;
+            int localChunkX = (x >> 4) - this.chunkX;
+            int localChunkZ = (z >> 4) - this.chunkZ;
 
-            if (var5 >= 0 && var5 < this.chunkArray.length && var6 >= 0 && var6 < this.chunkArray[var5].length)
+            if (localChunkX >= 0 && localChunkX < this.chunkArray.length && localChunkZ >= 0 && localChunkZ < this.chunkArray[localChunkX].length)
             {
-                Chunk<EntityPlayerSP> var7 = this.chunkArray[var5][var6];
+                Chunk<EntityPlayerSP> chunk = this.chunkArray[localChunkX][localChunkZ];
 
-                if (var7 != null)
+                if (chunk != null)
                 {
-                    var4 = var7.getBlock(p_147439_1_ & 15, p_147439_2_, p_147439_3_ & 15);
+                    block = chunk.getBlock(x & 15, y, z & 15);
                 }
             }
         }
 
-        return var4;
+        return block;
     }
 
     /**
      * Returns the block metadata at coords x,y,z
      */
-    public int getBlockMetadata(int p_72805_1_, int p_72805_2_, int p_72805_3_)
+    public int getBlockMetadata(int x, int y, int z)
     {
-        if (p_72805_2_ < 0)
+        if (y >= 0 && y < 256)
         {
-            return 0;
+            int localChunkX = (x >> 4) - this.chunkX;
+            int localChunkZ = (z >> 4) - this.chunkZ;
+            return this.chunkArray[localChunkX][localChunkZ].getBlockMetadata(x & 15, y, z & 15);
         }
-        else if (p_72805_2_ >= 256)
-        {
-            return 0;
-        }
-        else
-        {
-            int var4 = (p_72805_1_ >> 4) - this.chunkX;
-            int var5 = (p_72805_3_ >> 4) - this.chunkZ;
-            return this.chunkArray[var4][var5].getBlockMetadata(p_72805_1_ & 15, p_72805_2_, p_72805_3_ & 15);
-        }
+
+        return 0;
     }
 }

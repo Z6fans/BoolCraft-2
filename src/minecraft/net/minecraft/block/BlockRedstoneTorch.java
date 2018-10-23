@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -64,19 +63,19 @@ public class BlockRedstoneTorch extends Block
         {
         	if (world.getBlockMetadata(x, y, z) == 0)
             {
-                if (world.isBlockNormalCubeDefault(x - 1, y, z, true))
+                if (world.isBlockNormalCubeDefault(x - 1, y, z))
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 1, false);
                 }
-                else if (world.isBlockNormalCubeDefault(x + 1, y, z, true))
+                else if (world.isBlockNormalCubeDefault(x + 1, y, z))
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 2, false);
                 }
-                else if (world.isBlockNormalCubeDefault(x, y, z - 1, true))
+                else if (world.isBlockNormalCubeDefault(x, y, z - 1))
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 3, false);
                 }
-                else if (world.isBlockNormalCubeDefault(x, y, z + 1, true))
+                else if (world.isBlockNormalCubeDefault(x, y, z + 1))
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 4, false);
                 }
@@ -113,7 +112,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public <E extends EntityPlayer> int isProvidingWeakPower(World<E> p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
+    public int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
     {
         if (!this.isLit)
         {
@@ -171,7 +170,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+    public int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
     {
         return p_149748_5_ == 0 ? this.isProvidingWeakPower(p_149748_1_, p_149748_2_, p_149748_3_, p_149748_4_, p_149748_5_) : 0;
     }
@@ -204,36 +203,36 @@ public class BlockRedstoneTorch extends Block
         return 12;
     }
 
-    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
-        return p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ - 1, p_149742_3_, p_149742_4_, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ + 1, p_149742_3_, p_149742_4_, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ - 1, true) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ + 1, true) ? true : World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_))));
+        return p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ - 1, p_149742_3_, p_149742_4_) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ + 1, p_149742_3_, p_149742_4_) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ - 1) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ + 1) ? true : World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_))));
     }
 
-    public <E extends EntityPlayer> int onBlockPlaced(World<E> p_149660_1_, int p_149660_2_, int p_149660_3_, int p_149660_4_, int p_149660_5_)
+    public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
     {
         int var10 = 0;
 
-        if (p_149660_5_ == 1 && World.doesBlockHaveSolidTopSurface(p_149660_1_, p_149660_2_, p_149660_3_ - 1, p_149660_4_))
+        if (side == 1 && world.isBlockNormalCubeDefault(x, y - 1, z))
         {
             var10 = 5;
         }
 
-        if (p_149660_5_ == 2 && p_149660_1_.isBlockNormalCubeDefault(p_149660_2_, p_149660_3_, p_149660_4_ + 1, true))
+        if (side == 2 && world.isBlockNormalCubeDefault(x, y, z + 1))
         {
             var10 = 4;
         }
 
-        if (p_149660_5_ == 3 && p_149660_1_.isBlockNormalCubeDefault(p_149660_2_, p_149660_3_, p_149660_4_ - 1, true))
+        if (side == 3 && world.isBlockNormalCubeDefault(x, y, z - 1))
         {
             var10 = 3;
         }
 
-        if (p_149660_5_ == 4 && p_149660_1_.isBlockNormalCubeDefault(p_149660_2_ + 1, p_149660_3_, p_149660_4_, true))
+        if (side == 4 && world.isBlockNormalCubeDefault(x + 1, y, z))
         {
             var10 = 2;
         }
 
-        if (p_149660_5_ == 5 && p_149660_1_.isBlockNormalCubeDefault(p_149660_2_ - 1, p_149660_3_, p_149660_4_, true))
+        if (side == 5 && world.isBlockNormalCubeDefault(x - 1, y, z))
         {
             var10 = 1;
         }
@@ -248,22 +247,22 @@ public class BlockRedstoneTorch extends Block
             int var6 = p_150108_1_.getBlockMetadata(p_150108_2_, p_150108_3_, p_150108_4_);
             boolean var7 = false;
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ - 1, p_150108_3_, p_150108_4_, true) && var6 == 1)
+            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ - 1, p_150108_3_, p_150108_4_) && var6 == 1)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ + 1, p_150108_3_, p_150108_4_, true) && var6 == 2)
+            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ + 1, p_150108_3_, p_150108_4_) && var6 == 2)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ - 1, true) && var6 == 3)
+            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ - 1) && var6 == 3)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ + 1, true) && var6 == 4)
+            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ + 1) && var6 == 4)
             {
                 var7 = true;
             }
@@ -289,7 +288,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    private <E extends EntityPlayer> boolean func_150109_e(World<E> p_150109_1_, int p_150109_2_, int p_150109_3_, int p_150109_4_)
+    private boolean func_150109_e(WorldServer p_150109_1_, int p_150109_2_, int p_150109_3_, int p_150109_4_)
     {
         if (!this.canPlaceBlockAt(p_150109_1_, p_150109_2_, p_150109_3_, p_150109_4_))
         {

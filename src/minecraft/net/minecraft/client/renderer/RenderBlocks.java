@@ -114,29 +114,29 @@ public class RenderBlocks
     private boolean renderBlockRedstoneWire(Block p_147788_1_, int p_147788_2_, int p_147788_3_, int p_147788_4_)
     {
         Tessellator var5 = Tessellator.instance;
-        boolean var19 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ - 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ - 1, p_147788_3_ - 1, p_147788_4_, false);
-        boolean var20 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ + 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ + 1, p_147788_3_ - 1, p_147788_4_, false);
-        boolean var21 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ - 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ - 1, false);
-        boolean var22 = BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ + 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ + 1, false);
+        boolean var19 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_ - 1, p_147788_4_, false);
+        boolean var20 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_ - 1, p_147788_4_, false);
+        boolean var21 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ - 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ - 1, false);
+        boolean var22 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ + 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ + 1, false);
 
         if (!this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_).isSolid())
         {
-            if (this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ - 1, p_147788_3_ + 1, p_147788_4_, false))
+            if (this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_ + 1, p_147788_4_, false))
             {
                 var19 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_ + 1, p_147788_3_ + 1, p_147788_4_, false))
+            if (this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_ + 1, p_147788_4_, false))
             {
                 var20 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ - 1, false))
+            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ - 1, false))
             {
                 var21 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.func_150174_f(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ + 1, false))
+            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ + 1, false))
             {
                 var22 = true;
             }

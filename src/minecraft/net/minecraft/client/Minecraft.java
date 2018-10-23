@@ -817,19 +817,9 @@ public class Minecraft
         	int yPrime = y + yOff[side];
         	int zPrime = z + zOff[side];
         	
-            boolean flag = this.worldClient.getBlock(x, y, z).onBlockActivatedClient(this.worldClient, x, y, z);
-
-            if (!this.worldClient.getBlock(x, y, z).isReplaceable() && block != null && (flag || this.worldClient.canPlaceEntityOnSide(block, xPrime, yPrime, zPrime, side)) && (yPrime != 255 || !block.isSolid()))
+        	if (!this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z) && y < 256 && (y < 255 || side != 1) && this.worldServer.canPlaceEntityOnSide(block, xPrime, yPrime, zPrime, side))
             {
-            	if (y < 256 && (y < 255 || side != 1) && !this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z) && this.worldServer.canPlaceEntityOnSide(block, xPrime, yPrime, zPrime, side))
-                {
-            		this.worldServer.setBlock(xPrime, yPrime, zPrime, block, block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
-                }
-
-                if (!flag && this.worldClient.canPlaceEntityOnSide(block, xPrime, yPrime, zPrime, side))
-                {
-                    this.worldClient.setBlock(xPrime, yPrime, zPrime, block, block.onBlockPlaced(this.worldClient, xPrime, yPrime, zPrime, side));
-                }
+        		this.worldServer.setBlock(xPrime, yPrime, zPrime, block, block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
             }
         }
     }

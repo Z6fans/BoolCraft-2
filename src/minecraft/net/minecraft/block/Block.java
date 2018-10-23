@@ -1,16 +1,12 @@
 package net.minecraft.block;
 
 import java.util.List;
-
 import com.google.common.collect.HashBiMap;
-
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public abstract class Block
@@ -229,12 +225,12 @@ public abstract class Block
     /**
      * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
      */
-    public <E extends EntityPlayer> boolean canPlaceBlockOnSide(World<E> p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
+    public boolean canPlaceBlockOnSide(WorldServer p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
     {
         return this.canPlaceBlockAt(p_149707_1_, p_149707_2_, p_149707_3_, p_149707_4_);
     }
 
-    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
     	return p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_).isReplaceable();
     }
@@ -294,7 +290,7 @@ public abstract class Block
     /**
      * called when the block is placed, returns meta for new block
      */
-    public abstract <E extends EntityPlayer> int onBlockPlaced(World<E> world, int x, int y, int z, int side);
+    public abstract int onBlockPlaced(WorldServer world, int x, int y, int z, int side);
 
     /**
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
@@ -302,12 +298,12 @@ public abstract class Block
      */
     public abstract int colorMultiplier(ChunkCache cc, int x, int y, int z);
 
-    public abstract <E extends EntityPlayer> int isProvidingWeakPower(World<E> p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
+    public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 
     /**
      * Can this block provide power. Only wire currently seems to have this change based on its state.
      */
     public abstract boolean canProvidePower();
 
-    public abstract <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_);
+    public abstract int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_);
 }

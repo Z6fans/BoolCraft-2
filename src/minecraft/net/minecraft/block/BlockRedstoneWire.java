@@ -5,11 +5,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -62,12 +60,12 @@ public class BlockRedstoneWire extends Block
         return (int)(0x39 * var12) << 16 | (int)(0xEE * var12) << 8 | (int)(0xEE * var12);
     }
 
-    protected <E extends EntityPlayer> boolean canPlaceBlockAt(World<E> p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
         return World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_);
     }
 
-    private <E extends EntityPlayer> void func_150177_e(World<E> world, int x, int y, int z)
+    private void func_150177_e(WorldServer world, int x, int y, int z)
     {
         int prevPower = world.getBlockMetadata(x, y, z);
         int currentPower = this.maxRedstonePowerAt(world, x, y, z, 0);
@@ -159,7 +157,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private <E extends EntityPlayer> int maxRedstonePowerAt(World<E> world, int x, int y, int z, int other)
+    private int maxRedstonePowerAt(WorldServer world, int x, int y, int z, int other)
     {
         if (world.getBlock(x, y, z) != this)
         {
@@ -171,7 +169,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private <E extends EntityPlayer> void func_150172_m(World<E> world, int x, int y, int z)
+    private void func_150172_m(WorldServer world, int x, int y, int z)
     {
         if (world.getBlock(x, y, z) == this)
         {
@@ -295,12 +293,12 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public <E extends EntityPlayer> int isProvidingStrongPower(World<E> p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+    public int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
     {
         return this.isCheckingForPower ? 0 : this.isProvidingWeakPower(p_149748_1_, p_149748_2_, p_149748_3_, p_149748_4_, p_149748_5_);
     }
 
-    public <E extends EntityPlayer> int isProvidingWeakPower(World<E> world, int x, int y, int z, int side)
+    public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
     {
         if (this.isCheckingForPower)
         {
@@ -320,29 +318,29 @@ public class BlockRedstoneWire extends Block
             }
             else
             {
-                boolean var7 = func_150174_f(world, x - 1, y, z, true) || !world.getBlock(x - 1, y, z).isSolid() && func_150174_f(world, x - 1, y - 1, z, false);
-                boolean var8 = func_150174_f(world, x + 1, y, z, true) || !world.getBlock(x + 1, y, z).isSolid() && func_150174_f(world, x + 1, y - 1, z, false);
-                boolean var9 = func_150174_f(world, x, y, z - 1, true) || !world.getBlock(x, y, z - 1).isSolid() && func_150174_f(world, x, y - 1, z - 1, false);
-                boolean var10 = func_150174_f(world, x, y, z + 1, true) || !world.getBlock(x, y, z + 1).isSolid() && func_150174_f(world, x, y - 1, z + 1, false);
+                boolean var7 = shouldConnect(world, x - 1, y, z, true) || !world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y - 1, z, false);
+                boolean var8 = shouldConnect(world, x + 1, y, z, true) || !world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y - 1, z, false);
+                boolean var9 = shouldConnect(world, x, y, z - 1, true) || !world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y - 1, z - 1, false);
+                boolean var10 = shouldConnect(world, x, y, z + 1, true) || !world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y - 1, z + 1, false);
 
                 if (!world.getBlock(x, y + 1, z).isSolid())
                 {
-                    if (world.getBlock(x - 1, y, z).isSolid() && func_150174_f(world, x - 1, y + 1, z, false))
+                    if (world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y + 1, z, false))
                     {
                         var7 = true;
                     }
 
-                    if (world.getBlock(x + 1, y, z).isSolid() && func_150174_f(world, x + 1, y + 1, z, false))
+                    if (world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y + 1, z, false))
                     {
                         var8 = true;
                     }
 
-                    if (world.getBlock(x, y, z - 1).isSolid() && func_150174_f(world, x, y + 1, z - 1, false))
+                    if (world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y + 1, z - 1, false))
                     {
                         var9 = true;
                     }
 
-                    if (world.getBlock(x, y, z + 1).isSolid() && func_150174_f(world, x, y + 1, z + 1, false))
+                    if (world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y + 1, z + 1, false))
                     {
                         var10 = true;
                     }
@@ -353,9 +351,15 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public static boolean func_150174_f(IBlockAccess blockAccess, int x, int y, int z, boolean flag)
+    public static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
     {
-        Block block = blockAccess.getBlock(x, y, z);
+        Block block = world.getBlock(x, y, z);
+        return block == Block.redstone_wire || (block.canProvidePower() && flag);
+    }
+    
+    public static boolean shouldConnect(ChunkCache cc, int x, int y, int z, boolean flag)
+    {
+        Block block = cc.getBlock(x, y, z);
         return block == Block.redstone_wire || (block.canProvidePower() && flag);
     }
 
@@ -372,7 +376,7 @@ public class BlockRedstoneWire extends Block
 		return false;
 	}
 
-	public <E extends EntityPlayer> int onBlockPlaced(World<E> world, int x, int y, int z, int side)
+	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
 	{
 		return 0;
 	}
