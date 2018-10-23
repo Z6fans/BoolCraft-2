@@ -318,7 +318,7 @@ public class PlayerChunkLoadManager
         {
             if (this.playerWatchingChunk != null)
             {
-                Chunk<EntityPlayerMP> chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+                Chunk chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
 
                 if (chunk.getLoaded())
                 {

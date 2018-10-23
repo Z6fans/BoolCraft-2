@@ -5,7 +5,6 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockLever extends Block
@@ -35,14 +34,14 @@ public class BlockLever extends Block
     /**
      * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
      */
-    public boolean canPlaceBlockOnSide(WorldServer p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
+    public boolean canPlaceBlockOnSide(WorldServer world, int x, int y, int z, int side)
     {
-        return p_149707_5_ == 0 && p_149707_1_.getBlock(p_149707_2_, p_149707_3_ + 1, p_149707_4_).isSolid() ? true : (p_149707_5_ == 1 && World.doesBlockHaveSolidTopSurface(p_149707_1_, p_149707_2_, p_149707_3_ - 1, p_149707_4_) ? true : (p_149707_5_ == 2 && p_149707_1_.getBlock(p_149707_2_, p_149707_3_, p_149707_4_ + 1).isSolid() ? true : (p_149707_5_ == 3 && p_149707_1_.getBlock(p_149707_2_, p_149707_3_, p_149707_4_ - 1).isSolid() ? true : (p_149707_5_ == 4 && p_149707_1_.getBlock(p_149707_2_ + 1, p_149707_3_, p_149707_4_).isSolid() ? true : p_149707_5_ == 5 && p_149707_1_.getBlock(p_149707_2_ - 1, p_149707_3_, p_149707_4_).isSolid()))));
+        return side == 0 && world.getBlock(x, y + 1, z).isSolid() ? true : (side == 1 && world.getBlock(x, y - 1, z).isSolid() ? true : (side == 2 && world.getBlock(x, y, z + 1).isSolid() ? true : (side == 3 && world.getBlock(x, y, z - 1).isSolid() ? true : (side == 4 && world.getBlock(x + 1, y, z).isSolid() ? true : side == 5 && world.getBlock(x - 1, y, z).isSolid()))));
     }
 
-    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return p_149742_1_.getBlock(p_149742_2_ - 1, p_149742_3_, p_149742_4_).isSolid() ? true : (p_149742_1_.getBlock(p_149742_2_ + 1, p_149742_3_, p_149742_4_).isSolid() ? true : (p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_ - 1).isSolid() ? true : (p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_ + 1).isSolid() ? true : (World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_) ? true : p_149742_1_.getBlock(p_149742_2_, p_149742_3_ + 1, p_149742_4_).isSolid()))));
+        return world.getBlock(x - 1, y, z).isSolid() ? true : (world.getBlock(x + 1, y, z).isSolid() ? true : (world.getBlock(x, y, z - 1).isSolid() ? true : (world.getBlock(x, y, z + 1).isSolid() ? true : (world.getBlock(x, y - 1, z).isSolid() ? true : world.getBlock(x, y + 1, z).isSolid()))));
     }
 
     public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
@@ -59,56 +58,56 @@ public class BlockLever extends Block
         return -1;
     }
 
-    public void onNeighborBlockChange(WorldServer p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_, Block p_149695_5_)
+    public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
     {
-        if (this.func_149820_e(p_149695_1_, p_149695_2_, p_149695_3_, p_149695_4_))
+        if (this.func_149820_e(world, x, y, z))
         {
-            int var6 = p_149695_1_.getBlockMetadata(p_149695_2_, p_149695_3_, p_149695_4_) & 7;
+            int var6 = world.getBlockMetadata(x, y, z) & 7;
             boolean var7 = false;
 
-            if (!p_149695_1_.getBlock(p_149695_2_ - 1, p_149695_3_, p_149695_4_).isSolid() && var6 == 1)
+            if (!world.getBlock(x - 1, y, z).isSolid() && var6 == 1)
             {
                 var7 = true;
             }
 
-            if (!p_149695_1_.getBlock(p_149695_2_ + 1, p_149695_3_, p_149695_4_).isSolid() && var6 == 2)
+            if (!world.getBlock(x + 1, y, z).isSolid() && var6 == 2)
             {
                 var7 = true;
             }
 
-            if (!p_149695_1_.getBlock(p_149695_2_, p_149695_3_, p_149695_4_ - 1).isSolid() && var6 == 3)
+            if (!world.getBlock(x, y, z - 1).isSolid() && var6 == 3)
             {
                 var7 = true;
             }
 
-            if (!p_149695_1_.getBlock(p_149695_2_, p_149695_3_, p_149695_4_ + 1).isSolid() && var6 == 4)
+            if (!world.getBlock(x, y, z + 1).isSolid() && var6 == 4)
             {
                 var7 = true;
             }
 
-            if (!World.doesBlockHaveSolidTopSurface(p_149695_1_, p_149695_2_, p_149695_3_ - 1, p_149695_4_) && var6 == 5)
+            if (!world.getBlock(x, y - 1, z).isSolid() && var6 == 5)
             {
                 var7 = true;
             }
 
-            if (!World.doesBlockHaveSolidTopSurface(p_149695_1_, p_149695_2_, p_149695_3_ - 1, p_149695_4_) && var6 == 6)
+            if (!world.getBlock(x, y - 1, z).isSolid() && var6 == 6)
             {
                 var7 = true;
             }
 
-            if (!p_149695_1_.getBlock(p_149695_2_, p_149695_3_ + 1, p_149695_4_).isSolid() && var6 == 0)
+            if (!world.getBlock(x, y + 1, z).isSolid() && var6 == 0)
             {
                 var7 = true;
             }
 
-            if (!p_149695_1_.getBlock(p_149695_2_, p_149695_3_ + 1, p_149695_4_).isSolid() && var6 == 7)
+            if (!world.getBlock(x, y + 1, z).isSolid() && var6 == 7)
             {
                 var7 = true;
             }
 
             if (var7)
             {
-                p_149695_1_.setBlockToAir(p_149695_2_, p_149695_3_, p_149695_4_);
+                world.setBlockToAir(x, y, z);
             }
         }
     }

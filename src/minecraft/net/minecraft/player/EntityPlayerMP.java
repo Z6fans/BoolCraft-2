@@ -32,7 +32,7 @@ public class EntityPlayerMP extends EntityPlayer
     {
     	if (this.addedToChunk && !this.loadedChunks.isEmpty())
         {
-    		ArrayList<Chunk<EntityPlayerMP>> chunksToSend = new ArrayList<Chunk<EntityPlayerMP>>();
+    		ArrayList<Chunk> chunksToSend = new ArrayList<Chunk>();
             Iterator<ChunkCoordIntPair> chunkIterator = this.loadedChunks.iterator();
 
             while (chunkIterator.hasNext() && chunksToSend.size() < S26PacketMapChunkBulk.maxChunks())
@@ -43,7 +43,7 @@ public class EntityPlayerMP extends EntityPlayer
                 {
                     if (this.minecraft.worldServer.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                     {
-                        Chunk<EntityPlayerMP> chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
+                        Chunk chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
                         
                         if (chunk.getLoaded())
                         {

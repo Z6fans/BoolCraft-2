@@ -14,7 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.NextTickListEntry;
@@ -44,7 +43,7 @@ public class AnvilChunkLoader
     /**
      * Loads the specified(XZ) chunk into the specified world.
      */
-    public Chunk<EntityPlayerMP> loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
+    public Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
     {
         NBTTagCompound tag = null;
         ChunkCoordIntPair coords = new ChunkCoordIntPair(chunkX, chunkZ);
@@ -90,7 +89,7 @@ public class AnvilChunkLoader
         }
         else
         {
-            Chunk<EntityPlayerMP> chunk = this.readChunkFromNBT(world, tag.getCompoundTag("Level"));
+            Chunk chunk = this.readChunkFromNBT(world, tag.getCompoundTag("Level"));
 
             if (!chunk.isAtLocation(chunkX, chunkZ))
             {
@@ -104,7 +103,7 @@ public class AnvilChunkLoader
         }
     }
 
-    public void saveChunk(WorldServer world, Chunk<EntityPlayerMP> chunk) throws MinecraftException, IOException
+    public void saveChunk(WorldServer world, Chunk chunk) throws MinecraftException, IOException
     {
         world.checkSessionLock();
 
@@ -193,7 +192,7 @@ public class AnvilChunkLoader
      * Writes the Chunk passed as an argument to the NBTTagCompound also passed, using the World argument to retrieve
      * the Chunk's last update time.
      */
-    private void writeChunkToNBT(Chunk<EntityPlayerMP> chunk, WorldServer world, NBTTagCompound tag)
+    private void writeChunkToNBT(Chunk chunk, WorldServer world, NBTTagCompound tag)
     {
         tag.setInteger("xPos", chunk.xPosition);
         tag.setInteger("zPos", chunk.zPosition);
@@ -255,11 +254,11 @@ public class AnvilChunkLoader
      * Reads the data stored in the passed NBTTagCompound and creates a Chunk with that data in the passed World.
      * Returns the created Chunk.
      */
-    private Chunk<EntityPlayerMP> readChunkFromNBT(WorldServer world, NBTTagCompound tag)
+    private Chunk readChunkFromNBT(WorldServer world, NBTTagCompound tag)
     {
         int chunkX = tag.getInteger("xPos");
         int chunkZ = tag.getInteger("zPos");
-        Chunk<EntityPlayerMP> chunk = new Chunk<EntityPlayerMP>(world, chunkX, chunkZ);
+        Chunk chunk = new Chunk(chunkX, chunkZ);
         chunk.isTerrainPopulated = tag.getBoolean("TerrainPopulated");
         chunk.isLightPopulated = tag.getBoolean("LightPopulated");
         NBTTagList sections = tag.getTagList("Sections", 10);

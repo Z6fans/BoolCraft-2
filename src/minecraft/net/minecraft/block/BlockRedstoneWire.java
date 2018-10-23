@@ -8,7 +8,6 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.ChunkPosition;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneWire extends Block
@@ -60,9 +59,9 @@ public class BlockRedstoneWire extends Block
         return (int)(0x39 * var12) << 16 | (int)(0xEE * var12) << 8 | (int)(0xEE * var12);
     }
 
-    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_);
+        return world.getBlock(x, y - 1, z).isSolid();
     }
 
     private void func_150177_e(WorldServer world, int x, int y, int z)
@@ -351,7 +350,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
+    private static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
     {
         Block block = world.getBlock(x, y, z);
         return block == Block.redstone_wire || (block.canProvidePower() && flag);

@@ -10,7 +10,6 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneTorch extends Block
@@ -79,7 +78,7 @@ public class BlockRedstoneTorch extends Block
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 4, false);
                 }
-                else if (World.doesBlockHaveSolidTopSurface(world, x, y - 1, z))
+                else if (world.isBlockNormalCubeDefault(x, y - 1, z))
                 {
                     world.setBlockMetadataWithNotify(x, y, z, 5, false);
                 }
@@ -203,9 +202,9 @@ public class BlockRedstoneTorch extends Block
         return 12;
     }
 
-    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ - 1, p_149742_3_, p_149742_4_) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_ + 1, p_149742_3_, p_149742_4_) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ - 1) ? true : (p_149742_1_.isBlockNormalCubeDefault(p_149742_2_, p_149742_3_, p_149742_4_ + 1) ? true : World.doesBlockHaveSolidTopSurface(p_149742_1_, p_149742_2_, p_149742_3_ - 1, p_149742_4_))));
+        return world.isBlockNormalCubeDefault(x - 1, y, z) ? true : (world.isBlockNormalCubeDefault(x + 1, y, z) ? true : (world.isBlockNormalCubeDefault(x, y, z - 1) ? true : (world.isBlockNormalCubeDefault(x, y, z + 1) ? true : world.getBlock(x, y - 1, z).isSolid())));
     }
 
     public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
@@ -240,41 +239,41 @@ public class BlockRedstoneTorch extends Block
         return var10;
     }
 
-    private boolean func_150108_b(WorldServer p_150108_1_, int p_150108_2_, int p_150108_3_, int p_150108_4_, Block p_150108_5_)
+    private boolean func_150108_b(WorldServer world, int x, int y, int z, Block block)
     {
-        if (this.func_150109_e(p_150108_1_, p_150108_2_, p_150108_3_, p_150108_4_))
+        if (this.func_150109_e(world, x, y, z))
         {
-            int var6 = p_150108_1_.getBlockMetadata(p_150108_2_, p_150108_3_, p_150108_4_);
+            int var6 = world.getBlockMetadata(x, y, z);
             boolean var7 = false;
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ - 1, p_150108_3_, p_150108_4_) && var6 == 1)
+            if (!world.isBlockNormalCubeDefault(x - 1, y, z) && var6 == 1)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_ + 1, p_150108_3_, p_150108_4_) && var6 == 2)
+            if (!world.isBlockNormalCubeDefault(x + 1, y, z) && var6 == 2)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ - 1) && var6 == 3)
+            if (!world.isBlockNormalCubeDefault(x, y, z - 1) && var6 == 3)
             {
                 var7 = true;
             }
 
-            if (!p_150108_1_.isBlockNormalCubeDefault(p_150108_2_, p_150108_3_, p_150108_4_ + 1) && var6 == 4)
+            if (!world.isBlockNormalCubeDefault(x, y, z + 1) && var6 == 4)
             {
                 var7 = true;
             }
 
-            if (!World.doesBlockHaveSolidTopSurface(p_150108_1_, p_150108_2_, p_150108_3_ - 1, p_150108_4_) && var6 == 5)
+            if (!world.isBlockNormalCubeDefault(x, y - 1, z) && var6 == 5)
             {
                 var7 = true;
             }
 
             if (var7)
             {
-                p_150108_1_.setBlockToAir(p_150108_2_, p_150108_3_, p_150108_4_);
+                world.setBlockToAir(x, y, z);
                 return true;
             }
             else

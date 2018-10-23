@@ -2,8 +2,6 @@ package net.minecraft.network;
 
 import java.util.List;
 import java.util.zip.Deflater;
-
-import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.chunk.Chunk;
 
 public class S26PacketMapChunkBulk
@@ -18,7 +16,7 @@ public class S26PacketMapChunkBulk
 
     public S26PacketMapChunkBulk() {}
 
-    public S26PacketMapChunkBulk(List<Chunk<EntityPlayerMP>> chunks)
+    public S26PacketMapChunkBulk(List<Chunk> chunks)
     {
         int numChunks = chunks.size();
         this.chunkXList = new int[numChunks];
@@ -30,23 +28,23 @@ public class S26PacketMapChunkBulk
 
         for (int i = 0; i < numChunks; ++i)
         {
-            Chunk<EntityPlayerMP> chunk = chunks.get(i);
+            Chunk chunk = chunks.get(i);
             S21PacketChunkData.Extracted extracted = S21PacketChunkData.func_149269_a(chunk, true, 65535);
 
-            if (field_149268_i.length < var3 + extracted.field_150282_a.length)
+            if (field_149268_i.length < var3 + extracted.data.length)
             {
-                byte[] var7 = new byte[var3 + extracted.field_150282_a.length];
+                byte[] var7 = new byte[var3 + extracted.data.length];
                 System.arraycopy(field_149268_i, 0, var7, 0, field_149268_i.length);
                 field_149268_i = var7;
             }
 
-            System.arraycopy(extracted.field_150282_a, 0, field_149268_i, var3, extracted.field_150282_a.length);
-            var3 += extracted.field_150282_a.length;
+            System.arraycopy(extracted.data, 0, field_149268_i, var3, extracted.data.length);
+            var3 += extracted.data.length;
             this.chunkXList[i] = chunk.xPosition;
             this.chunkZList[i] = chunk.zPosition;
-            this.field_149265_c[i] = extracted.field_150280_b;
-            this.field_149262_d[i] = extracted.field_150281_c;
-            this.field_149260_f[i] = extracted.field_150282_a;
+            this.field_149265_c[i] = extracted.LSBFlags;
+            this.field_149262_d[i] = extracted.MSBFlags;
+            this.field_149260_f[i] = extracted.data;
         }
 
         Deflater deflater = new Deflater(-1);

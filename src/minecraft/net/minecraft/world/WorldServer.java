@@ -61,11 +61,11 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     private Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     private AnvilChunkLoader currentChunkLoader;
-    private LongHashMap<Chunk<EntityPlayerMP>> loadedChunkHashMap = new LongHashMap<Chunk<EntityPlayerMP>>();
-    private List<Chunk<EntityPlayerMP>> loadedChunks = new ArrayList<Chunk<EntityPlayerMP>>();
+    private LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
+    private List<Chunk> loadedChunks = new ArrayList<Chunk>();
 
     /** RNG for World. */
-    protected Random rand = new Random();
+    private Random rand = new Random();
 
     public WorldServer(SaveHandler sh)
     {
@@ -97,7 +97,7 @@ public class WorldServer extends World<EntityPlayerMP>
                 if (!this.chunksToUnload.isEmpty())
                 {
                     Long var2 = (Long)this.chunksToUnload.iterator().next();
-                    Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
+                    Chunk var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
 
                     if (var3 != null)
                     {
@@ -194,7 +194,7 @@ public class WorldServer extends World<EntityPlayerMP>
             ChunkCoordIntPair var4 = (ChunkCoordIntPair)var3.next();
             int var5 = var4.chunkXPos * 16;
             int var6 = var4.chunkZPos * 16;
-            Chunk<EntityPlayerMP> chunk = this.provideChunk(var4.chunkXPos, var4.chunkZPos);
+            Chunk chunk = this.provideChunk(var4.chunkXPos, var4.chunkZPos);
             chunk.setLoaded();
 
             if (this.rand.nextInt(16) == 0)
@@ -289,7 +289,7 @@ public class WorldServer extends World<EntityPlayerMP>
         super.updateEntities();
     }
 
-    public List<NextTickListEntry> getPendingBlockUpdates(Chunk<EntityPlayerMP> chunk)
+    public List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk)
     {
         ChunkCoordIntPair chunkCoords = chunk.getChunkCoordIntPair();
         int xmin = (chunkCoords.chunkXPos << 4) - 2;
@@ -351,11 +351,11 @@ public class WorldServer extends World<EntityPlayerMP>
         	this.checkSessionLock();
             this.saveHandler.saveWorldInfo(this.worldInfo);
 
-            ArrayList<Chunk<EntityPlayerMP>> chunkList = Lists.newArrayList(this.loadedChunks);
+            ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
 
             for (int i = 0; i < chunkList.size(); ++i)
             {
-                Chunk<EntityPlayerMP> chunk = chunkList.get(i);
+                Chunk chunk = chunkList.get(i);
 
                 if (chunk.needsSaving())
                 {
@@ -364,11 +364,11 @@ public class WorldServer extends World<EntityPlayerMP>
                 }
             }
             
-            Iterator<Chunk<EntityPlayerMP>> var4 = Lists.newArrayList(this.getLoadedChunks()).iterator();
+            Iterator<Chunk> var4 = Lists.newArrayList(this.getLoadedChunks()).iterator();
 
             while (var4.hasNext())
             {
-                Chunk<EntityPlayerMP> chunk = var4.next();
+                Chunk chunk = var4.next();
 
                 if (chunk != null && !this.thePlayerManager.doesPlayerInstanceExist(chunk.xPosition, chunk.zPosition))
                 {
@@ -413,7 +413,7 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     public int getTopSolidOrLiquidBlock(int x, int z)
     {
-        Chunk<EntityPlayerMP> chunk = this.provideChunk(x >> 4, z >> 4);
+        Chunk chunk = this.provideChunk(x >> 4, z >> 4);
         int y = chunk.getTopFilledSegment() + 15;
         x &= 15;
 
@@ -458,7 +458,7 @@ public class WorldServer extends World<EntityPlayerMP>
      */
     public void populate(int x, int z)
     {
-        Chunk<EntityPlayerMP> chunk = this.provideChunk(x, z);
+        Chunk chunk = this.provideChunk(x, z);
 
         if (!chunk.isTerrainPopulated)
         {
@@ -474,7 +474,7 @@ public class WorldServer extends World<EntityPlayerMP>
         return this.loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
     }
 
-    public List<Chunk<EntityPlayerMP>> getLoadedChunks()
+    public List<Chunk> getLoadedChunks()
     {
         return this.loadedChunks;
     }
@@ -497,11 +497,11 @@ public class WorldServer extends World<EntityPlayerMP>
     /**
      * loads or generates the chunk at the chunk location specified
      */
-    public Chunk<EntityPlayerMP> loadChunk(int x, int z)
+    public Chunk loadChunk(int x, int z)
     {
         long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
         this.chunksToUnload.remove(Long.valueOf(posHash));
-        Chunk<EntityPlayerMP> newChunk = this.loadedChunkHashMap.getValueByKey(posHash);
+        Chunk newChunk = this.loadedChunkHashMap.getValueByKey(posHash);
 
         if (newChunk == null)
         {
@@ -521,7 +521,7 @@ public class WorldServer extends World<EntityPlayerMP>
             {
             	try
                 {
-                	newChunk = new Chunk<EntityPlayerMP>(this, x, z);
+                	newChunk = new Chunk(x, z);
 
                     for (int y = 0; y < 5; ++y)
                     {
@@ -561,16 +561,16 @@ public class WorldServer extends World<EntityPlayerMP>
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
      * specified chunk from the map seed and chunk seed
      */
-    public Chunk<EntityPlayerMP> provideChunk(int p_73154_1_, int p_73154_2_)
+    public Chunk provideChunk(int p_73154_1_, int p_73154_2_)
     {
-        Chunk<EntityPlayerMP> var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
+        Chunk var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
         return var3 == null ? this.loadChunk(p_73154_1_, p_73154_2_) : var3;
     }
 
     /**
      * used by saveChunks, but catches any exceptions if the save fails.
      */
-    private void safeSaveChunk(Chunk<EntityPlayerMP> chunk)
+    private void safeSaveChunk(Chunk chunk)
     {
         if (this.currentChunkLoader != null)
         {
@@ -718,7 +718,7 @@ public class WorldServer extends World<EntityPlayerMP>
             }
             else
             {
-                Chunk<EntityPlayerMP> chunk = this.provideChunk(x >> 4, z >> 4);
+                Chunk chunk = this.provideChunk(x >> 4, z >> 4);
                 int localX = x & 15;
                 int localZ = z & 15;
                 boolean didChange = chunk.setBlockMetadata(localX, y, localZ, metadata);
@@ -755,7 +755,7 @@ public class WorldServer extends World<EntityPlayerMP>
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
         {
-            Chunk<EntityPlayerMP> chunk = this.provideChunk(x >> 4, z >> 4);
+            Chunk chunk = this.provideChunk(x >> 4, z >> 4);
 
             if (chunk != null && !chunk.isEmpty())
             {

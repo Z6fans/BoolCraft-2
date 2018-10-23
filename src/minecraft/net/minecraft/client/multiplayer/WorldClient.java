@@ -21,23 +21,23 @@ public class WorldClient extends World<EntityPlayerSP>
      * The completely empty chunk used by ChunkProviderClient when chunkMapping doesn't contain the requested
      * coordinates.
      */
-    private Chunk<EntityPlayerSP> blankChunk;
+    private Chunk blankChunk;
 
     /**
      * The mapping between ChunkCoordinates and Chunks that ChunkProviderClient maintains.
      */
-    private LongHashMap<Chunk<EntityPlayerSP>> chunkMapping = new LongHashMap<Chunk<EntityPlayerSP>>();
+    private LongHashMap<Chunk> chunkMapping = new LongHashMap<Chunk>();
 
     /**
      * This may have been intended to be an iterable version of all currently loaded chunks (MultiplayerChunkCache),
      * with identical contents to chunkMapping's values. However it is never actually added to.
      */
-    private List<Chunk<EntityPlayerSP>> chunkListing = new ArrayList<Chunk<EntityPlayerSP>>();
+    private List<Chunk> chunkListing = new ArrayList<Chunk>();
 
     public WorldClient()
     {
         super(null);
-        this.blankChunk = new EmptyChunk(this);
+        this.blankChunk = new EmptyChunk();
     }
 
     /**
@@ -46,7 +46,7 @@ public class WorldClient extends World<EntityPlayerSP>
     public void tick()
     {
         this.incrementTotalWorldTime(this.getTotalWorldTime() + 1L);
-        Iterator<Chunk<EntityPlayerSP>> chunks = this.chunkListing.iterator();
+        Iterator<Chunk> chunks = this.chunkListing.iterator();
 
         while (chunks.hasNext())
         {
@@ -58,13 +58,13 @@ public class WorldClient extends World<EntityPlayerSP>
     {
         if (doLoad)
         {
-        	Chunk<EntityPlayerSP> chunk = new Chunk<EntityPlayerSP>(this, x, z);
+        	Chunk chunk = new Chunk(x, z);
             this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
             this.chunkListing.add(chunk);
         }
         else
         {
-        	Chunk<EntityPlayerSP> chunk = this.provideChunk(x, z);
+        	Chunk chunk = this.provideChunk(x, z);
             this.chunkMapping.remove(ChunkCoordIntPair.chunkXZ2Int(x, z));
             this.chunkListing.remove(chunk);
             this.markBlockRangeForRenderUpdate(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15);
@@ -103,9 +103,9 @@ public class WorldClient extends World<EntityPlayerSP>
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
      * specified chunk from the map seed and chunk seed
      */
-    public Chunk<EntityPlayerSP> provideChunk(int x, int z)
+    public Chunk provideChunk(int x, int z)
     {
-        Chunk<EntityPlayerSP> chunk = this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        Chunk chunk = this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
         return chunk == null ? this.blankChunk : chunk;
     }
 }

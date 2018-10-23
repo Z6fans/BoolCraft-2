@@ -1,14 +1,13 @@
 package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.player.EntityPlayerSP;
 
-public class EmptyChunk extends Chunk<EntityPlayerSP>
+public class EmptyChunk extends Chunk
 {
-    public EmptyChunk(WorldClient world)
+    public EmptyChunk()
     {
-        super(world, 0, 0);
+        super(0, 0);
     }
 
     /**

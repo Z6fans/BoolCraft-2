@@ -52,7 +52,7 @@ public abstract class World<Entity extends EntityPlayer>
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
-            Chunk<Entity> chunk = null;
+            Chunk chunk = null;
 
             try
             {
@@ -109,7 +109,7 @@ public abstract class World<Entity extends EntityPlayer>
     /**
      * Returns back a chunk looked up by chunk coordinates Args: x, z
      */
-    public abstract Chunk<Entity> provideChunk(int x, int z);
+    public abstract Chunk provideChunk(int x, int z);
 
     /**
      * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block ID, new metadata, flags. Flag 1 will
@@ -120,10 +120,10 @@ public abstract class World<Entity extends EntityPlayer>
     {
     	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
-    		Chunk<Entity> chunk = this.provideChunk(x >> 4, z >> 4);
+    		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
             Block oldBlock = chunk.getBlock(x & 15, y, z & 15);
 
-            if (chunk.setBlockAndMeta(x & 15, y, z & 15, block, metadata))
+            if (chunk.setBlockAndMeta(this, x & 15, y, z & 15, block, metadata))
             {
                 if (chunk.getLoaded())
                 {
@@ -155,7 +155,7 @@ public abstract class World<Entity extends EntityPlayer>
             }
             else
             {
-                Chunk<Entity> var4 = this.provideChunk(p_72805_1_ >> 4, p_72805_3_ >> 4);
+                Chunk var4 = this.provideChunk(p_72805_1_ >> 4, p_72805_3_ >> 4);
                 p_72805_1_ &= 15;
                 p_72805_3_ &= 15;
                 return var4.getBlockMetadata(p_72805_1_, p_72805_2_, p_72805_3_);
@@ -184,7 +184,7 @@ public abstract class World<Entity extends EntityPlayer>
         int chunkX = MathHelper.floor_double(player.posX / 16.0D);
         int chunkZ = MathHelper.floor_double(player.posZ / 16.0D);
         this.playerEntity = player;
-        this.provideChunk(chunkX, chunkZ).addPlayer(player);
+        this.addPlayerToChunk(provideChunk(chunkX, chunkZ), player);
     }
 
     /**
@@ -213,7 +213,7 @@ public abstract class World<Entity extends EntityPlayer>
                         if (this.chunkExists(chunkX, chunkZ))
                         {
                         	this.playerEntity.addedToChunk = true;
-                            this.provideChunk(chunkX, chunkZ).addPlayer(this.playerEntity);
+                            this.addPlayerToChunk(provideChunk(chunkX, chunkZ), this.playerEntity);
                         }
                         else
                         {
@@ -228,13 +228,19 @@ public abstract class World<Entity extends EntityPlayer>
             }
         }
     }
+    
+    private void addPlayerToChunk(Chunk chunk, Entity player){
+    	int chunkY = MathHelper.floor_double(player.posY / 16.0D);
 
-    /**
-     * Returns true if the block at the given coordinate has a solid (buildable) top surface.
-     */
-    public static boolean doesBlockHaveSolidTopSurface(WorldServer world, int x, int y, int z)
-    {
-        return world.getBlock(x, y, z).isSolid();
+        if (chunkY < 0)
+        {
+            chunkY = 0;
+        }
+
+        player.addedToChunk = true;
+        player.chunkCoordX = chunk.xPosition;
+        player.chunkCoordY = chunkY;
+        player.chunkCoordZ = chunk.zPosition;
     }
 
     /**

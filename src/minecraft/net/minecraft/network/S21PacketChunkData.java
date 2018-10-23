@@ -1,7 +1,6 @@
 package net.minecraft.network;
 
 import java.util.zip.Deflater;
-import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -10,31 +9,31 @@ public class S21PacketChunkData
 {
     private int chunkX;
     private int chunkZ;
-    private int field_149283_c;
-    private int field_149280_d;
+    private int LSBFlags;
+    private int MSBFlags;
     private byte[] field_149281_e;
-    private byte[] field_149278_f;
-    private boolean field_149279_g;
+    private byte[] data;
+    private boolean isHardCopy;
     private static byte[] field_149286_i = new byte[196864];
 
     public S21PacketChunkData() {}
 
-    public S21PacketChunkData(Chunk<EntityPlayerMP> chunk, boolean p_i45196_2_, int flags)
+    public S21PacketChunkData(Chunk chunk, boolean hardCopy, int flagsYAreasToUpdate)
     {
         this.chunkX = chunk.xPosition;
         this.chunkZ = chunk.zPosition;
-        this.field_149279_g = p_i45196_2_;
-        S21PacketChunkData.Extracted extracted = func_149269_a(chunk, p_i45196_2_, flags);
+        this.isHardCopy = hardCopy;
+        S21PacketChunkData.Extracted extracted = func_149269_a(chunk, hardCopy, flagsYAreasToUpdate);
         Deflater var5 = new Deflater(-1);
-        this.field_149280_d = extracted.field_150281_c;
-        this.field_149283_c = extracted.field_150280_b;
+        this.MSBFlags = extracted.MSBFlags;
+        this.LSBFlags = extracted.LSBFlags;
 
         try
         {
-            this.field_149278_f = extracted.field_150282_a;
-            var5.setInput(extracted.field_150282_a, 0, extracted.field_150282_a.length);
+            this.data = extracted.data;
+            var5.setInput(extracted.data, 0, extracted.data.length);
             var5.finish();
-            this.field_149281_e = new byte[extracted.field_150282_a.length];
+            this.field_149281_e = new byte[extracted.data.length];
             var5.deflate(this.field_149281_e);
         }
         finally
@@ -46,12 +45,12 @@ public class S21PacketChunkData
     /**
      * Returns a string formatted as comma separated [field]=[value] values. Used by Minecraft for logging purposes.
      */
-    public byte[] func_149272_d()
+    public byte[] getData()
     {
-        return this.field_149278_f;
+        return this.data;
     }
 
-    public static S21PacketChunkData.Extracted func_149269_a(Chunk<EntityPlayerMP> chunk, boolean p_149269_1_, int flags)
+    public static S21PacketChunkData.Extracted func_149269_a(Chunk chunk, boolean hardCopy, int flagsYAreasToUpdate)
     {
         int var3 = 0;
         ExtendedBlockStorage[] storageArray = chunk.getBlockStorageArray();
@@ -63,13 +62,13 @@ public class S21PacketChunkData
 
         for (i = 0; i < storageArray.length; ++i)
         {
-            if (storageArray[i] != null && (!p_149269_1_ || !storageArray[i].isEmpty()) && (flags & 1 << i) != 0)
+            if (storageArray[i] != null && (!hardCopy || !storageArray[i].isEmpty()) && (flagsYAreasToUpdate & 1 << i) != 0)
             {
-                extracted.field_150280_b |= 1 << i;
+                extracted.LSBFlags |= 1 << i;
 
                 if (storageArray[i].getBlockMSBArray() != null)
                 {
-                    extracted.field_150281_c |= 1 << i;
+                    extracted.MSBFlags |= 1 << i;
                     ++var5;
                 }
             }
@@ -77,7 +76,7 @@ public class S21PacketChunkData
 
         for (i = 0; i < storageArray.length; ++i)
         {
-            if (storageArray[i] != null && (!p_149269_1_ || !storageArray[i].isEmpty()) && (flags & 1 << i) != 0)
+            if (storageArray[i] != null && (!hardCopy || !storageArray[i].isEmpty()) && (flagsYAreasToUpdate & 1 << i) != 0)
             {
                 byte[] var9 = storageArray[i].getBlockLSBArray();
                 System.arraycopy(var9, 0, var7, var3, var9.length);
@@ -89,7 +88,7 @@ public class S21PacketChunkData
 
         for (i = 0; i < storageArray.length; ++i)
         {
-            if (storageArray[i] != null && (!p_149269_1_ || !storageArray[i].isEmpty()) && (flags & 1 << i) != 0)
+            if (storageArray[i] != null && (!hardCopy || !storageArray[i].isEmpty()) && (flagsYAreasToUpdate & 1 << i) != 0)
             {
                 var11 = storageArray[i].getMetadataArray();
                 System.arraycopy(var11.data, 0, var7, var3, var11.data.length);
@@ -101,7 +100,7 @@ public class S21PacketChunkData
         {
             for (i = 0; i < storageArray.length; ++i)
             {
-                if (storageArray[i] != null && (!p_149269_1_ || !storageArray[i].isEmpty()) && storageArray[i].getBlockMSBArray() != null && (flags & 1 << i) != 0)
+                if (storageArray[i] != null && (!hardCopy || !storageArray[i].isEmpty()) && storageArray[i].getBlockMSBArray() != null && (flagsYAreasToUpdate & 1 << i) != 0)
                 {
                     var11 = storageArray[i].getBlockMSBArray();
                     System.arraycopy(var11.data, 0, var7, var3, var11.data.length);
@@ -109,8 +108,8 @@ public class S21PacketChunkData
                 }
             }
         }
-        extracted.field_150282_a = new byte[var3];
-        System.arraycopy(var7, 0, extracted.field_150282_a, 0, var3);
+        extracted.data = new byte[var3];
+        System.arraycopy(var7, 0, extracted.data, 0, var3);
         return extracted;
     }
 
@@ -124,25 +123,25 @@ public class S21PacketChunkData
         return this.chunkZ;
     }
 
-    public int func_149276_g()
+    public int getLSBFlags()
     {
-        return this.field_149283_c;
+        return this.LSBFlags;
     }
 
-    public int func_149270_h()
+    public int getMSBFlags()
     {
-        return this.field_149280_d;
+        return this.MSBFlags;
     }
 
-    public boolean func_149274_i()
+    public boolean getIsHardCopy()
     {
-        return this.field_149279_g;
+        return this.isHardCopy;
     }
 
     public static class Extracted
     {
-        public byte[] field_150282_a;
-        public int field_150280_b;
-        public int field_150281_c;
+        public byte[] data;
+        public int LSBFlags;
+        public int MSBFlags;
     }
 }

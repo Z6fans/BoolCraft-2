@@ -2,22 +2,18 @@ package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
 import net.minecraft.player.EntityPlayer;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
-public class Chunk<Entity extends EntityPlayer>
+public class Chunk
 {
     /**
      * Used to store block IDs, block MSBs, Sky-light maps, Block-light maps, and metadata. Each entry corresponds to a
      * logical segment of 16x16x16 blocks, stacked vertically.
      */
     private ExtendedBlockStorage[] storageArrays;
-
-    /** Reference to the World object. */
-    private World<Entity> worldObj;
 
     /** The x coordinate of the chunk. */
     public final int xPosition;
@@ -35,10 +31,9 @@ public class Chunk<Entity extends EntityPlayer>
      */
     public boolean isModified;
 
-    public Chunk(World<Entity> world, int x, int y)
+    public Chunk(int x, int y)
     {
         this.storageArrays = new ExtendedBlockStorage[16];
-        this.worldObj = world;
         this.xPosition = x;
         this.zPosition = y;
     }
@@ -103,20 +98,20 @@ public class Chunk<Entity extends EntityPlayer>
     /**
      * Return the metadata corresponding to the given coordinates inside a chunk.
      */
-    public int getBlockMetadata(int p_76628_1_, int p_76628_2_, int p_76628_3_)
+    public int getBlockMetadata(int x, int y, int z)
     {
-        if (p_76628_2_ >> 4 >= this.storageArrays.length)
+        if (y >> 4 >= this.storageArrays.length)
         {
             return 0;
         }
         else
         {
-            ExtendedBlockStorage var4 = this.storageArrays[p_76628_2_ >> 4];
-            return var4 != null ? var4.getExtBlockMetadata(p_76628_1_, p_76628_2_ & 15, p_76628_3_) : 0;
+            ExtendedBlockStorage storage = this.storageArrays[y >> 4];
+            return storage != null ? storage.getExtBlockMetadata(x, y & 15, z) : 0;
         }
     }
 
-    public boolean setBlockAndMeta(int localX, int y, int localZ, Block block, int meta)
+    public <E extends EntityPlayer> boolean setBlockAndMeta(World<E> world, int localX, int y, int localZ, Block block, int meta)
     {
         Block oldBlock = this.getBlock(localX, y, localZ);
         int oldMeta = this.getBlockMetadata(localX, y, localZ);
@@ -144,9 +139,9 @@ public class Chunk<Entity extends EntityPlayer>
 
             storageArray.setBlock(localX, y & 15, localZ, block);
 
-            if (this.worldObj instanceof WorldServer)
+            if (world instanceof WorldServer)
             {
-                oldBlock.breakBlock((WorldServer)this.worldObj, trueX, y, trueZ, oldBlock, oldMeta);
+                oldBlock.breakBlock((WorldServer)world, trueX, y, trueZ, oldBlock, oldMeta);
             }
 
             if (storageArray.getBlock(localX, y & 15, localZ) != block)
@@ -157,9 +152,9 @@ public class Chunk<Entity extends EntityPlayer>
             {
                 storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
 
-                if (this.worldObj instanceof WorldServer)
+                if (world instanceof WorldServer)
                 {
-                    block.onBlockAdded((WorldServer)this.worldObj, trueX, y, trueZ);
+                    block.onBlockAdded((WorldServer)world, trueX, y, trueZ);
                 }
 
                 this.isModified = true;
@@ -195,24 +190,6 @@ public class Chunk<Entity extends EntityPlayer>
                 return true;
             }
         }
-    }
-
-    /**
-     * Adds an entity to the chunk. Args: entity
-     */
-    public void addPlayer(Entity player)
-    {
-        int chunkY = MathHelper.floor_double(player.posY / 16.0D);
-
-        if (chunkY < 0)
-        {
-            chunkY = 0;
-        }
-
-        player.addedToChunk = true;
-        player.chunkCoordX = this.xPosition;
-        player.chunkCoordY = chunkY;
-        player.chunkCoordZ = this.zPosition;
     }
 
     /**
@@ -306,71 +283,69 @@ public class Chunk<Entity extends EntityPlayer>
         return true;
     }
 
-    public void setStorageArrays(ExtendedBlockStorage[] storage)
+    public void setStorageArrays(ExtendedBlockStorage[] storageArray)
     {
-        this.storageArrays = storage;
+        this.storageArrays = storageArray;
     }
 
     /**
      * Initialise this chunk with new binary data
      */
-    public void fillChunk(byte[] p_76607_1_, int p_76607_2_, int p_76607_3_, boolean p_76607_4_)
+    public void fillChunk(byte[] data, int flagsLSB, int flagsMSB, boolean isHardCopy)
     {
-        int var5 = 0;
+        int dataPointer = 0;
 
         for (int i = 0; i < this.storageArrays.length; ++i)
         {
-            if ((p_76607_2_ & 1 << i) != 0)
+            if ((flagsLSB & 1 << i) != 0)
             {
                 if (this.storageArrays[i] == null)
                 {
                     this.storageArrays[i] = new ExtendedBlockStorage(i << 4);
                 }
 
-                byte[] var8 = this.storageArrays[i].getBlockLSBArray();
-                System.arraycopy(p_76607_1_, var5, var8, 0, var8.length);
-                var5 += var8.length;
+                byte[] arrayLSB = this.storageArrays[i].getBlockLSBArray();
+                System.arraycopy(data, dataPointer, arrayLSB, 0, arrayLSB.length);
+                dataPointer += arrayLSB.length;
             }
-            else if (p_76607_4_ && this.storageArrays[i] != null)
+            else if (isHardCopy && this.storageArrays[i] != null)
             {
                 this.storageArrays[i] = null;
             }
         }
 
-        NibbleArray var10;
-
         for (int i = 0; i < this.storageArrays.length; ++i)
         {
-            if ((p_76607_2_ & 1 << i) != 0 && this.storageArrays[i] != null)
+            if ((flagsLSB & 1 << i) != 0 && this.storageArrays[i] != null)
             {
-                var10 = this.storageArrays[i].getMetadataArray();
-                System.arraycopy(p_76607_1_, var5, var10.data, 0, var10.data.length);
-                var5 += var10.data.length;
+            	NibbleArray arrayMeta = this.storageArrays[i].getMetadataArray();
+                System.arraycopy(data, dataPointer, arrayMeta.data, 0, arrayMeta.data.length);
+                dataPointer += arrayMeta.data.length;
             }
         }
 
         for (int i = 0; i < this.storageArrays.length; ++i)
         {
-            if ((p_76607_3_ & 1 << i) != 0)
+            if ((flagsMSB & 1 << i) != 0)
             {
                 if (this.storageArrays[i] == null)
                 {
-                    var5 += 2048;
+                    dataPointer += 2048;
                 }
                 else
                 {
-                    var10 = this.storageArrays[i].getBlockMSBArray();
+                	NibbleArray arrayMSB = this.storageArrays[i].getBlockMSBArray();
 
-                    if (var10 == null)
+                    if (arrayMSB == null)
                     {
-                        var10 = this.storageArrays[i].createBlockMSBArray();
+                        arrayMSB = this.storageArrays[i].createBlockMSBArray();
                     }
 
-                    System.arraycopy(p_76607_1_, var5, var10.data, 0, var10.data.length);
-                    var5 += var10.data.length;
+                    System.arraycopy(data, dataPointer, arrayMSB.data, 0, arrayMSB.data.length);
+                    dataPointer += arrayMSB.data.length;
                 }
             }
-            else if (p_76607_4_ && this.storageArrays[i] != null && this.storageArrays[i].getBlockMSBArray() != null)
+            else if (isHardCopy && this.storageArrays[i] != null && this.storageArrays[i].getBlockMSBArray() != null)
             {
                 this.storageArrays[i].clearMSBArray();
             }
@@ -378,7 +353,7 @@ public class Chunk<Entity extends EntityPlayer>
 
         for (int i = 0; i < this.storageArrays.length; ++i)
         {
-            if (this.storageArrays[i] != null && (p_76607_2_ & 1 << i) != 0)
+            if (this.storageArrays[i] != null && (flagsLSB & 1 << i) != 0)
             {
                 this.storageArrays[i].removeInvalidBlocks();
             }

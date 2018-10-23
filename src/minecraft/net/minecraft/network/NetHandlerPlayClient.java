@@ -1,8 +1,6 @@
 package net.minecraft.network;
 
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayerMP;
-import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 
@@ -18,7 +16,7 @@ public class NetHandlerPlayClient
         this.worldClient = wc;
     }
     
-    public void handleMultiBlockChange(int numTiles, short[] localKeyArray, Chunk<EntityPlayerMP> chunk)
+    public void handleMultiBlockChange(int numTiles, short[] localKeyArray, Chunk chunk)
     {
         int baseX = chunk.xPosition * 16;
         int baseZ = chunk.zPosition * 16;
@@ -38,9 +36,9 @@ public class NetHandlerPlayClient
      */
     public void handleChunkData(S21PacketChunkData packetChunkData)
     {
-        if (packetChunkData.func_149274_i())
+        if (packetChunkData.getIsHardCopy())
         {
-            if (packetChunkData.func_149276_g() == 0)
+            if (packetChunkData.getLSBFlags() == 0)
             {
                 this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), false);
                 return;
@@ -49,8 +47,8 @@ public class NetHandlerPlayClient
             this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), true);
         }
 
-        Chunk<EntityPlayerSP> chunk = this.worldClient.provideChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ());
-        chunk.fillChunk(packetChunkData.func_149272_d(), packetChunkData.func_149276_g(), packetChunkData.func_149270_h(), packetChunkData.func_149274_i());
+        Chunk chunk = this.worldClient.provideChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ());
+        chunk.fillChunk(packetChunkData.getData(), packetChunkData.getLSBFlags(), packetChunkData.getMSBFlags(), packetChunkData.getIsHardCopy());
         this.worldClient.markBlockRangeForRenderUpdate(packetChunkData.getChunkX() << 4, 0, packetChunkData.getChunkZ() << 4, (packetChunkData.getChunkX() << 4) + 15, 256, (packetChunkData.getChunkZ() << 4) + 15);
     }
 
@@ -66,7 +64,7 @@ public class NetHandlerPlayClient
             int chunkX = packetMapChunkBulk.getChunkX(i);
             int chunkZ = packetMapChunkBulk.getChunkZ(i);
             this.worldClient.doPreChunk(chunkX, chunkZ, true);
-            Chunk<EntityPlayerSP> chunk = this.worldClient.provideChunk(chunkX, chunkZ);
+            Chunk chunk = this.worldClient.provideChunk(chunkX, chunkZ);
             chunk.fillChunk(packetMapChunkBulk.func_149256_c(i), packetMapChunkBulk.func_149252_e()[i], packetMapChunkBulk.func_149257_f()[i], true);
             this.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
         }
