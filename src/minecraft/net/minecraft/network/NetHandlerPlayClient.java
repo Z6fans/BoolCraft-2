@@ -1,8 +1,12 @@
 package net.minecraft.network;
 
+import java.util.List;
+
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.NibbleArray;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 public class NetHandlerPlayClient
 {
@@ -34,22 +38,9 @@ public class NetHandlerPlayClient
     /**
      * Updates the specified chunk with the supplied data, marks it for re-rendering and lighting recalculation
      */
-    public void handleChunkData(S21PacketChunkData packetChunkData)
+    public void handleUnloadChunk(Chunk serverChunk)
     {
-        if (packetChunkData.getIsHardCopy())
-        {
-            if (packetChunkData.getLSBFlags() == 0)
-            {
-                this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), false);
-                return;
-            }
-            
-            this.worldClient.doPreChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ(), true);
-        }
-
-        Chunk chunk = this.worldClient.provideChunk(packetChunkData.getChunkX(), packetChunkData.getChunkZ());
-        chunk.fillChunk(packetChunkData.getData(), packetChunkData.getLSBFlags(), packetChunkData.getMSBFlags(), packetChunkData.getIsHardCopy());
-        this.worldClient.markBlockRangeForRenderUpdate(packetChunkData.getChunkX() << 4, 0, packetChunkData.getChunkZ() << 4, (packetChunkData.getChunkX() << 4) + 15, 256, (packetChunkData.getChunkZ() << 4) + 15);
+    	this.worldClient.unloadChunk(serverChunk.xPosition, serverChunk.zPosition);
     }
 
     public void handleBlockChange(int x, int y, int z, WorldServer worldServer)
@@ -57,16 +48,73 @@ public class NetHandlerPlayClient
         this.worldClient.setBlock(x, y, z, worldServer.getBlock(x, y, z), worldServer.getBlockMetadata(x, y, z));
     }
 
-    public void handleMapChunkBulk(S26PacketMapChunkBulk packetMapChunkBulk)
+    public void handleMapChunkBulk(List<Chunk> chunks)
     {
-        for (int i = 0; i < packetMapChunkBulk.getNumChunks(); ++i)
+        for (int i = 0; i < chunks.size(); ++i)
         {
-            int chunkX = packetMapChunkBulk.getChunkX(i);
-            int chunkZ = packetMapChunkBulk.getChunkZ(i);
-            this.worldClient.doPreChunk(chunkX, chunkZ, true);
-            Chunk chunk = this.worldClient.provideChunk(chunkX, chunkZ);
-            chunk.fillChunk(packetMapChunkBulk.func_149256_c(i), packetMapChunkBulk.func_149252_e()[i], packetMapChunkBulk.func_149257_f()[i], true);
+        	Chunk serverChunk = chunks.get(i);
+            int chunkX = serverChunk.xPosition;
+            int chunkZ = serverChunk.zPosition;
+            this.worldClient.loadChunk(chunkX, chunkZ);
+            Chunk clientChunk = this.worldClient.provideChunk(chunkX, chunkZ);
+            clientChunk.setStorageArrays(this.copyStorage(serverChunk));
+            clientChunk.isLightPopulated = true;
+            clientChunk.isTerrainPopulated = true;
+            clientChunk.generateHeightMap();
             this.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
         }
+    }
+    
+    private ExtendedBlockStorage[] copyStorage(Chunk chunk)
+    {
+    	ExtendedBlockStorage[] oldStorageArray = chunk.getBlockStorageArray();
+    	ExtendedBlockStorage[] newStorageArray = new ExtendedBlockStorage[oldStorageArray.length];
+    	
+    	for(int i = 0; i < oldStorageArray.length; i++)
+    	{
+    		ExtendedBlockStorage oldStorage = oldStorageArray[i];
+    		
+    		if(oldStorage != null)
+    		{
+    			ExtendedBlockStorage newStorage = new ExtendedBlockStorage(oldStorage.getYLocation());
+        		
+        		if(oldStorage.getBlockLSBArray() != null)
+        		{
+        			byte[] oldLSBArray = oldStorage.getBlockLSBArray();
+            		byte[] newLSBArray = newStorage.getBlockLSBArray();
+            		System.arraycopy(oldLSBArray, 0, newLSBArray, 0, oldLSBArray.length);
+        		}
+        		
+        		if(oldStorage.getBlockMSBArray() != null)
+        		{
+        			byte[] oldMSBArrayData = oldStorage.getBlockMSBArray().data;
+            		NibbleArray newMSBArray = newStorage.getBlockMSBArray();
+            		
+            		if(newMSBArray == null)
+            		{
+            			newStorage.createBlockMSBArray();
+            		}
+            		
+            		System.arraycopy(oldMSBArrayData, 0, newMSBArray.data, 0, oldMSBArrayData.length);
+        		}
+        		
+        		if(oldStorage.getMetadataArray() != null)
+        		{
+        			byte[] oldMetadataArrayData = oldStorage.getMetadataArray().data;
+        			NibbleArray newMetadataArray = newStorage.getMetadataArray();
+            		System.arraycopy(oldMetadataArrayData, 0, newMetadataArray.data, 0, oldMetadataArrayData.length);
+        		}
+        		
+        		newStorage.removeInvalidBlocks();
+        		newStorageArray[i] = newStorage;
+    		}
+    	}
+    	
+    	return newStorageArray;
+    }
+
+    public static int maxChunks()
+    {
+        return 5;
     }
 }

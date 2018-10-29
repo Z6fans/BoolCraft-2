@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.S26PacketMapChunkBulk;
+import net.minecraft.network.NetHandlerPlayClient;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.chunk.Chunk;
 
@@ -35,7 +35,7 @@ public class EntityPlayerMP extends EntityPlayer
     		ArrayList<Chunk> chunksToSend = new ArrayList<Chunk>();
             Iterator<ChunkCoordIntPair> chunkIterator = this.loadedChunks.iterator();
 
-            while (chunkIterator.hasNext() && chunksToSend.size() < S26PacketMapChunkBulk.maxChunks())
+            while (chunkIterator.hasNext() && chunksToSend.size() < NetHandlerPlayClient.maxChunks())
             {
                 ChunkCoordIntPair chunkCoords = (ChunkCoordIntPair)chunkIterator.next();
 
@@ -60,7 +60,7 @@ public class EntityPlayerMP extends EntityPlayer
 
             if (!chunksToSend.isEmpty())
             {
-                this.minecraft.clientHandler.handleMapChunkBulk(new S26PacketMapChunkBulk(chunksToSend));
+                this.minecraft.clientHandler.handleMapChunkBulk(chunksToSend);
             }
         }
     }

@@ -54,21 +54,18 @@ public class WorldClient extends World<EntityPlayerSP>
         }
     }
 
-    public void doPreChunk(int x, int z, boolean doLoad)
+    public void loadChunk(int x, int z)
     {
-        if (doLoad)
-        {
-        	Chunk chunk = new Chunk(x, z);
-            this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
-            this.chunkListing.add(chunk);
-        }
-        else
-        {
-        	Chunk chunk = this.provideChunk(x, z);
-            this.chunkMapping.remove(ChunkCoordIntPair.chunkXZ2Int(x, z));
-            this.chunkListing.remove(chunk);
-            this.markBlockRangeForRenderUpdate(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15);
-        }
+    	Chunk chunk = new Chunk(x, z);
+        this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
+        this.chunkListing.add(chunk);
+    }
+    
+    public void unloadChunk(int x, int z){
+    	Chunk chunk = this.provideChunk(x, z);
+        this.chunkMapping.remove(ChunkCoordIntPair.chunkXZ2Int(x, z));
+        this.chunkListing.remove(chunk);
+        this.markBlockRangeForRenderUpdate(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15);
     }
     
     public void setRenderer(RenderGlobal r)

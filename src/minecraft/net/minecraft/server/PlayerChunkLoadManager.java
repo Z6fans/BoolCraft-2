@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.S21PacketChunkData;
 import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
@@ -65,25 +64,23 @@ public class PlayerChunkLoadManager
      */
     public void updatePlayerInstances()
     {
-        long var1 = this.theWorldServer.getTotalWorldTime();
-        int var3;
-        PlayerChunkLoadManager.PlayerInstance var4;
+        long worldTime = this.theWorldServer.getTotalWorldTime();
 
-        if (var1 - this.previousTotalWorldTime > 8000L)
+        if (worldTime - this.previousTotalWorldTime > 8000L)
         {
-            this.previousTotalWorldTime = var1;
+            this.previousTotalWorldTime = worldTime;
 
-            for (var3 = 0; var3 < this.playerInstanceList.size(); ++var3)
+            for (int var3 = 0; var3 < this.playerInstanceList.size(); ++var3)
             {
-                var4 = (PlayerChunkLoadManager.PlayerInstance)this.playerInstanceList.get(var3);
+            	PlayerChunkLoadManager.PlayerInstance var4 = this.playerInstanceList.get(var3);
                 var4.sendChunkUpdate();
             }
         }
         else
         {
-            for (var3 = 0; var3 < this.chunkWatcherWithPlayers.size(); ++var3)
+            for (int var3 = 0; var3 < this.chunkWatcherWithPlayers.size(); ++var3)
             {
-                var4 = (PlayerChunkLoadManager.PlayerInstance)this.chunkWatcherWithPlayers.get(var3);
+            	PlayerChunkLoadManager.PlayerInstance var4 = this.chunkWatcherWithPlayers.get(var3);
                 var4.sendChunkUpdate();
             }
         }
@@ -297,7 +294,6 @@ public class PlayerChunkLoadManager
         private final ChunkCoordIntPair chunkLocation;
         private short[] tilesToUpdate = new short[64];
         private int numberOfTilesToUpdate;
-        private int flagsYAreasToUpdate;
 
         private PlayerInstance(int chunkX, int chunkZ)
         {
@@ -322,7 +318,7 @@ public class PlayerChunkLoadManager
 
                 if (chunk.getLoaded())
                 {
-                    Minecraft.getMinecraft().clientHandler.handleChunkData(new S21PacketChunkData(chunk, true, 0));
+                    Minecraft.getMinecraft().clientHandler.handleUnloadChunk(chunk);
                 }
 
                 this.playerWatchingChunk = null;
@@ -347,8 +343,6 @@ public class PlayerChunkLoadManager
             {
                 PlayerChunkLoadManager.this.chunkWatcherWithPlayers.add(this);
             }
-
-            this.flagsYAreasToUpdate |= 1 << (localY >> 4);
 
             if (this.numberOfTilesToUpdate < 64)
             {
@@ -378,10 +372,6 @@ public class PlayerChunkLoadManager
             			int z = this.chunkLocation.chunkZPos * 16 + (this.tilesToUpdate[0] >> 8 & 15);
             			Minecraft.getMinecraft().clientHandler.handleBlockChange(x, y, z, PlayerChunkLoadManager.this.theWorldServer);
             		}
-            		else if (this.numberOfTilesToUpdate == 64)
-            		{
-            			Minecraft.getMinecraft().clientHandler.handleChunkData(new S21PacketChunkData(PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos), false, this.flagsYAreasToUpdate));
-            		}
             		else
             		{
             			Minecraft.getMinecraft().clientHandler.handleMultiBlockChange(this.numberOfTilesToUpdate, this.tilesToUpdate, PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos));
@@ -390,7 +380,6 @@ public class PlayerChunkLoadManager
                 
 
                 this.numberOfTilesToUpdate = 0;
-                this.flagsYAreasToUpdate = 0;
             }
         }
     }
