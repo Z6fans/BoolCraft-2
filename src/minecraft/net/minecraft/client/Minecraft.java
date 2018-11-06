@@ -460,8 +460,8 @@ public class Minecraft
 
                                     if (!this.worldClient.getBlock(x, y, z).isReplaceable())
                                     {
-                                        this.worldServer.setBlockToAir(x, y, z);
-                                        this.worldClient.setBlockToAir(x, y, z);
+                                        this.worldServer.setBlock(x, y, z, Block.air, 0);
+                                        this.worldClient.setBlock(x, y, z, Block.air, 0);
                                         this.blockHitDelay = 5;
                                     }
                                 }
@@ -500,8 +500,8 @@ public class Minecraft
                                         }
                                         else
                                         {
-                                        	this.worldServer.setBlockToAir(x, y, z);
-                                            this.worldClient.setBlockToAir(x, y, z);
+                                        	this.worldServer.setBlock(x, y, z, Block.air, 0);
+                                            this.worldClient.setBlock(x, y, z, Block.air, 0);
                                             this.blockHitDelay = 5;
                                         }
                                     }
@@ -521,21 +521,7 @@ public class Minecraft
                                 this.worldClient.updateEntities();
                             }
                         }
-
-                        if (this.worldClient != null)
-                        {
-                            if (!this.isGamePaused)
-                            {
-                                try
-                                {
-                                    this.worldClient.tick();
-                                }
-                                catch (Throwable var7)
-                                {
-                                    throw new ReportedException(CrashReport.makeCrashReport(var7, "Exception in world tick" + (this.worldClient == null ? ", level is null!" : "")));
-                                }
-                            }
-                        }
+                        
                         this.systemTime = getSystemTime();
                     }
                     
@@ -602,13 +588,6 @@ public class Minecraft
                         if (!this.isServerPaused)
                         {
                             ++this.tickCounter;
-                            
-                            if (this.tickCounter % 20 == 0)
-                            {
-                                if(this.worldClient != null){
-                            		this.worldClient.incrementTotalWorldTime(this.worldServer.getTotalWorldTime());
-                            	}
-                            }
 
                             try
                             {
@@ -883,10 +862,6 @@ public class Minecraft
             this.systemTime = 0L;
             
             this.worldServer.spawnPlayerInWorld(this);
-            
-            if(this.worldClient != null){
-        		this.worldClient.incrementTotalWorldTime(this.worldServer.getTotalWorldTime());
-        	}
         }
         catch (Throwable var10)
         {

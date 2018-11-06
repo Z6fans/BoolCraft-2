@@ -1,7 +1,6 @@
 package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
-import net.minecraft.player.EntityPlayer;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -23,7 +22,6 @@ public class Chunk
 
     /** Boolean value indicating if the terrain is populated. */
     public boolean isTerrainPopulated;
-    public boolean isLightPopulated;
     private boolean isLoaded;
 
     /**
@@ -70,14 +68,6 @@ public class Chunk
         return this.storageArrays;
     }
 
-    /**
-     * Generates the height map for a chunk from scratch
-     */
-    public void generateHeightMap()
-    {
-        this.isModified = true;
-    }
-
     public Block getBlock(final int x, final int y, final int z)
     {
         Block block = Block.air;
@@ -111,7 +101,7 @@ public class Chunk
         }
     }
 
-    public <E extends EntityPlayer> boolean setBlockAndMeta(World<E> world, int localX, int y, int localZ, Block block, int meta)
+    public boolean setBlockAndMeta(World world, int localX, int y, int localZ, Block block, int meta)
     {
         Block oldBlock = this.getBlock(localX, y, localZ);
         int oldMeta = this.getBlockMetadata(localX, y, localZ);
@@ -286,81 +276,5 @@ public class Chunk
     public void setStorageArrays(ExtendedBlockStorage[] storageArray)
     {
         this.storageArrays = storageArray;
-    }
-
-    /**
-     * Initialise this chunk with new binary data
-     */
-    public void fillChunk(byte[] data, int flagsLSB, int flagsMSB, boolean isHardCopy)
-    {
-        int dataPointer = 0;
-
-        for (int i = 0; i < this.storageArrays.length; ++i)
-        {
-            if ((flagsLSB & 1 << i) != 0)
-            {
-                if (this.storageArrays[i] == null)
-                {
-                    this.storageArrays[i] = new ExtendedBlockStorage(i << 4);
-                }
-
-                byte[] arrayLSB = this.storageArrays[i].getBlockLSBArray();
-                System.arraycopy(data, dataPointer, arrayLSB, 0, arrayLSB.length);
-                dataPointer += arrayLSB.length;
-            }
-            else if (isHardCopy && this.storageArrays[i] != null)
-            {
-                this.storageArrays[i] = null;
-            }
-        }
-
-        for (int i = 0; i < this.storageArrays.length; ++i)
-        {
-            if ((flagsLSB & 1 << i) != 0 && this.storageArrays[i] != null)
-            {
-            	NibbleArray arrayMeta = this.storageArrays[i].getMetadataArray();
-                System.arraycopy(data, dataPointer, arrayMeta.data, 0, arrayMeta.data.length);
-                dataPointer += arrayMeta.data.length;
-            }
-        }
-
-        for (int i = 0; i < this.storageArrays.length; ++i)
-        {
-            if ((flagsMSB & 1 << i) != 0)
-            {
-                if (this.storageArrays[i] == null)
-                {
-                    dataPointer += 2048;
-                }
-                else
-                {
-                	NibbleArray arrayMSB = this.storageArrays[i].getBlockMSBArray();
-
-                    if (arrayMSB == null)
-                    {
-                        arrayMSB = this.storageArrays[i].createBlockMSBArray();
-                    }
-
-                    System.arraycopy(data, dataPointer, arrayMSB.data, 0, arrayMSB.data.length);
-                    dataPointer += arrayMSB.data.length;
-                }
-            }
-            else if (isHardCopy && this.storageArrays[i] != null && this.storageArrays[i].getBlockMSBArray() != null)
-            {
-                this.storageArrays[i].clearMSBArray();
-            }
-        }
-
-        for (int i = 0; i < this.storageArrays.length; ++i)
-        {
-            if (this.storageArrays[i] != null && (flagsLSB & 1 << i) != 0)
-            {
-                this.storageArrays[i].removeInvalidBlocks();
-            }
-        }
-
-        this.isLightPopulated = true;
-        this.isTerrainPopulated = true;
-        this.generateHeightMap();
     }
 }

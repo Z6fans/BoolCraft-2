@@ -28,9 +28,12 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.SaveHandler;
+import net.minecraft.world.storage.WorldInfo;
 
-public class WorldServer extends World<EntityPlayerMP>
+public class WorldServer extends World
 {
+    /** Array list of players in the world. */
+    private EntityPlayerMP playerEntity;
     private final PlayerChunkLoadManager thePlayerManager;
     private Set<NextTickListEntry> pendingTickListEntriesHashSet;
 
@@ -67,9 +70,34 @@ public class WorldServer extends World<EntityPlayerMP>
     /** RNG for World. */
     private Random rand = new Random();
 
+    /**
+     * holds information about a world (size on disk, time, spawn point, seed, ...)
+     */
+    private WorldInfo worldInfo;
+
     public WorldServer(SaveHandler sh)
     {
-        super(sh.loadWorldInfo());
+    	this.playerEntity = null;
+        this.worldInfo = sh.loadWorldInfo();
+
+        if (this.worldInfo == null)
+        {
+            this.worldInfo = new WorldInfo();
+        }
+
+        if (!this.worldInfo.isInitialized())
+        {
+            try
+            {
+                this.initialize();
+            }
+            catch (Throwable t)
+            {
+                throw new ReportedException(CrashReport.makeCrashReport(t, "Exception initializing level"));
+            }
+
+            this.worldInfo.setServerInitialized(true);
+        }
         this.saveHandler = sh;
         this.currentChunkLoader =new AnvilChunkLoader(this.saveHandler.getWorldDirectory());
         this.thePlayerManager = new PlayerChunkLoadManager(this);
@@ -286,7 +314,55 @@ public class WorldServer extends World<EntityPlayerMP>
         	this.updateEntityTick = 0;
         }
 
-        super.updateEntities();
+        if (this.playerEntity != null)
+        {
+        	try
+            {
+        		int playerX = MathHelper.floor_double(this.playerEntity.posX);
+                int playerZ = MathHelper.floor_double(this.playerEntity.posZ);
+                int r = 32;
+
+                if (this.checkChunksExist(playerX - r, 0, playerZ - r, playerX + r, 0, playerZ + r))
+                {
+                	this.playerEntity.onUpdate();
+                }
+            }
+            catch (Throwable t)
+            {
+                throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
+            }
+        }
+    }
+
+    /**
+     * Checks between a min and max all the chunks inbetween actually exist. Args: minX, minY, minZ, maxX, maxY, maxZ
+     */
+    private final boolean checkChunksExist(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+    {
+        if (maxY >= 0 && minY < 256)
+        {
+            minX >>= 4;
+            minZ >>= 4;
+            maxX >>= 4;
+            maxZ >>= 4;
+
+            for (int x = minX; x <= maxX; ++x)
+            {
+                for (int z = minZ; z <= maxZ; ++z)
+                {
+                    if (!this.chunkExists(x, z))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk)
@@ -326,7 +402,7 @@ public class WorldServer extends World<EntityPlayerMP>
         return updateList;
     }
 
-    protected void initialize()
+    private void initialize()
     {
         if (this.pendingTickListEntriesHashSet == null)
         {
@@ -338,7 +414,7 @@ public class WorldServer extends World<EntityPlayerMP>
             this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
         }
 
-        super.initialize();
+        this.worldInfo.setServerInitialized(true);
     }
 
     /**
@@ -411,15 +487,13 @@ public class WorldServer extends World<EntityPlayerMP>
 	/**
      * Finds the highest block on the x, z coordinate that is solid and returns its y coord. Args x, z
      */
-    public int getTopSolidOrLiquidBlock(int x, int z)
+    public int getTopBlockAtSpawn()
     {
-        Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-        int y = chunk.getTopFilledSegment() + 15;
-        x &= 15;
+        Chunk chunk = this.provideChunk(0, 0);
 
-        for (z &= 15; y > 0; --y)
+        for (int y = chunk.getTopFilledSegment() + 15; y > 0; --y)
         {
-            if (chunk.getBlock(x, y, z).isSolid())
+            if (chunk.getBlock(0, y, 0).isSolid())
             {
                 return y + 1;
             }
@@ -436,9 +510,10 @@ public class WorldServer extends World<EntityPlayerMP>
         this.saveHandler.checkSessionLock();
     }
     
-    public void spawnPlayerInWorld(Minecraft mc){
+    public void spawnPlayerInWorld(Minecraft mc)
+    {
     	EntityPlayerMP player = new EntityPlayerMP(mc);
-    	this.spawnEntityInWorld(player);
+    	this.playerEntity = player;
     	this.getPlayerManager().addPlayer(player);
         this.loadChunk((int)player.posX >> 4, (int)player.posZ >> 4);
     }
@@ -483,7 +558,7 @@ public class WorldServer extends World<EntityPlayerMP>
      * marks chunk for unload by "unload100OldestChunks"  if there is no spawn point, or if the center of the chunk is
      * outside 200 blocks (x or z) of the spawn
      */
-    public void unloadChunksIfNotNearSpawn(int chunkX, int chunkZ)
+    private void unloadChunksIfNotNearSpawn(int chunkX, int chunkZ)
     {
         int x = chunkX * 16 + 8;
         int z = chunkZ * 16 + 8;
@@ -764,5 +839,10 @@ public class WorldServer extends World<EntityPlayerMP>
         }
         
         return true;
+    }
+
+    public final long getTotalWorldTime()
+    {
+        return this.worldInfo.getWorldTotalTime();
     }
 }

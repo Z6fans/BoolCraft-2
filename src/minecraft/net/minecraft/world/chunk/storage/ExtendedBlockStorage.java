@@ -177,11 +177,6 @@ public class ExtendedBlockStorage
         return this.blockLSBArray;
     }
 
-    public void clearMSBArray()
-    {
-        this.blockMSBArray = null;
-    }
-
     /**
      * Returns the block ID MSB (bits 11..8) array for this storage array's Chunk.
      */

@@ -1,7 +1,6 @@
 package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
-import net.minecraft.player.EntityPlayerSP;
 
 public class EmptyChunk extends Chunk
 {
@@ -18,19 +17,9 @@ public class EmptyChunk extends Chunk
         return p_76600_1_ == this.xPosition && p_76600_2_ == this.zPosition;
     }
 
-    /**
-     * Generates the height map for a chunk from scratch
-     */
-    public void generateHeightMap() {}
-
     public Block getBlock(int p_150810_1_, int p_150810_2_, int p_150810_3_)
     {
         return Block.air;
-    }
-
-    public boolean setBlockAndMeta(int p_150807_1_, int p_150807_2_, int p_150807_3_, Block p_150807_4_, int p_150807_5_)
-    {
-        return true;
     }
 
     /**
@@ -48,11 +37,6 @@ public class EmptyChunk extends Chunk
     {
         return false;
     }
-
-    /**
-     * Adds an entity to the chunk. Args: entity
-     */
-    public void addPlayer(EntityPlayerSP p_76612_1_) {}
 
     /**
      * Sets the isModified flag for this Chunk

@@ -288,7 +288,7 @@ public class BlockRedstoneWire extends Block
         }
         else
         {
-            world.setBlockToAir(x, y, z);
+            world.setBlock(x, y, z, Block.air, 0);
         }
     }
 

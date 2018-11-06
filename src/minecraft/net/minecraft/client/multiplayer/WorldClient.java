@@ -1,20 +1,21 @@
 package net.minecraft.client.multiplayer;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.ReportedException;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.LongHashMap;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 
-public class WorldClient extends World<EntityPlayerSP>
+public class WorldClient extends World
 {
+    /** Array list of players in the world. */
+    private EntityPlayerSP playerEntity;
     private RenderGlobal renderer;
     
     /**
@@ -28,44 +29,17 @@ public class WorldClient extends World<EntityPlayerSP>
      */
     private LongHashMap<Chunk> chunkMapping = new LongHashMap<Chunk>();
 
-    /**
-     * This may have been intended to be an iterable version of all currently loaded chunks (MultiplayerChunkCache),
-     * with identical contents to chunkMapping's values. However it is never actually added to.
-     */
-    private List<Chunk> chunkListing = new ArrayList<Chunk>();
-
     public WorldClient()
     {
-        super(null);
+    	this.playerEntity = null;
         this.blankChunk = new EmptyChunk();
-    }
-
-    /**
-     * Runs a single tick for the world
-     */
-    public void tick()
-    {
-        this.incrementTotalWorldTime(this.getTotalWorldTime() + 1L);
-        Iterator<Chunk> chunks = this.chunkListing.iterator();
-
-        while (chunks.hasNext())
-        {
-            chunks.next().setLoaded();
-        }
     }
 
     public void loadChunk(int x, int z)
     {
     	Chunk chunk = new Chunk(x, z);
         this.chunkMapping.add(ChunkCoordIntPair.chunkXZ2Int(x, z), chunk);
-        this.chunkListing.add(chunk);
-    }
-    
-    public void unloadChunk(int x, int z){
-    	Chunk chunk = this.provideChunk(x, z);
-        this.chunkMapping.remove(ChunkCoordIntPair.chunkXZ2Int(x, z));
-        this.chunkListing.remove(chunk);
-        this.markBlockRangeForRenderUpdate(x * 16, 0, z * 16, x * 16 + 15, 256, z * 16 + 15);
+        chunk.setLoaded();
     }
     
     public void setRenderer(RenderGlobal r)
@@ -104,5 +78,48 @@ public class WorldClient extends World<EntityPlayerSP>
     {
         Chunk chunk = this.chunkMapping.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(x, z));
         return chunk == null ? this.blankChunk : chunk;
+    }
+
+    /**
+     * Updates (and cleans up) entities and tile entities
+     */
+    public void updateEntities()
+    {
+        if (this.playerEntity != null)
+        {
+        	try
+            {
+        		this.playerEntity.onUpdate();
+                this.playerEntity.addedToChunk = true;
+                this.playerEntity.chunkCoordX = MathHelper.floor_double(this.playerEntity.posX / 16.0D);
+                this.playerEntity.chunkCoordY = MathHelper.floor_double(this.playerEntity.posY / 16.0D);
+                this.playerEntity.chunkCoordZ = MathHelper.floor_double(this.playerEntity.posZ / 16.0D);
+            }
+            catch (Throwable t)
+            {
+                throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
+            }
+        }
+    }
+
+    /**
+     * Called to place all entities as part of a world
+     */
+    public final void spawnEntityInWorld(EntityPlayerSP player)
+    {
+        int chunkX = MathHelper.floor_double(player.posX / 16.0D);
+    	int chunkY = MathHelper.floor_double(player.posY / 16.0D);
+        int chunkZ = MathHelper.floor_double(player.posZ / 16.0D);
+
+        if (chunkY < 0)
+        {
+            chunkY = 0;
+        }
+        
+        this.playerEntity = player;
+        player.addedToChunk = true;
+        player.chunkCoordX = chunkX;
+        player.chunkCoordY = chunkY;
+        player.chunkCoordZ = chunkZ;
     }
 }

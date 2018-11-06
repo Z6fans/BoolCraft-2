@@ -107,7 +107,7 @@ public class BlockLever extends Block
 
             if (var7)
             {
-                world.setBlockToAir(x, y, z);
+                world.setBlock(x, y, z, Block.air, 0);
             }
         }
     }
@@ -116,7 +116,7 @@ public class BlockLever extends Block
     {
         if (!this.canPlaceBlockAt(p_149820_1_, p_149820_2_, p_149820_3_, p_149820_4_))
         {
-            p_149820_1_.setBlockToAir(p_149820_2_, p_149820_3_, p_149820_4_);
+            p_149820_1_.setBlock(p_149820_2_, p_149820_3_, p_149820_4_, Block.air, 0);
             return false;
         }
         else

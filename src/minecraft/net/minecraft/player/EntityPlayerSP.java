@@ -12,8 +12,22 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
-public class EntityPlayerSP extends EntityPlayer
+public class EntityPlayerSP
 {
+    /** Entity position X */
+    public double posX;
+
+    /** Entity position Y */
+    public double posY;
+
+    /** Entity position Z */
+    public double posZ;
+
+    /** Has this entity been added to the chunk its within */
+    public boolean addedToChunk;
+    public int chunkCoordX;
+    public int chunkCoordY;
+    public int chunkCoordZ;
 	private WorldClient worldObj;
     
     private double oldPosX;
@@ -96,8 +110,13 @@ public class EntityPlayerSP extends EntityPlayer
         this.setPosition(this.posX, this.posY, this.posZ);
         this.ySize = 0.0F;
         this.motionX = this.motionY = this.motionZ = 0.0D;
-        double ypos = Minecraft.getMinecraft().worldServer.getTopSolidOrLiquidBlock(0, 0);
-        this.setPositionAndRotation(ypos + 1.6200000047683716D);
+        this.prevPosX = this.posX = 0;
+        this.prevPosY = this.posY = Minecraft.getMinecraft().worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
+        this.prevPosZ = this.posZ = 0;
+        this.prevRotationYaw = this.rotationYaw = 0;
+        this.prevRotationPitch = this.rotationPitch = 0;
+        this.ySize = 0.0F;
+        this.setPosition(this.posX, this.posY, this.posZ);
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
@@ -117,59 +136,196 @@ public class EntityPlayerSP extends EntityPlayer
 
         if (this.addedToChunk)
         {
-        	if (this.worldObj.chunkExists(MathHelper.floor_double(this.posX) >> 4, MathHelper.floor_double(this.posZ) >> 4))
+        	this.prevPosX = this.posX;
+            this.prevPosY = this.posY;
+            this.prevPosZ = this.posZ;
+            this.prevRotationPitch = this.rotationPitch;
+            this.prevRotationYaw = this.rotationYaw;
+            this.prevRotationYaw = this.rotationYaw;
+            this.prevRotationPitch = this.rotationPitch;
+            
+            this.moveStrafing = 0.0F;
+            this.moveForward = 0.0F;
+
+            if (KeyBinding.keyBindForward.getIsKeyPressed())
             {
-            	this.onEntityUpdate();
-                this.onLivingUpdate();
+                ++this.moveForward;
+            }
 
-                while (this.rotationYaw - this.prevRotationYaw < -180.0F)
+            if (KeyBinding.keyBindBack.getIsKeyPressed())
+            {
+                --this.moveForward;
+            }
+
+            if (KeyBinding.keyBindLeft.getIsKeyPressed())
+            {
+                ++this.moveStrafing;
+            }
+
+            if (KeyBinding.keyBindRight.getIsKeyPressed())
+            {
+                --this.moveStrafing;
+            }
+
+            this.isJumping = KeyBinding.keyBindJump.getIsKeyPressed();
+
+            this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
+            this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
+            this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
+            this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
+
+            if (KeyBinding.keyBindSneak.getIsKeyPressed())
+            {
+                this.motionY -= 0.15D;
+            }
+
+            if (this.isJumping)
+            {
+                this.motionY += 0.15D;
+            }
+
+            if (Math.abs(this.motionX) < 0.005D)
+            {
+                this.motionX = 0.0D;
+            }
+
+            if (Math.abs(this.motionY) < 0.005D)
+            {
+                this.motionY = 0.0D;
+            }
+
+            if (Math.abs(this.motionZ) < 0.005D)
+            {
+                this.motionZ = 0.0D;
+            }
+            this.moveStrafing *= 0.98F;
+            this.moveForward *= 0.98F;
+            
+            float strafe = this.moveStrafing;
+        	float forward = this.moveForward;
+        	double xMov = this.motionX;
+        	double yMov = this.motionY;
+        	double zMov = this.motionZ;
+        	
+        	float magnitude = strafe * strafe + forward * forward;
+
+            if (magnitude >= 1.0E-4F)
+            {
+                magnitude = (float)Math.sqrt(magnitude);
+
+                if (magnitude < 1.0F)
                 {
-                    this.prevRotationYaw -= 360.0F;
+                    magnitude = 1.0F;
                 }
 
-                while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
-                {
-                    this.prevRotationYaw += 360.0F;
-                }
+                magnitude = 0.41999998688697815F / magnitude;
+                strafe *= magnitude;
+                forward *= magnitude;
+                float var5 = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
+                float var6 = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
+                this.motionX += (double)(strafe * var6 - forward * var5);
+                this.motionZ += (double)(forward * var6 + strafe * var5);
+            }
+            
+            this.ySize *= 0.4F;
 
-                while (this.rotationPitch - this.prevRotationPitch < -180.0F)
-                {
-                    this.prevRotationPitch -= 360.0F;
-                }
+            double var13 = this.motionX;
+            double var15 = this.motionY;
+            double var17 = this.motionZ;
 
-                while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
-                {
-                    this.prevRotationPitch += 360.0F;
-                }
-                
-                double dx = this.posX - this.oldPosX;
-                double dy = this.boundingBox.minY - this.oldMinY;
-                double dz = this.posZ - this.oldPosZ;
-                double dyaw = (double)(this.rotationYaw - this.oldRotationYaw);
-                double dpitch = (double)(this.rotationPitch - this.oldRotationPitch);
-                boolean hasMoved = dx * dx + dy * dy + dz * dz > 9.0E-4D || this.ticksSinceMovePacket >= 20;
-                boolean hasTurned = dyaw != 0.0D || dpitch != 0.0D;
+            List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
 
-                if (hasMoved)
-                {
-                    Minecraft.getMinecraft().worldServer.getPlayerManager().updateMountedMovingPlayer(this.posX, this.posY, this.posZ);
-                }
+            for (int var22 = 0; var22 < var36.size(); ++var22)
+            {
+            	this.motionY = var36.get(var22).calculateYOffset(this.boundingBox, this.motionY);
+            }
 
-                ++this.ticksSinceMovePacket;
+            this.boundingBox.offset(0.0D, this.motionY, 0.0D);
+            int var23;
 
-                if (hasMoved)
-                {
-                    this.oldPosX = this.posX;
-                    this.oldMinY = this.boundingBox.minY;
-                    this.oldPosZ = this.posZ;
-                    this.ticksSinceMovePacket = 0;
-                }
+            for (var23 = 0; var23 < var36.size(); ++var23)
+            {
+            	this.motionX = var36.get(var23).calculateXOffset(this.boundingBox, this.motionX);
+            }
 
-                if (hasTurned)
-                {
-                    this.oldRotationYaw = this.rotationYaw;
-                    this.oldRotationPitch = this.rotationPitch;
-                }
+            this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
+
+            for (var23 = 0; var23 < var36.size(); ++var23)
+            {
+            	this.motionZ = var36.get(var23).calculateZOffset(this.boundingBox, this.motionZ);
+            }
+
+            this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
+            this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
+            this.posY = this.boundingBox.minY + (double)this.yOffset - (double)this.ySize;
+            this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
+
+            if (var13 != this.motionX)
+            {
+                this.motionX = 0.0D;
+            }
+
+            if (var15 != this.motionY)
+            {
+                this.motionY = 0.0D;
+            }
+
+            if (var17 != this.motionZ)
+            {
+                this.motionZ = 0.0D;
+            }
+            
+            this.motionX = xMov * 0.6D;
+            this.motionY = yMov * 0.6D;
+            this.motionZ = zMov * 0.6D;
+
+            while (this.rotationYaw - this.prevRotationYaw < -180.0F)
+            {
+                this.prevRotationYaw -= 360.0F;
+            }
+
+            while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
+            {
+                this.prevRotationYaw += 360.0F;
+            }
+
+            while (this.rotationPitch - this.prevRotationPitch < -180.0F)
+            {
+                this.prevRotationPitch -= 360.0F;
+            }
+
+            while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
+            {
+                this.prevRotationPitch += 360.0F;
+            }
+            
+            double dx = this.posX - this.oldPosX;
+            double dy = this.boundingBox.minY - this.oldMinY;
+            double dz = this.posZ - this.oldPosZ;
+            double dyaw = (double)(this.rotationYaw - this.oldRotationYaw);
+            double dpitch = (double)(this.rotationPitch - this.oldRotationPitch);
+            boolean hasMoved = dx * dx + dy * dy + dz * dz > 9.0E-4D || this.ticksSinceMovePacket >= 20;
+            boolean hasTurned = dyaw != 0.0D || dpitch != 0.0D;
+
+            if (hasMoved)
+            {
+                Minecraft.getMinecraft().worldServer.getPlayerManager().updateMountedMovingPlayer(this.posX, this.posZ);
+            }
+
+            ++this.ticksSinceMovePacket;
+
+            if (hasMoved)
+            {
+                this.oldPosX = this.posX;
+                this.oldMinY = this.boundingBox.minY;
+                this.oldPosZ = this.posZ;
+                this.ticksSinceMovePacket = 0;
+            }
+
+            if (hasTurned)
+            {
+                this.oldRotationYaw = this.rotationYaw;
+                this.oldRotationPitch = this.rotationPitch;
             }
         }
 
@@ -198,170 +354,6 @@ public class EntityPlayerSP extends EntityPlayer
         	this.rotationYaw = this.prevRotationYaw;
         }
         
-    }
-
-    /**
-     * Gets called every tick from main Entity class
-     */
-    private void onEntityUpdate()
-    {
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
-        this.prevRotationPitch = this.rotationPitch;
-        this.prevRotationYaw = this.rotationYaw;
-        this.prevRotationYaw = this.rotationYaw;
-        this.prevRotationPitch = this.rotationPitch;
-    }
-
-    /**
-     * Called frequently so the entity can update its state every tick as required. For example, zombies and skeletons
-     * use this to react to sunlight and start to burn.
-     */
-    private void onLivingUpdate()
-    {
-        this.moveStrafing = 0.0F;
-        this.moveForward = 0.0F;
-
-        if (KeyBinding.keyBindForward.getIsKeyPressed())
-        {
-            ++this.moveForward;
-        }
-
-        if (KeyBinding.keyBindBack.getIsKeyPressed())
-        {
-            --this.moveForward;
-        }
-
-        if (KeyBinding.keyBindLeft.getIsKeyPressed())
-        {
-            ++this.moveStrafing;
-        }
-
-        if (KeyBinding.keyBindRight.getIsKeyPressed())
-        {
-            --this.moveStrafing;
-        }
-
-        this.isJumping = KeyBinding.keyBindJump.getIsKeyPressed();
-
-        this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
-        this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-        this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-        this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
-
-        if (KeyBinding.keyBindSneak.getIsKeyPressed())
-        {
-            this.motionY -= 0.15D;
-        }
-
-        if (this.isJumping)
-        {
-            this.motionY += 0.15D;
-        }
-
-        if (Math.abs(this.motionX) < 0.005D)
-        {
-            this.motionX = 0.0D;
-        }
-
-        if (Math.abs(this.motionY) < 0.005D)
-        {
-            this.motionY = 0.0D;
-        }
-
-        if (Math.abs(this.motionZ) < 0.005D)
-        {
-            this.motionZ = 0.0D;
-        }
-        this.moveStrafing *= 0.98F;
-        this.moveForward *= 0.98F;
-        
-        float strafe = this.moveStrafing;
-    	float forward = this.moveForward;
-    	double xMov = this.motionX;
-    	double yMov = this.motionY;
-    	double zMov = this.motionZ;
-    	
-    	float magnitude = strafe * strafe + forward * forward;
-
-        if (magnitude >= 1.0E-4F)
-        {
-            magnitude = (float)Math.sqrt(magnitude);
-
-            if (magnitude < 1.0F)
-            {
-                magnitude = 1.0F;
-            }
-
-            magnitude = 0.41999998688697815F / magnitude;
-            strafe *= magnitude;
-            forward *= magnitude;
-            float var5 = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
-            float var6 = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
-            this.motionX += (double)(strafe * var6 - forward * var5);
-            this.motionZ += (double)(forward * var6 + strafe * var5);
-        }
-        
-        this.moveEntity(this.motionX, this.motionY, this.motionZ);
-        
-        this.motionX = xMov * 0.6D;
-        this.motionY = yMov * 0.6D;
-        this.motionZ = zMov * 0.6D;
-    }
-
-    /**
-     * Tries to moves the entity by the passed in displacement. Args: x, y, z
-     */
-    private void moveEntity(double x, double y, double z)
-    {
-    	this.ySize *= 0.4F;
-
-        double var13 = x;
-        double var15 = y;
-        double var17 = z;
-
-        List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(x, y, z));
-
-        for (int var22 = 0; var22 < var36.size(); ++var22)
-        {
-            y = var36.get(var22).calculateYOffset(this.boundingBox, y);
-        }
-
-        this.boundingBox.offset(0.0D, y, 0.0D);
-        int var23;
-
-        for (var23 = 0; var23 < var36.size(); ++var23)
-        {
-            x = var36.get(var23).calculateXOffset(this.boundingBox, x);
-        }
-
-        this.boundingBox.offset(x, 0.0D, 0.0D);
-
-        for (var23 = 0; var23 < var36.size(); ++var23)
-        {
-            z = var36.get(var23).calculateZOffset(this.boundingBox, z);
-        }
-
-        this.boundingBox.offset(0.0D, 0.0D, z);
-        this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
-        this.posY = this.boundingBox.minY + (double)this.yOffset - (double)this.ySize;
-        this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
-
-        if (var13 != x)
-        {
-            this.motionX = 0.0D;
-        }
-
-        if (var15 != y)
-        {
-            this.motionY = 0.0D;
-        }
-
-        if (var17 != z)
-        {
-            this.motionZ = 0.0D;
-        }
     }
 
     /**
@@ -502,7 +494,10 @@ public class EntityPlayerSP extends EntityPlayer
      */
     public MovingObjectPosition rayTrace(double distance, float ptt)
     {
-        Vec3 v1 = this.getPosition(ptt);
+        double x = this.prevPosX + (this.posX - this.prevPosX) * (double)ptt;
+        double y = this.prevPosY + (this.posY - this.prevPosY) * (double)ptt;
+        double z = this.prevPosZ + (this.posZ - this.prevPosZ) * (double)ptt;
+        Vec3 v1 = Vec3.createVectorHelper(x, y, z);
         Vec3 lookVec = this.getLook(ptt);
         Vec3 v2 = v1.addVector(lookVec.x * distance, lookVec.y * distance, lookVec.z * distance);
         if (!Double.isNaN(v1.x) && !Double.isNaN(v1.y) && !Double.isNaN(v1.z))
@@ -709,78 +704,30 @@ public class EntityPlayerSP extends EntityPlayer
     }
 
     /**
-     * interpolated position vector
-     */
-    private Vec3 getPosition(float p_70666_1_)
-    {
-        if (p_70666_1_ == 1.0F)
-        {
-            return Vec3.createVectorHelper(this.posX, this.posY, this.posZ);
-        }
-        else
-        {
-            double var2 = this.prevPosX + (this.posX - this.prevPosX) * (double)p_70666_1_;
-            double var4 = this.prevPosY + (this.posY - this.prevPosY) * (double)p_70666_1_;
-            double var6 = this.prevPosZ + (this.posZ - this.prevPosZ) * (double)p_70666_1_;
-            return Vec3.createVectorHelper(var2, var4, var6);
-        }
-    }
-
-    /**
      * interpolated look vector
      */
-    private Vec3 getLook(float p_70676_1_)
+    private Vec3 getLook(float ptt)
     {
-        float var2;
-        float var3;
-        float var4;
-        float var5;
-
-        if (p_70676_1_ == 1.0F)
-        {
-            var2 = MathHelper.cos(-this.rotationYaw * 0.017453292F - (float)Math.PI);
-            var3 = MathHelper.sin(-this.rotationYaw * 0.017453292F - (float)Math.PI);
-            var4 = -MathHelper.cos(-this.rotationPitch * 0.017453292F);
-            var5 = MathHelper.sin(-this.rotationPitch * 0.017453292F);
-            return Vec3.createVectorHelper((double)(var3 * var4), (double)var5, (double)(var2 * var4));
-        }
-        else
-        {
-            var2 = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * p_70676_1_;
-            var3 = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * p_70676_1_;
-            var4 = MathHelper.cos(-var3 * 0.017453292F - (float)Math.PI);
-            var5 = MathHelper.sin(-var3 * 0.017453292F - (float)Math.PI);
-            float var6 = -MathHelper.cos(-var2 * 0.017453292F);
-            float var7 = MathHelper.sin(-var2 * 0.017453292F);
-            return Vec3.createVectorHelper((double)(var5 * var6), (double)var7, (double)(var4 * var6));
-        }
-    }
-
-    /**
-     * Sets the entity's position and rotation. Args: posX, posY, posZ, yaw, pitch
-     */
-    public void setPositionAndRotation(double p_70080_3_)
-    {
-        this.prevPosX = this.posX = 0;
-        this.prevPosY = this.posY = p_70080_3_;
-        this.prevPosZ = this.posZ = 0;
-        this.prevRotationYaw = this.rotationYaw = 0;
-        this.prevRotationPitch = this.rotationPitch = 0;
-        this.ySize = 0.0F;
-        this.setPosition(this.posX, this.posY, this.posZ);
+        float var2 = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
+        float var3 = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+        float var4 = MathHelper.cos(-var3 * 0.017453292F - (float)Math.PI);
+        float var5 = MathHelper.sin(-var3 * 0.017453292F - (float)Math.PI);
+        float var6 = -MathHelper.cos(-var2 * 0.017453292F);
+        float var7 = MathHelper.sin(-var2 * 0.017453292F);
+        return Vec3.createVectorHelper((double)(var5 * var6), (double)var7, (double)(var4 * var6));
     }
 
     /**
      * Sets the x,y,z of the entity from the given parameters. Also seems to set up a bounding box.
      */
-    private void setPosition(double p_70107_1_, double p_70107_3_, double p_70107_5_)
+    private void setPosition(double x, double y, double z)
     {
-        this.posX = p_70107_1_;
-        this.posY = p_70107_3_;
-        this.posZ = p_70107_5_;
-        float var7 = this.width / 2.0F;
-        float var8 = this.height;
-        this.boundingBox.setBounds(p_70107_1_ - (double)var7, p_70107_3_ - (double)this.yOffset + (double)this.ySize, p_70107_5_ - (double)var7, p_70107_1_ + (double)var7, p_70107_3_ - (double)this.yOffset + (double)this.ySize + (double)var8, p_70107_5_ + (double)var7);
+        this.posX = x;
+        this.posY = y;
+        this.posZ = z;
+        float w = this.width / 2.0F;
+        float h = this.height;
+        this.boundingBox.setBounds(x - (double)w, y - (double)this.yOffset + (double)this.ySize, z - (double)w, x + (double)w, y - (double)this.yOffset + (double)this.ySize + (double)h, z + (double)w);
     }
     
     /**
@@ -801,23 +748,20 @@ public class EntityPlayerSP extends EntityPlayer
         {
             for (int z = minz; z < maxz; ++z)
             {
-                if (this.worldObj.chunkExists(x >> 4, z >> 4))
+            	for (int y = miny - 1; y < maxy; ++y)
                 {
-                    for (int y = miny - 1; y < maxy; ++y)
+                    Block block;
+
+                    if (x >= -30000000 && x < 30000000 && z >= -30000000 && z < 30000000)
                     {
-                        Block block;
-
-                        if (x >= -30000000 && x < 30000000 && z >= -30000000 && z < 30000000)
-                        {
-                            block = this.worldObj.getBlock(x, y, z);
-                        }
-                        else
-                        {
-                            block = Block.stone;
-                        }
-
-                        block.addCollisionBoxesToList(x, y, z, aabb, collidingBoundingBoxes);
+                        block = this.worldObj.getBlock(x, y, z);
                     }
+                    else
+                    {
+                        block = Block.stone;
+                    }
+
+                    block.addCollisionBoxesToList(x, y, z, aabb, collidingBoundingBoxes);
                 }
             }
         }

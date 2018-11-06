@@ -3,7 +3,6 @@ package net.minecraft.network;
 import java.util.List;
 
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -35,19 +34,6 @@ public class NetHandlerPlayClient
         }
     }
 
-    /**
-     * Updates the specified chunk with the supplied data, marks it for re-rendering and lighting recalculation
-     */
-    public void handleUnloadChunk(Chunk serverChunk)
-    {
-    	this.worldClient.unloadChunk(serverChunk.xPosition, serverChunk.zPosition);
-    }
-
-    public void handleBlockChange(int x, int y, int z, WorldServer worldServer)
-    {
-        this.worldClient.setBlock(x, y, z, worldServer.getBlock(x, y, z), worldServer.getBlockMetadata(x, y, z));
-    }
-
     public void handleMapChunkBulk(List<Chunk> chunks)
     {
         for (int i = 0; i < chunks.size(); ++i)
@@ -58,9 +44,8 @@ public class NetHandlerPlayClient
             this.worldClient.loadChunk(chunkX, chunkZ);
             Chunk clientChunk = this.worldClient.provideChunk(chunkX, chunkZ);
             clientChunk.setStorageArrays(this.copyStorage(serverChunk));
-            clientChunk.isLightPopulated = true;
             clientChunk.isTerrainPopulated = true;
-            clientChunk.generateHeightMap();
+            clientChunk.setChunkModified();
             this.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
         }
     }
@@ -111,10 +96,5 @@ public class NetHandlerPlayClient
     	}
     	
     	return newStorageArray;
-    }
-
-    public static int maxChunks()
-    {
-        return 5;
     }
 }

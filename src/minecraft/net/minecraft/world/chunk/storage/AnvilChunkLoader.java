@@ -198,7 +198,6 @@ public class AnvilChunkLoader
         tag.setInteger("zPos", chunk.zPosition);
         tag.setLong("LastUpdate", world.getTotalWorldTime());
         tag.setBoolean("TerrainPopulated", chunk.isTerrainPopulated);
-        tag.setBoolean("LightPopulated", chunk.isLightPopulated);
         ExtendedBlockStorage[] storageArray = chunk.getBlockStorageArray();
         NBTTagList sectionsTagList = new NBTTagList();
         ExtendedBlockStorage[] storageArrayClone = storageArray;
@@ -260,7 +259,6 @@ public class AnvilChunkLoader
         int chunkZ = tag.getInteger("zPos");
         Chunk chunk = new Chunk(chunkX, chunkZ);
         chunk.isTerrainPopulated = tag.getBoolean("TerrainPopulated");
-        chunk.isLightPopulated = tag.getBoolean("LightPopulated");
         NBTTagList sections = tag.getTagList("Sections", 10);
         ExtendedBlockStorage[] storageArray = new ExtendedBlockStorage[16];
 

@@ -273,7 +273,7 @@ public class BlockRedstoneTorch extends Block
 
             if (var7)
             {
-                world.setBlockToAir(x, y, z);
+                world.setBlock(x, y, z, Block.air, 0);
                 return true;
             }
             else
@@ -293,7 +293,7 @@ public class BlockRedstoneTorch extends Block
         {
             if (p_150109_1_.getBlock(p_150109_2_, p_150109_3_, p_150109_4_) == this)
             {
-                p_150109_1_.setBlockToAir(p_150109_2_, p_150109_3_, p_150109_4_);
+                p_150109_1_.setBlock(p_150109_2_, p_150109_3_, p_150109_4_, Block.air, 0);
             }
 
             return false;
