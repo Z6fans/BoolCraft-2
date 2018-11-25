@@ -467,7 +467,7 @@ public class WorldServer extends World
         return this.thePlayerManager;
     }
 
-	protected void markBlockForUpdate(int x, int y, int z)
+	private void markBlockForUpdate(int x, int y, int z)
 	{
 		this.thePlayerManager.markBlockForUpdate(x, y, z);
 	}
@@ -844,5 +844,32 @@ public class WorldServer extends World
     public final long getTotalWorldTime()
     {
         return this.worldInfo.getWorldTotalTime();
+    }
+
+    /**
+     * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block ID, new metadata, flags. Flag 1 will
+     * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
+     * block from being re-rendered, if this is a client world. Flags can be added together.
+     */
+    public final boolean setBlock(int x, int y, int z, Block block, int metadata)
+    {
+    	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
+        {
+    		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            Block oldBlock = chunk.getBlock(x & 15, y, z & 15);
+
+            if (chunk.setBlockAndMeta(this, x & 15, y, z & 15, block, metadata))
+            {
+                if (chunk.getLoaded())
+                {
+                    this.markBlockForUpdate(x, y, z);
+                }
+
+                this.notifyBlocksOfNeighborChange(x, y, z, oldBlock);
+                return true;
+            }
+        }
+    	
+        return false;
     }
 }

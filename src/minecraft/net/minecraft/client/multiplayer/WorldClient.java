@@ -47,14 +47,6 @@ public class WorldClient extends World
     	this.renderer = r;
     }
     
-    protected void markBlockForUpdate(int x, int y, int z)
-    {
-    	if(this.renderer != null)
-    	{
-    		this.renderer.markBlockForUpdate(x, y, z);
-    	}
-    }
-    
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2)
     {
     	if(this.renderer != null)
@@ -62,13 +54,6 @@ public class WorldClient extends World
     		this.renderer.markBlockRangeForRenderUpdate(x1, y1, z1, x2, y2, z2);
     	}
     }
-
-	public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block){}
-
-	public boolean chunkExists(int x, int z)
-	{
-		return true;
-	}
 
     /**
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
@@ -121,5 +106,30 @@ public class WorldClient extends World
         player.chunkCoordX = chunkX;
         player.chunkCoordY = chunkY;
         player.chunkCoordZ = chunkZ;
+    }
+
+    /**
+     * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block ID, new metadata, flags. Flag 1 will
+     * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
+     * block from being re-rendered, if this is a client world. Flags can be added together.
+     */
+    public final boolean setBlock(int x, int y, int z, Block block, int metadata)
+    {
+    	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
+        {
+    		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+
+            if (chunk.setBlockAndMeta(this, x & 15, y, z & 15, block, metadata))
+            {
+                if (chunk.getLoaded() && this.renderer != null)
+                {
+                    this.renderer.markBlockForUpdate(x, y, z);
+                }
+
+                return true;
+            }
+        }
+    	
+        return false;
     }
 }
