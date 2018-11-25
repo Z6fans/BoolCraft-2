@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.network.NetHandlerPlayClient;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MouseHelper;
@@ -92,8 +91,6 @@ public class Minecraft
      * Set to true to keep the game loop running. Set to false by shutdown() to allow the game loop to exit cleanly.
      */
     private volatile boolean running = true;
-    
-    public NetHandlerPlayClient clientHandler;
     
     /**
      * An array of 36 item stacks indicating the main player inventory (including the visible bar).
@@ -577,7 +574,7 @@ public class Minecraft
                         tickTimer -= 50L;
                         
                         boolean lastPaused = this.isServerPaused;
-                        this.isServerPaused = this.getNetHandler() != null && this.isGamePaused;
+                        this.isServerPaused = this.isGamePaused;
 
                         if (!lastPaused && this.isServerPaused)
                         {
@@ -818,8 +815,6 @@ public class Minecraft
             wi = new WorldInfo();
             sh.saveWorldInfo(wi);
         }
-        
-        this.clientHandler = new NetHandlerPlayClient();
 
         try
         {
@@ -841,7 +836,6 @@ public class Minecraft
             tickTimer = 0L;
             
             this.worldClient = new WorldClient();
-            this.clientHandler.setWorld(this.worldClient);
             this.renderViewEntity = null;
 
             if (this.renderGlobal != null)
@@ -873,14 +867,7 @@ public class Minecraft
     
     private void loadWorldNull()
     {
-    	NetHandlerPlayClient netHandler = this.getNetHandler();
-
-        if (netHandler != null)
-        {
-            netHandler.setWorld(null);
-        }
-
-        this.serverRunning = false;
+    	this.serverRunning = false;
         this.stopServer();
         this.renderViewEntity = null;
         this.worldClient = null;
@@ -888,11 +875,6 @@ public class Minecraft
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;
-    }
-
-    public NetHandlerPlayClient getNetHandler()
-    {
-        return this.clientHandler;
     }
 
     /**

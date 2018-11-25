@@ -570,17 +570,12 @@ public class RenderGlobal
         GL11.glLineWidth(2.0F);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDepthMask(false);
-        float var5 = 0.002F;
+        double var5 = 0.002F;
         Block var6 = this.theWorld.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-
-        if (!var6.isReplaceable())
-        {
-            double var7 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTickTime;
-            double var9 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTickTime;
-            double var11 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTickTime;
-            drawOutlinedBoundingBox(var6.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand((double)var5, (double)var5, (double)var5).getOffsetBoundingBox(-var7, -var9, -var11));
-        }
-
+        double var7 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTickTime;
+        double var9 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTickTime;
+        double var11 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTickTime;
+        drawOutlinedBoundingBox(var6.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(var5, var5, var5).getOffsetBoundingBox(-var7, -var9, -var11));
         GL11.glDepthMask(true);
         GL11.glDisable(GL11.GL_BLEND);
     }

@@ -8,6 +8,7 @@ import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
 
 public class PlayerChunkLoadManager
 {
@@ -286,7 +287,18 @@ public class PlayerChunkLoadManager
             {
             	if (!PlayerChunkLoadManager.this.player.loadedChunks.contains(this.chunkLocation))
             	{
-            		Minecraft.getMinecraft().clientHandler.handleMultiBlockChange(this.numberOfTilesToUpdate, this.tilesToUpdate, PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos));
+            		Chunk chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+            		int baseX = chunk.xPosition * 16;
+                    int baseZ = chunk.zPosition * 16;
+
+                    for (int i = 0; i < this.numberOfTilesToUpdate; ++i)
+                    {
+                        short localKey = this.tilesToUpdate[i];
+                        int localX = localKey >> 12 & 15;
+                        int localZ = localKey >> 8 & 15;
+                        int localY = localKey & 255;
+                        Minecraft.getMinecraft().worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
+                    }
             	}
 
                 this.numberOfTilesToUpdate = 0;

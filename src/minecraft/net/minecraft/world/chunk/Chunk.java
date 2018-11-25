@@ -29,11 +29,11 @@ public class Chunk
      */
     public boolean isModified;
 
-    public Chunk(int x, int y)
+    public Chunk(int x, int z)
     {
         this.storageArrays = new ExtendedBlockStorage[16];
         this.xPosition = x;
-        this.zPosition = y;
+        this.zPosition = z;
     }
 
     /**
