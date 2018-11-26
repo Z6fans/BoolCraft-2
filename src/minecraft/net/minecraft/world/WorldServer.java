@@ -30,7 +30,7 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 
-public class WorldServer extends World
+public class WorldServer
 {
     /** Array list of players in the world. */
     private EntityPlayerMP playerEntity;
@@ -858,7 +858,7 @@ public class WorldServer extends World
     		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
             Block oldBlock = chunk.getBlock(x & 15, y, z & 15);
 
-            if (chunk.setBlockAndMeta(this, x & 15, y, z & 15, block, metadata))
+            if (chunk.setBlockAndMetaServer(this, x & 15, y, z & 15, block, metadata))
             {
                 if (chunk.getLoaded())
                 {
@@ -871,5 +871,34 @@ public class WorldServer extends World
         }
     	
         return false;
+    }
+
+    public final Block getBlock(int x, int y, int z)
+    {
+        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
+        {
+            Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            return chunk.getBlock(x & 15, y, z & 15);
+        }
+        else
+        {
+            return Block.air;
+        }
+    }
+
+    /**
+     * Returns the block metadata at coords x,y,z
+     */
+    public final int getBlockMetadata(int x, int y, int z)
+    {
+        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
+        {
+        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            return chunk.getBlockMetadata(x & 15, y, z & 15);
+        }
+        else
+        {
+            return 0;
+        }
     }
 }

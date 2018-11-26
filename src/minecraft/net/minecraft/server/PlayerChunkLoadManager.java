@@ -283,26 +283,23 @@ public class PlayerChunkLoadManager
 
         private void sendChunkUpdate()
         {
-            if (this.numberOfTilesToUpdate != 0)
-            {
-            	if (!PlayerChunkLoadManager.this.player.loadedChunks.contains(this.chunkLocation))
-            	{
-            		Chunk chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
-            		int baseX = chunk.xPosition * 16;
-                    int baseZ = chunk.zPosition * 16;
+        	if (!PlayerChunkLoadManager.this.player.loadedChunks.contains(this.chunkLocation))
+        	{
+        		Chunk chunk = PlayerChunkLoadManager.this.theWorldServer.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
+        		int baseX = chunk.xPosition * 16;
+                int baseZ = chunk.zPosition * 16;
 
-                    for (int i = 0; i < this.numberOfTilesToUpdate; ++i)
-                    {
-                        short localKey = this.tilesToUpdate[i];
-                        int localX = localKey >> 12 & 15;
-                        int localZ = localKey >> 8 & 15;
-                        int localY = localKey & 255;
-                        Minecraft.getMinecraft().worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
-                    }
-            	}
+                for (int i = 0; i < this.numberOfTilesToUpdate; ++i)
+                {
+                    short localKey = this.tilesToUpdate[i];
+                    int localX = localKey >> 12 & 15;
+                    int localZ = localKey >> 8 & 15;
+                    int localY = localKey & 255;
+                    Minecraft.getMinecraft().worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
+                }
+        	}
 
-                this.numberOfTilesToUpdate = 0;
-            }
+            this.numberOfTilesToUpdate = 0;
         }
     }
 }

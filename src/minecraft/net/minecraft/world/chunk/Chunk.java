@@ -1,8 +1,8 @@
 package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
@@ -101,7 +101,46 @@ public class Chunk
         }
     }
 
-    public boolean setBlockAndMeta(World world, int localX, int y, int localZ, Block block, int meta)
+    public boolean setBlockAndMetaClient(WorldClient world, int localX, int y, int localZ, Block block, int meta)
+    {
+        Block oldBlock = this.getBlock(localX, y, localZ);
+        int oldMeta = this.getBlockMetadata(localX, y, localZ);
+
+        if (oldBlock == block && oldMeta == meta)
+        {
+            return false;
+        }
+        else
+        {
+            ExtendedBlockStorage storageArray = this.storageArrays[y >> 4];
+
+            if (storageArray == null)
+            {
+                if (block == Block.air)
+                {
+                    return false;
+                }
+
+                storageArray = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4);
+            }
+
+            storageArray.setBlock(localX, y & 15, localZ, block);
+
+            if (storageArray.getBlock(localX, y & 15, localZ) != block)
+            {
+                return false;
+            }
+            else
+            {
+                storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
+
+                this.isModified = true;
+                return true;
+            }
+        }
+    }
+    
+    public boolean setBlockAndMetaServer(WorldServer world, int localX, int y, int localZ, Block block, int meta)
     {
         Block oldBlock = this.getBlock(localX, y, localZ);
         int oldMeta = this.getBlockMetadata(localX, y, localZ);
@@ -129,10 +168,7 @@ public class Chunk
 
             storageArray.setBlock(localX, y & 15, localZ, block);
 
-            if (world instanceof WorldServer)
-            {
-                oldBlock.breakBlock((WorldServer)world, trueX, y, trueZ, oldBlock, oldMeta);
-            }
+            oldBlock.breakBlock((WorldServer)world, trueX, y, trueZ, oldBlock, oldMeta);
 
             if (storageArray.getBlock(localX, y & 15, localZ) != block)
             {
@@ -142,10 +178,7 @@ public class Chunk
             {
                 storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
 
-                if (world instanceof WorldServer)
-                {
-                    block.onBlockAdded((WorldServer)world, trueX, y, trueZ);
-                }
+                block.onBlockAdded((WorldServer)world, trueX, y, trueZ);
 
                 this.isModified = true;
                 return true;

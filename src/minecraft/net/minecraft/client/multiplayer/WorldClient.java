@@ -8,11 +8,10 @@ import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 
-public class WorldClient extends World
+public class WorldClient
 {
     /** Array list of players in the world. */
     private EntityPlayerSP playerEntity;
@@ -119,7 +118,7 @@ public class WorldClient extends World
         {
     		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
 
-            if (chunk.setBlockAndMeta(this, x & 15, y, z & 15, block, metadata))
+            if (chunk.setBlockAndMetaClient(this, x & 15, y, z & 15, block, metadata))
             {
                 if (chunk.getLoaded() && this.renderer != null)
                 {
@@ -131,5 +130,34 @@ public class WorldClient extends World
         }
     	
         return false;
+    }
+    
+    public final Block getBlock(int x, int y, int z)
+    {
+        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
+        {
+            Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            return chunk.getBlock(x & 15, y, z & 15);
+        }
+        else
+        {
+            return Block.air;
+        }
+    }
+
+    /**
+     * Returns the block metadata at coords x,y,z
+     */
+    public final int getBlockMetadata(int x, int y, int z)
+    {
+        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
+        {
+        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            return chunk.getBlockMetadata(x & 15, y, z & 15);
+        }
+        else
+        {
+            return 0;
+        }
     }
 }
