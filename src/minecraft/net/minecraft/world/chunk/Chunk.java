@@ -1,7 +1,6 @@
 package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -101,7 +100,7 @@ public class Chunk
         }
     }
 
-    public boolean setBlockAndMetaClient(WorldClient world, int localX, int y, int localZ, Block block, int meta)
+    public boolean setBlockAndMetaClient(int localX, int y, int localZ, Block block, int meta)
     {
         Block oldBlock = this.getBlock(localX, y, localZ);
         int oldMeta = this.getBlockMetadata(localX, y, localZ);

@@ -354,6 +354,10 @@ public class EntityPlayerSP
         	this.rotationYaw = this.prevRotationYaw;
         }
         
+        this.addedToChunk = true;
+        this.chunkCoordX = MathHelper.floor_double(this.posX / 16.0D);
+        this.chunkCoordY = MathHelper.floor_double(this.posY / 16.0D);
+        this.chunkCoordZ = MathHelper.floor_double(this.posZ / 16.0D);
     }
 
     /**
@@ -381,49 +385,49 @@ public class EntityPlayerSP
         this.prevRotationYaw += this.rotationYaw - var4;
     }
 
-    private boolean isBlockTranslucent(int p_71153_1_, int p_71153_2_, int p_71153_3_)
+    private boolean isBlockTranslucent(int x, int y, int z)
     {
-        return this.worldObj.getBlock(p_71153_1_, p_71153_2_, p_71153_3_).isSolid();
+        return this.worldObj.getBlock(x, y, z).isSolid();
     }
 
-    private boolean func_145771_j(double p_145771_1_, double p_145771_3_, double p_145771_5_)
+    private boolean func_145771_j(double xpos, double ypos, double zpos)
     {
-        int var7 = MathHelper.floor_double(p_145771_1_);
-        int var8 = MathHelper.floor_double(p_145771_3_);
-        int var9 = MathHelper.floor_double(p_145771_5_);
-        double var10 = p_145771_1_ - (double)var7;
-        double var12 = p_145771_5_ - (double)var9;
+        int x = MathHelper.floor_double(xpos);
+        int y = MathHelper.floor_double(ypos);
+        int z = MathHelper.floor_double(zpos);
+        double fracx = xpos - (double)x;
+        double fracz = zpos - (double)z;
 
-        if (this.isBlockTranslucent(var7, var8, var9) || this.isBlockTranslucent(var7, var8 + 1, var9))
+        if (this.isBlockTranslucent(x, y, z) || this.isBlockTranslucent(x, y + 1, z))
         {
-            boolean var14 = !this.isBlockTranslucent(var7 - 1, var8, var9) && !this.isBlockTranslucent(var7 - 1, var8 + 1, var9);
-            boolean var15 = !this.isBlockTranslucent(var7 + 1, var8, var9) && !this.isBlockTranslucent(var7 + 1, var8 + 1, var9);
-            boolean var16 = !this.isBlockTranslucent(var7, var8, var9 - 1) && !this.isBlockTranslucent(var7, var8 + 1, var9 - 1);
-            boolean var17 = !this.isBlockTranslucent(var7, var8, var9 + 1) && !this.isBlockTranslucent(var7, var8 + 1, var9 + 1);
+            boolean var14 = !this.isBlockTranslucent(x - 1, y, z) && !this.isBlockTranslucent(x - 1, y + 1, z);
+            boolean var15 = !this.isBlockTranslucent(x + 1, y, z) && !this.isBlockTranslucent(x + 1, y + 1, z);
+            boolean var16 = !this.isBlockTranslucent(x, y, z - 1) && !this.isBlockTranslucent(x, y + 1, z - 1);
+            boolean var17 = !this.isBlockTranslucent(x, y, z + 1) && !this.isBlockTranslucent(x, y + 1, z + 1);
             byte var18 = -1;
             double var19 = 9999.0D;
 
-            if (var14 && var10 < var19)
+            if (var14 && fracx < var19)
             {
-                var19 = var10;
+                var19 = fracx;
                 var18 = 0;
             }
 
-            if (var15 && 1.0D - var10 < var19)
+            if (var15 && 1.0D - fracx < var19)
             {
-                var19 = 1.0D - var10;
+                var19 = 1.0D - fracx;
                 var18 = 1;
             }
 
-            if (var16 && var12 < var19)
+            if (var16 && fracz < var19)
             {
-                var19 = var12;
+                var19 = fracz;
                 var18 = 4;
             }
 
-            if (var17 && 1.0D - var12 < var19)
+            if (var17 && 1.0D - fracz < var19)
             {
-                var19 = 1.0D - var12;
+                var19 = 1.0D - fracz;
                 var18 = 5;
             }
 
@@ -492,14 +496,14 @@ public class EntityPlayerSP
     /**
      * Performs a ray trace for the distance specified and using the partial tick time. Args: distance, partialTickTime
      */
-    public MovingObjectPosition rayTrace(double distance, float ptt)
+    public MovingObjectPosition rayTrace8(float ptt)
     {
         double x = this.prevPosX + (this.posX - this.prevPosX) * (double)ptt;
         double y = this.prevPosY + (this.posY - this.prevPosY) * (double)ptt;
         double z = this.prevPosZ + (this.posZ - this.prevPosZ) * (double)ptt;
         Vec3 v1 = Vec3.createVectorHelper(x, y, z);
         Vec3 lookVec = this.getLook(ptt);
-        Vec3 v2 = v1.addVector(lookVec.x * distance, lookVec.y * distance, lookVec.z * distance);
+        Vec3 v2 = v1.addVector(lookVec.x * 8, lookVec.y * 8, lookVec.z * 8);
         if (!Double.isNaN(v1.x) && !Double.isNaN(v1.y) && !Double.isNaN(v1.z))
         {
             if (!Double.isNaN(v2.x) && !Double.isNaN(v2.y) && !Double.isNaN(v2.z))

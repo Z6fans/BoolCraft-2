@@ -139,7 +139,7 @@ public class WorldServer
             }
         }
     	
-        this.worldInfo.incrementTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
+        this.worldInfo.setTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
         
         int numEntries = this.pendingTickListEntriesTreeSet.size();
 

@@ -70,11 +70,12 @@ public class EntityPlayerMP
                 	Chunk serverChunk = chunksToSend.get(i);
                     int chunkX = serverChunk.xPosition;
                     int chunkZ = serverChunk.zPosition;
-                    this.minecraft.worldClient.loadChunk(chunkX, chunkZ);
-                    Chunk clientChunk = this.minecraft.worldClient.provideChunk(chunkX, chunkZ);
+                    Chunk clientChunk = new Chunk(chunkX, chunkZ);
+                    clientChunk.setLoaded();
                     clientChunk.setStorageArrays(this.copyStorage(serverChunk));
                     clientChunk.isTerrainPopulated = true;
                     clientChunk.setChunkModified();
+                    this.minecraft.worldClient.addChunk(clientChunk);
                     this.minecraft.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
                 }
             }

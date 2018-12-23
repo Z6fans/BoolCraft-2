@@ -1,7 +1,9 @@
 package net.minecraft.client;
 
 import java.io.File;
+
 import javax.imageio.ImageIO;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -13,6 +15,7 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.KeyBinding;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.MouseHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
@@ -21,6 +24,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.LWJGLException;
@@ -515,7 +519,17 @@ public class Minecraft
 
                             if (!this.isGamePaused)
                             {
-                                this.worldClient.updateEntities();
+                                if (this.thePlayer != null)
+                                {
+                                	try
+                                    {
+                                		this.thePlayer.onUpdate();
+                                    }
+                                    catch (Throwable t)
+                                    {
+                                        throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
+                                    }
+                                }
                             }
                         }
                         
@@ -849,7 +863,19 @@ public class Minecraft
             }
 
             this.thePlayer.preparePlayerToSpawn();
-            this.worldClient.spawnEntityInWorld(this.thePlayer);
+            int chunkX = MathHelper.floor_double(this.thePlayer.posX / 16.0D);
+        	int chunkY = MathHelper.floor_double(this.thePlayer.posY / 16.0D);
+            int chunkZ = MathHelper.floor_double(this.thePlayer.posZ / 16.0D);
+
+            if (chunkY < 0)
+            {
+                chunkY = 0;
+            }
+            
+            this.thePlayer.addedToChunk = true;
+            this.thePlayer.chunkCoordX = chunkX;
+            this.thePlayer.chunkCoordY = chunkY;
+            this.thePlayer.chunkCoordZ = chunkZ;
             this.renderViewEntity = this.thePlayer;
 
             System.gc();

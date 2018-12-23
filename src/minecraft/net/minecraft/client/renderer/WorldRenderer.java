@@ -61,38 +61,38 @@ public class WorldRenderer
     public int chunkIndex;
     private boolean isInitialized;
 
-    public WorldRenderer(WorldClient p_i1240_1_, int p_i1240_3_, int p_i1240_4_, int p_i1240_5_, int p_i1240_6_)
+    public WorldRenderer(WorldClient world, int x, int y, int z, int renderList)
     {
-        this.worldObj = p_i1240_1_;
+        this.worldObj = world;
         this.vertexState = null;
-        this.glRenderList = p_i1240_6_;
+        this.glRenderList = renderList;
         this.posX = -999;
-        this.setPosition(p_i1240_3_, p_i1240_4_, p_i1240_5_);
+        this.setPosition(x, y, z);
         this.needsUpdate = false;
     }
 
     /**
      * Sets a new position for the renderer and setting it up so it can be reloaded with the new data for that position
      */
-    public void setPosition(int p_78913_1_, int p_78913_2_, int p_78913_3_)
+    public void setPosition(int x, int y, int z)
     {
-        if (p_78913_1_ != this.posX || p_78913_2_ != this.posY || p_78913_3_ != this.posZ)
+        if (x != this.posX || y != this.posY || z != this.posZ)
         {
             this.setDontDraw();
-            this.posX = p_78913_1_;
-            this.posY = p_78913_2_;
-            this.posZ = p_78913_3_;
-            this.posXPlus = p_78913_1_ + 8;
-            this.posYPlus = p_78913_2_ + 8;
-            this.posZPlus = p_78913_3_ + 8;
-            this.posXClip = p_78913_1_ & 1023;
-            this.posYClip = p_78913_2_;
-            this.posZClip = p_78913_3_ & 1023;
-            this.posXMinus = p_78913_1_ - this.posXClip;
-            this.posYMinus = p_78913_2_ - this.posYClip;
-            this.posZMinus = p_78913_3_ - this.posZClip;
+            this.posX = x;
+            this.posY = y;
+            this.posZ = z;
+            this.posXPlus = x + 8;
+            this.posYPlus = y + 8;
+            this.posZPlus = z + 8;
+            this.posXClip = x & 1023;
+            this.posYClip = y;
+            this.posZClip = z & 1023;
+            this.posXMinus = x - this.posXClip;
+            this.posYMinus = y - this.posYClip;
+            this.posZMinus = z - this.posZClip;
             float var4 = 6.0F;
-            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)p_78913_1_ - var4), (double)((float)p_78913_2_ - var4), (double)((float)p_78913_3_ - var4), (double)((float)(p_78913_1_ + 16) + var4), (double)((float)(p_78913_2_ + 16) + var4), (double)((float)(p_78913_3_ + 16) + var4));
+            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)x - var4), (double)((float)y - var4), (double)((float)z - var4), (double)((float)(x + 16) + var4), (double)((float)(y + 16) + var4), (double)((float)(z + 16) + var4));
             GL11.glNewList(this.glRenderList + 2, GL11.GL_COMPILE);
             AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox((double)((float)this.posXClip - var4), (double)((float)this.posYClip - var4), (double)((float)this.posZClip - var4), (double)((float)(this.posXClip + 16) + var4), (double)((float)(this.posYClip + 16) + var4), (double)((float)(this.posZClip + 16) + var4));
             Tessellator tess = Tessellator.instance;
@@ -135,19 +135,19 @@ public class WorldRenderer
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
-            int var2 = this.posX;
-            int var3 = this.posY;
-            int var4 = this.posZ;
-            int var5 = this.posX + 16;
-            int var6 = this.posY + 16;
-            int var7 = this.posZ + 16;
+            int xmin = this.posX;
+            int ymin = this.posY;
+            int zmin = this.posZ;
+            int xmax = this.posX + 16;
+            int ymax = this.posY + 16;
+            int zmax = this.posZ + 16;
 
             for (int var8 = 0; var8 < 2; ++var8)
             {
                 this.skipRenderPass[var8] = true;
             }
             
-            ChunkCache cache = new ChunkCache(this.worldObj, var2 - 1, var3 - 1, var4 - 1, var5 + 1, var6 + 1, var7 + 1, 1);
+            ChunkCache cache = new ChunkCache(this.worldObj, xmin - 1, ymin - 1, zmin - 1, xmax + 1, ymax + 1, zmax + 1, 1);
 
             if (!cache.extendedLevelsInChunkCache())
             {
@@ -156,11 +156,11 @@ public class WorldRenderer
                 boolean var19 = false;
                 boolean var20 = false;
 
-                for (int var21 = var3; var21 < var6; ++var21)
+                for (int var21 = ymin; var21 < ymax; ++var21)
                 {
-                    for (int var22 = var4; var22 < var7; ++var22)
+                    for (int var22 = zmin; var22 < zmax; ++var22)
                     {
-                        for (int var23 = var2; var23 < var5; ++var23)
+                        for (int var23 = xmin; var23 < xmax; ++var23)
                         {
                             Block var24 = cache.getBlock(var23, var21, var22);
 

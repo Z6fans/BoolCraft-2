@@ -1,6 +1,5 @@
 package net.minecraft.block;
 
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.WorldServer;
@@ -63,11 +62,6 @@ public class BlockAir extends Block
 	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
 	{
 		return 0;
-	}
-
-	public boolean onBlockActivatedClient(WorldClient p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
 	}
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)

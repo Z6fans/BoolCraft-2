@@ -1,19 +1,12 @@
 package net.minecraft.block;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
-import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneWire extends Block
 {
     private boolean isCheckingForPower = false;
-    private Set<ChunkPosition> field_150179_b = new HashSet<ChunkPosition>();
 
     public BlockRedstoneWire()
     {
@@ -138,21 +131,13 @@ public class BlockRedstoneWire extends Block
         if (prevPower != currentPower)
         {
             world.setBlockMetadataWithNotify(x, y, z, currentPower, false);
-            this.field_150179_b.add(new ChunkPosition(x, y, z));
-            this.field_150179_b.add(new ChunkPosition(x - 1, y, z));
-            this.field_150179_b.add(new ChunkPosition(x + 1, y, z));
-            this.field_150179_b.add(new ChunkPosition(x, y - 1, z));
-            this.field_150179_b.add(new ChunkPosition(x, y + 1, z));
-            this.field_150179_b.add(new ChunkPosition(x, y, z - 1));
-            this.field_150179_b.add(new ChunkPosition(x, y, z + 1));
-        }
-        ArrayList<ChunkPosition> var5 = new ArrayList<ChunkPosition>(this.field_150179_b);
-        this.field_150179_b.clear();
-
-        for (int var6 = 0; var6 < var5.size(); ++var6)
-        {
-            ChunkPosition var7 = (ChunkPosition)var5.get(var6);
-            world.notifyBlocksOfNeighborChange(var7.xCoord, var7.yCoord, var7.zCoord, this);
+            world.notifyBlocksOfNeighborChange(x, y, z, this);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
         }
     }
 
@@ -378,11 +363,6 @@ public class BlockRedstoneWire extends Block
 	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
 	{
 		return 0;
-	}
-
-	public boolean onBlockActivatedClient(WorldClient p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
 	}
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)

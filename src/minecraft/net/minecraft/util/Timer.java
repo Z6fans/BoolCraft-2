@@ -28,7 +28,7 @@ public class Timer
      * The time reported by the high-resolution clock at the last call of updateTimer(), in seconds
      */
     private double lastHRTime;
-    private long field_74285_i;
+    private long diffSysAcc;
 
     /**
      * A ratio used to sync the high-resolution clock to the system clock, updated once per second
@@ -46,49 +46,50 @@ public class Timer
      */
     public void updateTimer()
     {
-        long var1 = Minecraft.getSystemTime();
-        long var3 = var1 - this.lastSyncSysClock;
-        long var5 = System.nanoTime() / 1000000L;
-        double var7 = (double)var5 / 1000.0D;
+        long currentSysClock = Minecraft.getSystemTime();
+        long diffSysClock = currentSysClock - this.lastSyncSysClock;
+        
+        long currentHRClock = System.nanoTime() / 1000000L;
+        double currentHRClockSecs = (double)currentHRClock / 1000.0D;
 
-        if (var3 <= 1000L && var3 >= 0L)
+        if (diffSysClock <= 1000L && diffSysClock >= 0L)
         {
-            this.field_74285_i += var3;
+            this.diffSysAcc += diffSysClock;
 
-            if (this.field_74285_i > 1000L)
+            if (this.diffSysAcc > 1000L)
             {
-                long var9 = var5 - this.lastSyncHRClock;
-                double var11 = (double)this.field_74285_i / (double)var9;
-                this.timeSyncAdjustment += (var11 - this.timeSyncAdjustment) * 0.20000000298023224D;
-                this.lastSyncHRClock = var5;
-                this.field_74285_i = 0L;
+                long diffHRClock = currentHRClock - this.lastSyncHRClock;
+                double newTimeSync = (double)this.diffSysAcc / (double)diffHRClock;
+                this.timeSyncAdjustment += (newTimeSync - this.timeSyncAdjustment) * 0.20000000298023224D;
+                this.lastSyncHRClock = currentHRClock;
+                this.diffSysAcc = 0L;
             }
 
-            if (this.field_74285_i < 0L)
+            if (this.diffSysAcc < 0L)
             {
-                this.lastSyncHRClock = var5;
+                this.lastSyncHRClock = currentHRClock;
             }
         }
         else
         {
-            this.lastHRTime = var7;
+            this.lastHRTime = currentHRClockSecs;
         }
 
-        this.lastSyncSysClock = var1;
-        double var13 = (var7 - this.lastHRTime) * this.timeSyncAdjustment;
-        this.lastHRTime = var7;
+        this.lastSyncSysClock = currentSysClock;
+        double diffHRClockSecs = (currentHRClockSecs - this.lastHRTime) * this.timeSyncAdjustment;
+        this.lastHRTime = currentHRClockSecs;
 
-        if (var13 < 0.0D)
+        if (diffHRClockSecs < 0.0D)
         {
-            var13 = 0.0D;
+            diffHRClockSecs = 0.0D;
         }
 
-        if (var13 > 1.0D)
+        if (diffHRClockSecs > 1.0D)
         {
-            var13 = 1.0D;
+            diffHRClockSecs = 1.0D;
         }
 
-        this.renderPartialTicks = (float)((double)this.renderPartialTicks + var13 * 20);
+        this.renderPartialTicks = (float)((double)this.renderPartialTicks + diffHRClockSecs * 20);
         this.elapsedTicks = (int)this.renderPartialTicks;
         this.renderPartialTicks -= (float)this.elapsedTicks;
 

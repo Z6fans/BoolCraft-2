@@ -63,7 +63,6 @@ public class AnvilSaveConverter
      */
     public boolean canLoadWorld(String p_90033_1_)
     {
-        File var2 = new File(this.savesDirectory, p_90033_1_);
-        return var2.isDirectory();
+        return new File(this.savesDirectory, p_90033_1_).isDirectory();
     }
 }

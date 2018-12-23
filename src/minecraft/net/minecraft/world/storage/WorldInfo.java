@@ -43,7 +43,7 @@ public class WorldInfo
         return this.totalTime;
     }
 
-    public void incrementTotalWorldTime(long time)
+    public void setTotalWorldTime(long time)
     {
         this.totalTime = time;
     }

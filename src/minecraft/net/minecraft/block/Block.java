@@ -276,11 +276,6 @@ public abstract class Block
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
     public abstract void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_);
-
-    /**
-     * Called upon block activation (right click on the block.)
-     */
-    public abstract boolean onBlockActivatedClient(WorldClient p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_);
     
     /**
      * Called upon block activation (right click on the block.)

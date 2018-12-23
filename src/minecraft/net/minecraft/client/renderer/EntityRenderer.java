@@ -43,7 +43,7 @@ public class EntityRenderer
         {
             if (this.mc.worldClient != null)
             {
-                this.mc.objectMouseOver = this.mc.renderViewEntity.rayTrace(8, partialTickTime);
+                this.mc.objectMouseOver = this.mc.renderViewEntity.rayTrace8(partialTickTime);
             }
         }
     }

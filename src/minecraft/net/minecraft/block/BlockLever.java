@@ -166,14 +166,6 @@ public class BlockLever extends Block
 
         return super.collisionRayTrace(world, x, y, z, playerPos, playerLook);
     }
-
-    /**
-     * Called upon block activation (right click on the block.)
-     */
-    public boolean onBlockActivatedClient(WorldClient world, int x, int y, int z)
-    {
-        return true;
-    }
     
     /**
      * Called upon block activation (right click on the block.)

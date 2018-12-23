@@ -376,11 +376,6 @@ public class BlockRedstoneTorch extends Block
 		return false;
 	}
 
-	public boolean onBlockActivatedClient(WorldClient p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
-	}
-
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
 	{
 		return false;
