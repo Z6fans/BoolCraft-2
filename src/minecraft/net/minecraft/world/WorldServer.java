@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -20,10 +21,10 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.player.EntityPlayerMP;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.storage.SaveHandler;
@@ -31,8 +32,6 @@ import net.minecraft.world.storage.WorldInfo;
 
 public class WorldServer
 {
-    /** Array list of players in the world. */
-    private EntityPlayerMP playerEntity;
     private Set<NextTickListEntry> pendingTickListEntriesHashSet;
 
     /** All work to do in future ticks. */
@@ -72,12 +71,15 @@ public class WorldServer
      * holds information about a world (size on disk, time, spawn point, seed, ...)
      */
     private WorldInfo worldInfo;
+    
+    private double playerPosX;
+    private double playerPosZ;
 
     /** player X position as seen by PlayerManager */
-    private double managedPosX;
+    private double prevPosX;
 
     /** player Z position as seen by PlayerManager */
-    private double managedPosZ;
+    private double prevPosZ;
 
     /**
      * A map of chunk position (two ints concatenated into a long) to PlayerInstance
@@ -103,10 +105,17 @@ public class WorldServer
 
     /** x, z direction vectors: east, south, west, north */
     private final int[][] xzDirectionsConst = new int[][] {{1, 0}, {0, 1}, { -1, 0}, {0, -1}};
+    
+	private Minecraft minecraft;
 
-    public WorldServer(SaveHandler sh)
+    /** LinkedList that holds the loaded chunks. */
+    public final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
+
+	private boolean isSpawned = false;
+
+    public WorldServer(Minecraft mc, SaveHandler sh)
     {
-    	this.playerEntity = null;
+    	this.minecraft = mc;
         this.worldInfo = sh.loadWorldInfo();
 
         if (this.worldInfo == null)
@@ -231,10 +240,10 @@ public class WorldServer
         
         this.activeChunkSet.clear();
 
-        if (this.playerEntity != null)
+        if (this.isSpawned)
         {
-        	int chunkX = MathHelper.floor_double(this.playerEntity.posX / 16.0D);
-            int chunkZ = MathHelper.floor_double(this.playerEntity.posZ / 16.0D);
+        	int chunkX = MathHelper.floor_double(this.playerPosX / 16.0D);
+            int chunkZ = MathHelper.floor_double(this.playerPosZ / 16.0D);
 
             for (int xOff = -16; xOff <= 16; ++xOff)
             {
@@ -284,7 +293,28 @@ public class WorldServer
             }
         }
         
-        this.updatePlayerInstances();
+        long worldTime = this.getTotalWorldTime();
+
+        if (worldTime - this.previousTotalWorldTime > 8000L)
+        {
+            this.previousTotalWorldTime = worldTime;
+
+            for (int var18 = 0; var18 < this.playerInstanceList.size(); ++var18)
+            {
+            	ChunkUpdateTracker var19 = this.playerInstanceList.get(var18);
+            	var19.sendChunkUpdate();
+            }
+        }
+        else
+        {
+            for (int var18 = 0; var18 < this.chunkWatcherWithPlayers.size(); ++var18)
+            {
+            	ChunkUpdateTracker var19 = this.chunkWatcherWithPlayers.get(var18);
+            	var19.sendChunkUpdate();
+            }
+        }
+
+        this.chunkWatcherWithPlayers.clear();
     }
 
     /**
@@ -331,7 +361,7 @@ public class WorldServer
      */
     public void updateEntities()
     {
-        if (this.playerEntity == null)
+        if (!this.isSpawned)
         {
             if (this.updateEntityTick++ >= 1200)
             {
@@ -343,17 +373,61 @@ public class WorldServer
         	this.updateEntityTick = 0;
         }
 
-        if (this.playerEntity != null)
+        if (this.isSpawned)
         {
         	try
             {
-        		int playerX = MathHelper.floor_double(this.playerEntity.posX);
-                int playerZ = MathHelper.floor_double(this.playerEntity.posZ);
+        		int playerX = MathHelper.floor_double(this.playerPosX);
+                int playerZ = MathHelper.floor_double(this.playerPosZ);
                 int r = 32;
 
                 if (this.checkChunksExist(playerX - r, 0, playerZ - r, playerX + r, 0, playerZ + r))
                 {
-                	this.playerEntity.onUpdate();
+                	if (!this.playerLoadedChunks.isEmpty())
+                    {
+                		ArrayList<Chunk> chunksToSend = new ArrayList<Chunk>();
+                        Iterator<ChunkCoordIntPair> chunkIterator = this.playerLoadedChunks.iterator();
+
+                        while (chunkIterator.hasNext() && chunksToSend.size() < 5)
+                        {
+                            ChunkCoordIntPair chunkCoords = (ChunkCoordIntPair)chunkIterator.next();
+
+                            if (chunkCoords != null)
+                            {
+                                if (this.minecraft.worldServer.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
+                                {
+                                    Chunk chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
+                                    
+                                    if (chunk.getLoaded())
+                                    {
+                                        chunksToSend.add(chunk);
+                                        chunkIterator.remove();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                chunkIterator.remove();
+                            }
+                        }
+
+                        if (!chunksToSend.isEmpty())
+                        {
+                            for (int i = 0; i < chunksToSend.size(); ++i)
+                            {
+                            	Chunk serverChunk = chunksToSend.get(i);
+                                int chunkX = serverChunk.xPosition;
+                                int chunkZ = serverChunk.zPosition;
+                                Chunk clientChunk = new Chunk(chunkX, chunkZ);
+                                clientChunk.setLoaded();
+                                clientChunk.setStorageArrays(this.copyStorage(serverChunk));
+                                clientChunk.isTerrainPopulated = true;
+                                clientChunk.setChunkModified();
+                                this.minecraft.worldClient.addChunk(clientChunk);
+                                this.minecraft.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
+                            }
+                        }
+                    }
                 }
             }
             catch (Throwable t)
@@ -361,6 +435,54 @@ public class WorldServer
                 throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
             }
         }
+    }
+    
+    private ExtendedBlockStorage[] copyStorage(Chunk chunk)
+    {
+    	ExtendedBlockStorage[] oldStorageArray = chunk.getBlockStorageArray();
+    	ExtendedBlockStorage[] newStorageArray = new ExtendedBlockStorage[oldStorageArray.length];
+    	
+    	for(int i = 0; i < oldStorageArray.length; i++)
+    	{
+    		ExtendedBlockStorage oldStorage = oldStorageArray[i];
+    		
+    		if(oldStorage != null)
+    		{
+    			ExtendedBlockStorage newStorage = new ExtendedBlockStorage(oldStorage.getYLocation());
+        		
+        		if(oldStorage.getBlockLSBArray() != null)
+        		{
+        			byte[] oldLSBArray = oldStorage.getBlockLSBArray();
+            		byte[] newLSBArray = newStorage.getBlockLSBArray();
+            		System.arraycopy(oldLSBArray, 0, newLSBArray, 0, oldLSBArray.length);
+        		}
+        		
+        		if(oldStorage.getBlockMSBArray() != null)
+        		{
+        			byte[] oldMSBArrayData = oldStorage.getBlockMSBArray().data;
+            		NibbleArray newMSBArray = newStorage.getBlockMSBArray();
+            		
+            		if(newMSBArray == null)
+            		{
+            			newStorage.createBlockMSBArray();
+            		}
+            		
+            		System.arraycopy(oldMSBArrayData, 0, newMSBArray.data, 0, oldMSBArrayData.length);
+        		}
+        		
+        		if(oldStorage.getMetadataArray() != null)
+        		{
+        			byte[] oldMetadataArrayData = oldStorage.getMetadataArray().data;
+        			NibbleArray newMetadataArray = newStorage.getMetadataArray();
+            		System.arraycopy(oldMetadataArrayData, 0, newMetadataArray.data, 0, oldMetadataArrayData.length);
+        		}
+        		
+        		newStorage.removeInvalidBlocks();
+        		newStorageArray[i] = newStorage;
+    		}
+    	}
+    	
+    	return newStorageArray;
     }
 
     /**
@@ -475,7 +597,7 @@ public class WorldServer
             {
                 Chunk chunk = var4.next();
 
-                if (chunk != null && !this.doesPlayerInstanceExist(chunk.xPosition, chunk.zPosition))
+                if (chunk != null && this.playerInstances.getValueByKey((long)chunk.xPosition + 2147483647L | (long)chunk.zPosition + 2147483647L << 32) == null)
                 {
                     this.unloadChunksIfNotNearSpawn(chunk.xPosition, chunk.zPosition);
                 }
@@ -531,23 +653,22 @@ public class WorldServer
     
     public void spawnPlayerInWorld(Minecraft mc)
     {
-    	EntityPlayerMP player = new EntityPlayerMP(mc);
-    	this.playerEntity = player;
-        int chunkX = (int)this.playerEntity.posX >> 4;
-        int chunkZ = (int)this.playerEntity.posZ >> 4;
-        this.managedPosX = this.playerEntity.posX;
-        this.managedPosZ = this.playerEntity.posZ;
+    	this.isSpawned  = true;
+        int chunkX = (int)this.playerPosX >> 4;
+        int chunkZ = (int)this.playerPosZ >> 4;
+        this.prevPosX = this.playerPosX;
+        this.prevPosZ = this.playerPosZ;
 
         for (int x = chunkX - this.playerViewRadius; x <= chunkX + this.playerViewRadius; ++x)
         {
             for (int y = chunkZ - this.playerViewRadius; y <= chunkZ + this.playerViewRadius; ++y)
             {
-                WorldServer.this.playerEntity.loadedChunks.add(new ChunkCoordIntPair(x, y));
+                WorldServer.this.playerLoadedChunks.add(new ChunkCoordIntPair(x, y));
             }
         }
         
         this.filterChunkLoadQueue();
-        this.loadChunk((int)player.posX >> 4, (int)player.posZ >> 4);
+        this.loadChunk((int)this.playerPosX >> 4, (int)this.playerPosZ >> 4);
     }
     
     public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block)
@@ -934,41 +1055,6 @@ public class WorldServer
         }
     }
 
-    /**
-     * updates all the player instances that need to be updated
-     */
-    public void updatePlayerInstances()
-    {
-        long worldTime = this.getTotalWorldTime();
-
-        if (worldTime - this.previousTotalWorldTime > 8000L)
-        {
-            this.previousTotalWorldTime = worldTime;
-
-            for (int var3 = 0; var3 < this.playerInstanceList.size(); ++var3)
-            {
-            	ChunkUpdateTracker var4 = this.playerInstanceList.get(var3);
-                var4.sendChunkUpdate();
-            }
-        }
-        else
-        {
-            for (int var3 = 0; var3 < this.chunkWatcherWithPlayers.size(); ++var3)
-            {
-            	ChunkUpdateTracker var4 = this.chunkWatcherWithPlayers.get(var3);
-                var4.sendChunkUpdate();
-            }
-        }
-
-        this.chunkWatcherWithPlayers.clear();
-    }
-
-    public boolean doesPlayerInstanceExist(int chunkX, int chunkZ)
-    {
-        long key = (long)chunkX + 2147483647L | (long)chunkZ + 2147483647L << 32;
-        return this.playerInstances.getValueByKey(key) != null;
-    }
-
     private ChunkUpdateTracker getOrCreateChunkWatcher(int chunkX, int chunkZ, boolean doCreate)
     {
         long key = (long)chunkX + 2147483647L | (long)chunkZ + 2147483647L << 32;
@@ -1001,19 +1087,19 @@ public class WorldServer
      */
     private void filterChunkLoadQueue()
     {
-        ArrayList<ChunkCoordIntPair> var2 = new ArrayList<ChunkCoordIntPair>(this.playerEntity.loadedChunks);
+        ArrayList<ChunkCoordIntPair> var2 = new ArrayList<ChunkCoordIntPair>(this.playerLoadedChunks);
         int var3 = 0;
         int r = this.playerViewRadius;
-        int chunkX = (int)this.playerEntity.posX >> 4;
-        int chunkZ = (int)this.playerEntity.posZ >> 4;
+        int chunkX = (int)this.playerPosX >> 4;
+        int chunkZ = (int)this.playerPosZ >> 4;
         int var7 = 0;
         int var8 = 0;
         ChunkCoordIntPair var9 = this.getOrCreateChunkWatcher(chunkX, chunkZ, true).chunkLocation;
-        this.playerEntity.loadedChunks.clear();
+        this.playerLoadedChunks.clear();
 
         if (var2.contains(var9))
         {
-        	this.playerEntity.loadedChunks.add(var9);
+        	this.playerLoadedChunks.add(var9);
         }
 
         for (int var10 = 1; var10 <= r * 2; ++var10)
@@ -1030,7 +1116,7 @@ public class WorldServer
 
                     if (var2.contains(var9))
                     {
-                    	this.playerEntity.loadedChunks.add(var9);
+                    	this.playerLoadedChunks.add(var9);
                     }
                 }
             }
@@ -1046,7 +1132,7 @@ public class WorldServer
 
             if (var2.contains(var9))
             {
-            	this.playerEntity.loadedChunks.add(var9);
+            	this.playerLoadedChunks.add(var9);
             }
         }
     }
@@ -1067,19 +1153,18 @@ public class WorldServer
      */
     public void updateMountedMovingPlayer(double x, double z)
     {
-    	this.playerEntity.posX = x;
-    	this.playerEntity.posZ = z;
+    	this.playerPosX = x;
+    	this.playerPosZ = z;
     	
-        int playerChunkX = (int)this.playerEntity.posX >> 4;
-        int playerChunkZ = (int)this.playerEntity.posZ >> 4;
-        double playerDeltaX = this.managedPosX - this.playerEntity.posX;
-        double playerDeltaZ = this.managedPosZ - this.playerEntity.posZ;
-        double playerDistance = playerDeltaX * playerDeltaX + playerDeltaZ * playerDeltaZ;
+        int playerChunkX = (int)this.playerPosX >> 4;
+        int playerChunkZ = (int)this.playerPosZ >> 4;
+        double playerDeltaX = this.prevPosX - this.playerPosX;
+        double playerDeltaZ = this.prevPosZ - this.playerPosZ;
 
-        if (playerDistance >= 64.0D)
+        if (playerDeltaX * playerDeltaX + playerDeltaZ * playerDeltaZ >= 64.0D)
         {
-            int managedChunkX = (int)this.managedPosX >> 4;
-            int managedChunkZ = (int)this.managedPosZ >> 4;
+            int managedChunkX = (int)this.prevPosX >> 4;
+            int managedChunkZ = (int)this.prevPosZ >> 4;
             int radius = this.playerViewRadius;
             int chunkDeltaX = playerChunkX - managedChunkX;
             int chunkDeltaZ = playerChunkZ - managedChunkZ;
@@ -1092,14 +1177,14 @@ public class WorldServer
                     {
                         if (!this.overlaps(chunkX, chunkZ, managedChunkX, managedChunkZ, radius))
                         {
-                            WorldServer.this.playerEntity.loadedChunks.add(new ChunkCoordIntPair(chunkX, chunkZ));
+                            WorldServer.this.playerLoadedChunks.add(new ChunkCoordIntPair(chunkX, chunkZ));
                         }
                     }
                 }
 
                 this.filterChunkLoadQueue();
-                this.managedPosX = this.playerEntity.posX;
-                this.managedPosZ = this.playerEntity.posZ;
+                this.prevPosX = this.playerPosX;
+                this.prevPosZ = this.playerPosZ;
             }
         }
     }
@@ -1141,7 +1226,7 @@ public class WorldServer
 
         private void sendChunkUpdate()
         {
-        	if (!WorldServer.this.playerEntity.loadedChunks.contains(this.chunkLocation))
+        	if (!WorldServer.this.playerLoadedChunks.contains(this.chunkLocation))
         	{
         		Chunk chunk = WorldServer.this.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
         		int baseX = chunk.xPosition * 16;
