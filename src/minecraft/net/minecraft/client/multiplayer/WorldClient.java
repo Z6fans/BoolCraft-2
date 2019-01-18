@@ -60,7 +60,7 @@ public class WorldClient
      * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
      * block from being re-rendered, if this is a client world. Flags can be added together.
      */
-    public final void setBlock(int x, int y, int z, Block block, int metadata)
+    public void setBlock(int x, int y, int z, Block block, int metadata)
     {
     	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
@@ -73,7 +73,7 @@ public class WorldClient
         }
     }
     
-    public final Block getBlock(int x, int y, int z)
+    public Block getBlock(int x, int y, int z)
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
@@ -89,7 +89,7 @@ public class WorldClient
     /**
      * Returns the block metadata at coords x,y,z
      */
-    public final int getBlockMetadata(int x, int y, int z)
+    public int getBlockMetadata(int x, int y, int z)
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {

@@ -43,14 +43,6 @@ public class EmptyChunk extends Chunk
      */
     public void setChunkModified() {}
 
-    /**
-     * Returns true if this Chunk needs to be saved
-     */
-    public boolean needsSaving()
-    {
-        return false;
-    }
-
     public boolean isEmpty()
     {
         return true;
