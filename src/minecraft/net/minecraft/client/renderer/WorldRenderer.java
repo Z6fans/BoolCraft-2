@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 
@@ -130,7 +130,7 @@ public class WorldRenderer
     /**
      * Will update this chunk renderer
      */
-    public void updateRenderer(EntityPlayerSP player)
+    public void updateRenderer(EntityPlayer player)
     {
         if (this.needsUpdate)
         {
@@ -209,7 +209,7 @@ public class WorldRenderer
         tessellator.setTranslation((double)(-this.posX), (double)(-this.posY), (double)(-this.posZ));
     }
 
-    private void postRenderBlocks(int p_147891_1_, EntityPlayerSP p_147891_2_)
+    private void postRenderBlocks(int p_147891_1_, EntityPlayer p_147891_2_)
     {
         if (p_147891_1_ == 1 && !this.skipRenderPass[p_147891_1_])
         {
@@ -222,7 +222,7 @@ public class WorldRenderer
         tessellator.setTranslation(0.0D, 0.0D, 0.0D);
     }
 
-    public void updateRendererSort(EntityPlayerSP p_147889_1_)
+    public void updateRendererSort(EntityPlayer p_147889_1_)
     {
         if (this.vertexState != null && !this.skipRenderPass[1])
         {
@@ -236,7 +236,7 @@ public class WorldRenderer
      * Returns the distance of this chunk renderer to the entity without performing the final normalizing square root,
      * for performance reasons.
      */
-    public float quadranceToPlayer(EntityPlayerSP player)
+    public float quadranceToPlayer(EntityPlayer player)
     {
         float var2 = (float)(player.posX - (double)this.posXPlus);
         float var3 = (float)(player.posY - (double)this.posYPlus);
