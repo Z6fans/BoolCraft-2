@@ -135,63 +135,55 @@ public class WorldRenderer
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
-            int xmin = this.posX;
-            int ymin = this.posY;
-            int zmin = this.posZ;
-            int xmax = this.posX + 16;
-            int ymax = this.posY + 16;
-            int zmax = this.posZ + 16;
 
-            for (int var8 = 0; var8 < 2; ++var8)
+            for (int i = 0; i < 2; ++i)
             {
-                this.skipRenderPass[var8] = true;
+                this.skipRenderPass[i] = true;
             }
             
-            ChunkCache cache = new ChunkCache(this.worldObj, xmin - 1, ymin - 1, zmin - 1, xmax + 1, ymax + 1, zmax + 1, 1);
+            ChunkCache cache = new ChunkCache(this.worldObj, this.posX, this.posZ);
 
-            if (!cache.extendedLevelsInChunkCache())
+            RenderBlocks blockRenderer = new RenderBlocks(cache);
+            this.vertexState = null;
+            boolean doRenderPass = false;
+            boolean doPostRenderBlocks = false;
+
+            for (int y = this.posY; y < this.posY + 16; ++y)
             {
-                RenderBlocks var16 = new RenderBlocks(cache);
-                this.vertexState = null;
-                boolean var19 = false;
-                boolean var20 = false;
-
-                for (int var21 = ymin; var21 < ymax; ++var21)
+                for (int z = this.posZ; z < this.posZ + 16; ++z)
                 {
-                    for (int var22 = zmin; var22 < zmax; ++var22)
+                    for (int x = this.posX; x < this.posX + 16; ++x)
                     {
-                        for (int var23 = xmin; var23 < xmax; ++var23)
+                        Block block = cache.getBlock(x, y, z);
+
+                        if (!block.isReplaceable())
                         {
-                            Block var24 = cache.getBlock(var23, var21, var22);
-
-                            if (!var24.isReplaceable())
+                            if (!doPostRenderBlocks)
                             {
-                                if (!var20)
-                                {
-                                    var20 = true;
-                                    this.preRenderBlocks(0);
-                                }
-
-                                var19 |= var16.renderBlockByRenderType(var24, var23, var21, var22);
+                                doPostRenderBlocks = true;
+                                this.preRenderBlocks(0);
                             }
+
+                            doRenderPass |= blockRenderer.renderBlockByRenderType(block, x, y, z);
                         }
                     }
                 }
-
-                if (var19)
-                {
-                    this.skipRenderPass[0] = false;
-                }
-
-                if (var20)
-                {
-                    this.postRenderBlocks(0, player);
-                }
-                else
-                {
-                    var19 = false;
-                }
             }
+
+            if (doRenderPass)
+            {
+                this.skipRenderPass[0] = false;
+            }
+
+            if (doPostRenderBlocks)
+            {
+                this.postRenderBlocks(0, player);
+            }
+            else
+            {
+                doRenderPass = false;
+            }
+            
             this.isInitialized = true;
         }
     }

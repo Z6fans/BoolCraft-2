@@ -10,60 +10,25 @@ public class ChunkCache
     private int chunkZ;
     private Chunk[][] chunkArray;
 
-    /** True if the chunk cache is empty. */
-    private boolean isEmpty;
-
-	public ChunkCache(WorldClient world, int p_i1964_2_, int p_i1964_3_, int p_i1964_4_, int p_i1964_5_, int p_i1964_6_, int p_i1964_7_, int p_i1964_8_)
+	public ChunkCache(WorldClient world, int x, int z)
     {
-        this.chunkX = p_i1964_2_ - p_i1964_8_ >> 4;
-        this.chunkZ = p_i1964_4_ - p_i1964_8_ >> 4;
-        int var9 = p_i1964_5_ + p_i1964_8_ >> 4;
-        int var10 = p_i1964_7_ + p_i1964_8_ >> 4;
-        this.chunkArray = new Chunk[var9 - this.chunkX + 1][var10 - this.chunkZ + 1];
-        this.isEmpty = true;
-        int var11;
-        int var12;
-        Chunk var13;
+        this.chunkX = (x - 1) - 1 >> 4;
+        this.chunkZ = (z - 1) - 1 >> 4;
+        int chunkXMAx = (x + 17) + 1 >> 4;
+        int chunkZMax = (z + 17) + 1 >> 4;
+        this.chunkArray = new Chunk[chunkXMAx - this.chunkX + 1][chunkZMax - this.chunkZ + 1];
 
-        for (var11 = this.chunkX; var11 <= var9; ++var11)
+        for (int xx = this.chunkX; x <= chunkXMAx; ++x)
         {
-            for (var12 = this.chunkZ; var12 <= var10; ++var12)
+            for (int zz = this.chunkZ; z <= chunkZMax; ++z)
             {
-                var13 = world.provideChunk(var11, var12);
-
-                if (var13 != null)
-                {
-                    this.chunkArray[var11 - this.chunkX][var12 - this.chunkZ] = var13;
-                }
+                this.chunkArray[xx - this.chunkX][zz - this.chunkZ] = world.provideChunk(xx, zz);
             }
         }
-
-        for (var11 = p_i1964_2_ >> 4; var11 <= p_i1964_5_ >> 4; ++var11)
-        {
-            for (var12 = p_i1964_4_ >> 4; var12 <= p_i1964_7_ >> 4; ++var12)
-            {
-                var13 = this.chunkArray[var11 - this.chunkX][var12 - this.chunkZ];
-
-                if (var13 != null && !var13.getAreLevelsEmpty(p_i1964_3_, p_i1964_6_))
-                {
-                    this.isEmpty = false;
-                }
-            }
-        }
-    }
-
-    /**
-     * set by !chunk.getAreLevelsEmpty
-     */
-    public boolean extendedLevelsInChunkCache()
-    {
-        return this.isEmpty;
     }
 
     public Block getBlock(int x, int y, int z)
     {
-        Block block = Block.air;
-
         if (y >= 0 && y < 256)
         {
             int localChunkX = (x >> 4) - this.chunkX;
@@ -75,12 +40,12 @@ public class ChunkCache
 
                 if (chunk != null)
                 {
-                    block = chunk.getBlock(x & 15, y, z & 15);
+                    return chunk.getBlock(x & 15, y, z & 15);
                 }
             }
         }
 
-        return block;
+        return Block.air;
     }
 
     /**
