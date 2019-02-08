@@ -222,40 +222,9 @@ public class Chunk
         this.isModified = true;
     }
 
-    /**
-     * Returns true if this Chunk needs to be saved
-     */
-    public boolean needsSaving()
-    {
-        return this.isModified;
-    }
-
     public boolean isEmpty()
     {
         return false;
-    }
-
-    public void populateChunk(WorldServer world, int chunkX, int chunkZ)
-    {
-        if (!this.isTerrainPopulated && world.chunkExists(chunkX + 1, chunkZ + 1) && world.chunkExists(chunkX, chunkZ + 1) && world.chunkExists(chunkX + 1, chunkZ))
-        {
-            world.populate(chunkX, chunkZ);
-        }
-
-        if (world.chunkExists(chunkX - 1, chunkZ) && !world.provideChunk(chunkX - 1, chunkZ).isTerrainPopulated && world.chunkExists(chunkX - 1, chunkZ + 1) && world.chunkExists(chunkX, chunkZ + 1) && world.chunkExists(chunkX - 1, chunkZ + 1))
-        {
-            world.populate(chunkX - 1, chunkZ);
-        }
-
-        if (world.chunkExists(chunkX, chunkZ - 1) && !world.provideChunk(chunkX, chunkZ - 1).isTerrainPopulated && world.chunkExists(chunkX + 1, chunkZ - 1) && world.chunkExists(chunkX + 1, chunkZ - 1) && world.chunkExists(chunkX + 1, chunkZ))
-        {
-            world.populate(chunkX, chunkZ - 1);
-        }
-
-        if (world.chunkExists(chunkX - 1, chunkZ - 1) && !world.provideChunk(chunkX - 1, chunkZ - 1).isTerrainPopulated && world.chunkExists(chunkX, chunkZ - 1) && world.chunkExists(chunkX - 1, chunkZ))
-        {
-            world.populate(chunkX - 1, chunkZ - 1);
-        }
     }
 
     public void setLoaded()
