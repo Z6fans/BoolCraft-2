@@ -59,8 +59,8 @@ public class WorldInfo
     /**
      * Sets the initialization status of the World.
      */
-    public void setServerInitialized(boolean initialized)
+    public void setServerInitialized()
     {
-        this.initialized = initialized;
+        this.initialized = true;
     }
 }
