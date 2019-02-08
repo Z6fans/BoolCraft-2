@@ -3,7 +3,7 @@ package net.minecraft.client.renderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.client.EntityPlayer;
+import net.minecraft.player.EntityPlayerSP;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -97,7 +97,7 @@ public class EntityRenderer
                 }
                 
                 this.getMouseOver(partialTickTime);
-                EntityPlayer player = this.mc.renderViewEntity;
+                EntityPlayerSP player = this.mc.renderViewEntity;
                 RenderGlobal renderGlobal = this.mc.renderGlobal;
                 double partialX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTickTime;
                 double partialY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTickTime;
