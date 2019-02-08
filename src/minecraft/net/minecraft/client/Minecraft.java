@@ -849,6 +849,7 @@ public class Minecraft
             tickTimer = 0L;
             
             this.worldClient = new WorldClient();
+            this.renderViewEntity = null;
 
             if (this.renderGlobal != null)
             {
