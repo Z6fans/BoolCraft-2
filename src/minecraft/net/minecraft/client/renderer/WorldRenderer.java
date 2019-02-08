@@ -135,19 +135,13 @@ public class WorldRenderer
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
-            int xmin = this.posX;
-            int ymin = this.posY;
-            int zmin = this.posZ;
-            int xmax = this.posX + 16;
-            int ymax = this.posY + 16;
-            int zmax = this.posZ + 16;
 
-            for (int var8 = 0; var8 < 2; ++var8)
+            for (int i = 0; i < 2; ++i)
             {
-                this.skipRenderPass[var8] = true;
+                this.skipRenderPass[i] = true;
             }
             
-            ChunkCache cache = new ChunkCache(this.worldObj, xmin - 1, ymin - 1, zmin - 1, xmax + 1, ymax + 1, zmax + 1);
+            ChunkCache cache = new ChunkCache(this.worldObj, this.posX, this.posY, this.posZ);
 
             if (!cache.extendedLevelsInChunkCache())
             {
@@ -156,11 +150,11 @@ public class WorldRenderer
                 boolean var19 = false;
                 boolean var20 = false;
 
-                for (int var21 = ymin; var21 < ymax; ++var21)
+                for (int var21 = this.posY; var21 < this.posY + 16; ++var21)
                 {
-                    for (int var22 = zmin; var22 < zmax; ++var22)
+                    for (int var22 = this.posZ; var22 < this.posZ + 16; ++var22)
                     {
-                        for (int var23 = xmin; var23 < xmax; ++var23)
+                        for (int var23 = this.posX; var23 < this.posX + 16; ++var23)
                         {
                             Block var24 = cache.getBlock(var23, var21, var22);
 
