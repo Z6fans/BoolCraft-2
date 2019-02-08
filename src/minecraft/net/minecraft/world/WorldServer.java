@@ -109,7 +109,7 @@ public class WorldServer
 	private Minecraft minecraft;
 
     /** LinkedList that holds the loaded chunks. */
-    private final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
+    public final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
 
 	private boolean isSpawned = false;
 
@@ -584,7 +584,7 @@ public class WorldServer
             {
                 Chunk chunk = chunkList.get(i);
 
-                if (chunk.isModified)
+                if (chunk.needsSaving())
                 {
                     this.safeSaveChunk(chunk);
                     chunk.isModified = false;
@@ -680,11 +680,24 @@ public class WorldServer
         this.notifyBlockOfNeighborChange(x, y, z - 1, block);
         this.notifyBlockOfNeighborChange(x, y, z + 1, block);
     }
+    
+    /**
+     * Populates chunk with ores etc etc
+     */
+    public void populate(int x, int z)
+    {
+        Chunk chunk = this.provideChunk(x, z);
+
+        if (!chunk.isTerrainPopulated)
+        {
+            chunk.setChunkModified();
+        }
+    }
 	
 	/**
      * Checks to see if a chunk exists at x, y
      */
-    private boolean chunkExists(int p_73149_1_, int p_73149_2_)
+    public boolean chunkExists(int p_73149_1_, int p_73149_2_)
     {
         return this.loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
     }
@@ -766,6 +779,7 @@ public class WorldServer
 
             this.loadedChunkHashMap.add(posHash, newChunk);
             this.loadedChunks.add(newChunk);
+            newChunk.populateChunk(this, x, z);
         }
 
         return newChunk;
@@ -775,7 +789,7 @@ public class WorldServer
      * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
      * specified chunk from the map seed and chunk seed
      */
-    private Chunk provideChunk(int p_73154_1_, int p_73154_2_)
+    public Chunk provideChunk(int p_73154_1_, int p_73154_2_)
     {
         Chunk var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
         return var3 == null ? this.loadChunk(p_73154_1_, p_73154_2_) : var3;
