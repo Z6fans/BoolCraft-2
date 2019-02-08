@@ -127,17 +127,7 @@ public class WorldServer
         {
             try
             {
-                if (this.pendingTickListEntriesHashSet == null)
-                {
-                    this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
-                }
-
-                if (this.pendingTickListEntriesTreeSet == null)
-                {
-                    this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
-                }
-
-                this.worldInfo.setServerInitialized(true);
+                this.initialize();
             }
             catch (Throwable t)
             {
@@ -563,6 +553,21 @@ public class WorldServer
         return updateList;
     }
 
+    private void initialize()
+    {
+        if (this.pendingTickListEntriesHashSet == null)
+        {
+            this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
+        }
+
+        if (this.pendingTickListEntriesTreeSet == null)
+        {
+            this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
+        }
+
+        this.worldInfo.setServerInitialized(true);
+    }
+
     /**
      * Saves all chunks to disk while updating progress bar.
      */
@@ -594,13 +599,7 @@ public class WorldServer
 
                 if (chunk != null && this.playerInstances.getValueByKey((long)chunk.xPosition + 2147483647L | (long)chunk.zPosition + 2147483647L << 32) == null)
                 {
-                    int x = chunk.xPosition * 16 + 8;
-                    int z = chunk.zPosition * 16 + 8;
-
-                    if (x < -128 || x > 128 || z < -128 || z > 128)
-                    {
-                        this.chunksToUnload.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
-                    }
+                    this.unloadChunksIfNotNearSpawn(chunk.xPosition, chunk.zPosition);
                 }
             }
         }
@@ -693,6 +692,21 @@ public class WorldServer
     public List<Chunk> getLoadedChunks()
     {
         return this.loadedChunks;
+    }
+
+    /**
+     * marks chunk for unload by "unload100OldestChunks"  if there is no spawn point, or if the center of the chunk is
+     * outside 200 blocks (x or z) of the spawn
+     */
+    private void unloadChunksIfNotNearSpawn(int chunkX, int chunkZ)
+    {
+        int x = chunkX * 16 + 8;
+        int z = chunkZ * 16 + 8;
+
+        if (x < -128 || x > 128 || z < -128 || z > 128)
+        {
+            this.chunksToUnload.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunkX, chunkZ)));
+        }
     }
 
     /**
