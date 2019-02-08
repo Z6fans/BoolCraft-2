@@ -1,4 +1,4 @@
-package net.minecraft.client.multiplayer;
+package net.minecraft.client;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;

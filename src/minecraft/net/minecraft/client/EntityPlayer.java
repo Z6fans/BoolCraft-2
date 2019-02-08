@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
@@ -168,10 +167,10 @@ public class EntityPlayer
 
             this.isJumping = KeyBinding.keyBindJump.getIsKeyPressed();
 
-            this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
-            this.func_145771_j(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-            this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-            this.func_145771_j(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
+            this.pushPlayerOutOfBlock(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
+            this.pushPlayerOutOfBlock(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
+            this.pushPlayerOutOfBlock(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
+            this.pushPlayerOutOfBlock(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
 
             if (KeyBinding.keyBindSneak.getIsKeyPressed())
             {
@@ -365,8 +364,8 @@ public class EntityPlayer
      */
     public void setAngles(float dYaw, float dPitch)
     {
-        float var3 = this.rotationPitch;
-        float var4 = this.rotationYaw;
+        float oldPitch = this.rotationPitch;
+        float oldYaw = this.rotationYaw;
         this.rotationYaw = (float)((double)this.rotationYaw + (double)dYaw * 0.15D);
         this.rotationPitch = (float)((double)this.rotationPitch - (double)dPitch * 0.15D);
 
@@ -380,16 +379,16 @@ public class EntityPlayer
             this.rotationPitch = 90.0F;
         }
 
-        this.prevRotationPitch += this.rotationPitch - var3;
-        this.prevRotationYaw += this.rotationYaw - var4;
+        this.prevRotationPitch += this.rotationPitch - oldPitch;
+        this.prevRotationYaw += this.rotationYaw - oldYaw;
     }
 
-    private boolean isBlockTranslucent(int x, int y, int z)
+    private boolean isBlockSolid(int x, int y, int z)
     {
         return this.worldObj.getBlock(x, y, z).isSolid();
     }
 
-    private boolean func_145771_j(double xpos, double ypos, double zpos)
+    private void pushPlayerOutOfBlock(double xpos, double ypos, double zpos)
     {
         int x = MathHelper.floor_double(xpos);
         int y = MathHelper.floor_double(ypos);
@@ -397,63 +396,59 @@ public class EntityPlayer
         double fracx = xpos - (double)x;
         double fracz = zpos - (double)z;
 
-        if (this.isBlockTranslucent(x, y, z) || this.isBlockTranslucent(x, y + 1, z))
+        if (this.isBlockSolid(x, y, z) || this.isBlockSolid(x, y + 1, z))
         {
-            boolean var14 = !this.isBlockTranslucent(x - 1, y, z) && !this.isBlockTranslucent(x - 1, y + 1, z);
-            boolean var15 = !this.isBlockTranslucent(x + 1, y, z) && !this.isBlockTranslucent(x + 1, y + 1, z);
-            boolean var16 = !this.isBlockTranslucent(x, y, z - 1) && !this.isBlockTranslucent(x, y + 1, z - 1);
-            boolean var17 = !this.isBlockTranslucent(x, y, z + 1) && !this.isBlockTranslucent(x, y + 1, z + 1);
-            byte var18 = -1;
-            double var19 = 9999.0D;
+            boolean minusXClear = !this.isBlockSolid(x - 1, y, z) && !this.isBlockSolid(x - 1, y + 1, z);
+            boolean plusXClear = !this.isBlockSolid(x + 1, y, z) && !this.isBlockSolid(x + 1, y + 1, z);
+            boolean minusZClear = !this.isBlockSolid(x, y, z - 1) && !this.isBlockSolid(x, y + 1, z - 1);
+            boolean plusZClear = !this.isBlockSolid(x, y, z + 1) && !this.isBlockSolid(x, y + 1, z + 1);
+            byte direction = -1;
+            double smallestDistance = 9999.0D;
 
-            if (var14 && fracx < var19)
+            if (minusXClear && fracx < smallestDistance)
             {
-                var19 = fracx;
-                var18 = 0;
+                smallestDistance = fracx;
+                direction = 0;
             }
 
-            if (var15 && 1.0D - fracx < var19)
+            if (plusXClear && 1.0D - fracx < smallestDistance)
             {
-                var19 = 1.0D - fracx;
-                var18 = 1;
+                smallestDistance = 1.0D - fracx;
+                direction = 1;
             }
 
-            if (var16 && fracz < var19)
+            if (minusZClear && fracz < smallestDistance)
             {
-                var19 = fracz;
-                var18 = 4;
+                smallestDistance = fracz;
+                direction = 4;
             }
 
-            if (var17 && 1.0D - fracz < var19)
+            if (plusZClear && 1.0D - fracz < smallestDistance)
             {
-                var19 = 1.0D - fracz;
-                var18 = 5;
+                smallestDistance = 1.0D - fracz;
+                direction = 5;
             }
 
-            float var21 = 0.1F;
-
-            if (var18 == 0)
+            if (direction == 0)
             {
-                this.motionX = (double)(-var21);
+                this.motionX = -0.1D;
             }
 
-            if (var18 == 1)
+            if (direction == 1)
             {
-                this.motionX = (double)var21;
+                this.motionX = 0.1D;
             }
 
-            if (var18 == 4)
+            if (direction == 4)
             {
-                this.motionZ = (double)(-var21);
+                this.motionZ = -0.1D;
             }
 
-            if (var18 == 5)
+            if (direction == 5)
             {
-                this.motionZ = (double)var21;
+                this.motionZ = 0.1D;
             }
         }
-
-        return false;
     }
     
     /**

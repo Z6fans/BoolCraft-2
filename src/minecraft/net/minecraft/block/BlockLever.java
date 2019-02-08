@@ -1,6 +1,6 @@
 package net.minecraft.block;
 
-import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;

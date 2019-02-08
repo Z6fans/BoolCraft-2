@@ -1,8 +1,10 @@
 package net.minecraft.block;
 
 import java.util.List;
+
 import com.google.common.collect.HashBiMap;
-import net.minecraft.client.multiplayer.WorldClient;
+
+import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
