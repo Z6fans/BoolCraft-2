@@ -835,7 +835,7 @@ public class Minecraft
             this.folderName = folder;
             this.serverRunning = true;
         	logger.info("Starting integrated minecraft server version 1.7.10");
-            this.worldServer = new WorldServer(this, (new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(this.folderName, true));
+            this.worldServer = new WorldServer((new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(this.folderName, true));
             logger.info("Preparing start region ");
 
             for (int var11 = -192; var11 <= 192 && this.serverRunning; var11 += 16)
