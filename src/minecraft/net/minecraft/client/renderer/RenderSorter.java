@@ -2,14 +2,14 @@ package net.minecraft.client.renderer;
 
 import java.util.Comparator;
 
-import net.minecraft.client.EntityPlayer;
+import net.minecraft.player.EntityPlayerSP;
 
 public class RenderSorter implements Comparator<WorldRenderer>
 {
     /** The entity (usually the player) that the camera is inside. */
-    private EntityPlayer baseEntity;
+    private EntityPlayerSP baseEntity;
 
-    public RenderSorter(EntityPlayer p_i1241_1_)
+    public RenderSorter(EntityPlayerSP p_i1241_1_)
     {
         this.baseEntity = p_i1241_1_;
     }

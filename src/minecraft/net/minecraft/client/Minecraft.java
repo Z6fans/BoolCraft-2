@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
+import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MouseHelper;
@@ -49,7 +50,7 @@ public class Minecraft
     private Timer timer = new Timer();
     public WorldClient worldClient;
     public RenderGlobal renderGlobal;
-    public EntityPlayer thePlayer;
+    public EntityPlayerSP thePlayer;
 
     /**
      * The Entity from which the renderer determines the render viewpoint. Currently is always the parent Minecraft
@@ -57,7 +58,7 @@ public class Minecraft
      * modify the camera likewise, with the caveat of triggering chunk rebuilds as it moves, making it unsuitable for
      * changing the viewpoint mid-render.
      */
-    public EntityPlayer renderViewEntity;
+    public EntityPlayerSP renderViewEntity;
     private boolean isGamePaused;
 
     /** The GuiScreen that's being displayed at the moment. */
@@ -858,7 +859,7 @@ public class Minecraft
 
             if (this.thePlayer == null)
             {
-                this.thePlayer = new EntityPlayer(this.worldClient);
+                this.thePlayer = new EntityPlayerSP(this.worldClient);
             }
 
             this.thePlayer.preparePlayerToSpawn();
