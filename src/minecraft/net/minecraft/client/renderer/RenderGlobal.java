@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.player.EntityPlayerSP;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+
 import org.lwjgl.opengl.GL11;
 
 public class RenderGlobal
@@ -178,7 +179,7 @@ public class RenderGlobal
 
             if (this.theWorld != null)
             {
-                EntityPlayerSP var7 = this.mc.renderViewEntity;
+                EntityPlayer var7 = this.mc.renderViewEntity;
 
                 if (var7 != null)
                 {
@@ -282,7 +283,7 @@ public class RenderGlobal
     /**
      * Sorts all renderers based on the passed in entity. Args: entityLiving, renderPass, partialTickTime
      */
-    public int sortAndRender(EntityPlayerSP p_72719_1_, int p_72719_2_, double p_72719_3_)
+    public int sortAndRender(EntityPlayer p_72719_1_, int p_72719_2_, double p_72719_3_)
     {
         for (int var5 = 0; var5 < 10; ++var5)
         {
@@ -365,7 +366,7 @@ public class RenderGlobal
             }
         }
 
-        EntityPlayerSP var22 = this.mc.renderViewEntity;
+        EntityPlayer var22 = this.mc.renderViewEntity;
         double var23 = var22.lastTickPosX + (var22.posX - var22.lastTickPosX) * p_72724_4_;
         double var13 = var22.lastTickPosY + (var22.posY - var22.lastTickPosY) * p_72724_4_;
         double var15 = var22.lastTickPosZ + (var22.posZ - var22.lastTickPosZ) * p_72724_4_;
@@ -419,7 +420,7 @@ public class RenderGlobal
     /**
      * Updates some of the renderers sorted by distance from the player
      */
-    public boolean updateRenderers(EntityPlayerSP player)
+    public boolean updateRenderers(EntityPlayer player)
     {
         byte var3 = 2;
         RenderSorter var4 = new RenderSorter(player);
@@ -562,7 +563,7 @@ public class RenderGlobal
     /**
      * Draws the selection box for the player. Args: entityPlayer, rayTraceHit, i, itemStack, partialTickTime
      */
-    public void drawSelectionBox(EntityPlayerSP player, MovingObjectPosition rayTraceHit, float partialTickTime)
+    public void drawSelectionBox(EntityPlayer player, MovingObjectPosition rayTraceHit, float partialTickTime)
     {
     	GL11.glEnable(GL11.GL_BLEND);
         OpenGlHelper.glBlendFunc(770, 771, 1, 0);

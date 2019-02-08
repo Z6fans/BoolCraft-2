@@ -1,10 +1,9 @@
-package net.minecraft.player;
+package net.minecraft.client;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
@@ -12,7 +11,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
-public class EntityPlayerSP
+public class EntityPlayer
 {
     /** Entity position X */
     public double posX;
@@ -98,10 +97,10 @@ public class EntityPlayerSP
      */
     public double lastTickPosZ;
 
-    public EntityPlayerSP(WorldClient p_i1238_2_)
+    public EntityPlayer(WorldClient world)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
-        this.worldObj = p_i1238_2_;
+        this.worldObj = world;
         this.yOffset = 1.62F;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.width = 0.6F;
@@ -474,23 +473,20 @@ public class EntityPlayerSP
             this.boundingBox.maxY = this.boundingBox.minY + (double)this.height;
         }
         
-        if (this.worldObj != null)
+        while (this.posY > 0.0D)
         {
-            while (this.posY > 0.0D)
+            this.setPosition(this.posX, this.posY, this.posZ);
+
+            if (this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
             {
-                this.setPosition(this.posX, this.posY, this.posZ);
-
-                if (this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
-                {
-                    break;
-                }
-
-                ++this.posY;
+                break;
             }
 
-            this.motionX = this.motionY = this.motionZ = 0.0D;
-            this.rotationPitch = 0.0F;
+            ++this.posY;
         }
+
+        this.motionX = this.motionY = this.motionZ = 0.0D;
+        this.rotationPitch = 0.0F;
     }
 
     /**
