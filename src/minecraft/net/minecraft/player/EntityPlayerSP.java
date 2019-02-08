@@ -309,7 +309,7 @@ public class EntityPlayerSP
 
             if (hasMoved)
             {
-                Minecraft.getMinecraft().worldServer.getPlayerManager().updateMountedMovingPlayer(this.posX, this.posZ);
+                Minecraft.getMinecraft().worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
             }
 
             ++this.ticksSinceMovePacket;
