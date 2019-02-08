@@ -7,7 +7,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.WorldClient;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;

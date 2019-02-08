@@ -1,7 +1,7 @@
 package net.minecraft.world;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.WorldClient;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.chunk.Chunk;
 
 public class ChunkCache

@@ -2,7 +2,7 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
-import net.minecraft.client.WorldClient;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.ChunkCache;
 

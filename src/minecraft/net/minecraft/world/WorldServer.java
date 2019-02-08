@@ -137,14 +137,14 @@ public class WorldServer
                     this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
                 }
 
-                this.worldInfo.setServerInitialized();
+                this.worldInfo.setServerInitialized(true);
             }
             catch (Throwable t)
             {
                 throw new ReportedException(CrashReport.makeCrashReport(t, "Exception initializing level"));
             }
 
-            this.worldInfo.setServerInitialized();
+            this.worldInfo.setServerInitialized(true);
         }
         this.saveHandler = sh;
         this.currentChunkLoader = new AnvilChunkLoader(this.saveHandler.getWorldDirectory());
