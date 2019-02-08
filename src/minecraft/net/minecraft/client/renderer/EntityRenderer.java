@@ -110,6 +110,7 @@ public class EntityRenderer
                 
                 GL11.glMatrixMode(GL11.GL_PROJECTION);
                 GL11.glLoadIdentity();
+                /**FOV*/
                 Project.gluPerspective(110, (float)this.mc.displayWidth / (float)this.mc.displayHeight, 0.05F, 512.0F);
                 GL11.glMatrixMode(GL11.GL_MODELVIEW);
                 GL11.glLoadIdentity();

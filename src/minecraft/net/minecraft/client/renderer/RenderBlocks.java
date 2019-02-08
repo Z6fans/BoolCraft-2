@@ -33,6 +33,28 @@ public class RenderBlocks
         this.chunkCache = p_i1251_1_;
     }
 
+    public boolean renderBlockByRenderType(Block block, int x, int y, int z)
+    {
+        int rt = block.getRenderType();
+
+        if (rt == -1)
+        {
+            return false;
+        }
+        else
+        {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.chunkCache, x, y, z));
+            AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
+        	this.renderMinX = aabb.minX;
+            this.renderMaxX = aabb.maxX;
+            this.renderMinY = aabb.minY;
+            this.renderMaxY = aabb.maxY;
+            this.renderMinZ = aabb.minZ;
+            this.renderMaxZ = aabb.maxZ;
+            return rt == 0 ? this.renderStandardBlock(block, x, y, z, false) : (rt == 5 ? this.renderBlockRedstoneWire(block, x, y, z) : (rt == 12 ? this.renderBlockLever(block, x, y, z) : false));
+        }
+    }
+
     private void setRenderBounds(double minx, double miny, double minz, double maxx, double maxy, double maxz)
     {
     	this.renderMinX = minx;
@@ -42,35 +64,10 @@ public class RenderBlocks
         this.renderMinZ = minz;
         this.renderMaxZ = maxz;
     }
-    
-    public void setRenderBoundsFromAABB(AxisAlignedBB aabb){
-    	this.renderMinX = aabb.minX;
-        this.renderMaxX = aabb.maxX;
-        this.renderMinY = aabb.minY;
-        this.renderMaxY = aabb.maxY;
-        this.renderMinZ = aabb.minZ;
-        this.renderMaxZ = aabb.maxZ;
-    }
 
-    public boolean renderBlockByRenderType(Block p_147805_1_, int p_147805_2_, int p_147805_3_, int p_147805_4_)
+    private boolean renderBlockLever(Block block, int x, int y, int z)
     {
-        int var5 = p_147805_1_.getRenderType();
-
-        if (var5 == -1)
-        {
-            return false;
-        }
-        else
-        {
-        	Tessellator.instance.setColorOpaque_I(p_147805_1_.colorMultiplier(this.chunkCache, p_147805_2_, p_147805_3_, p_147805_4_));
-            this.setRenderBoundsFromAABB(p_147805_1_.generateCubicBoundingBox(0, 0, 0));
-            return var5 == 0 ? this.renderStandardBlock(p_147805_1_, p_147805_2_, p_147805_3_, p_147805_4_, false) : (var5 == 5 ? this.renderBlockRedstoneWire(p_147805_1_, p_147805_2_, p_147805_3_, p_147805_4_) : (var5 == 12 ? this.renderBlockLever(p_147805_1_, p_147805_2_, p_147805_3_, p_147805_4_) : false));
-        }
-    }
-
-    private boolean renderBlockLever(Block p_147790_1_, int p_147790_2_, int p_147790_3_, int p_147790_4_)
-    {
-        int var6 = this.chunkCache.getBlockMetadata(p_147790_2_, p_147790_3_, p_147790_4_) & 7;
+        int var6 = this.chunkCache.getBlockMetadata(x, y, z) & 7;
 
         float d = 0.1875F;
 
@@ -107,45 +104,45 @@ public class RenderBlocks
             this.setRenderBounds((double)(0.5F - d), (double)(1.0F - d), (double)(0.5F - d), (double)(0.5F + d), 1.0D, (double)(0.5F + d));
         }
         
-        this.renderStandardBlock(p_147790_1_, p_147790_2_, p_147790_3_, p_147790_4_, true);
+        this.renderStandardBlock(block, x, y, z, true);
         return true;
     }
 
-    private boolean renderBlockRedstoneWire(Block p_147788_1_, int p_147788_2_, int p_147788_3_, int p_147788_4_)
+    private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
     {
         Tessellator var5 = Tessellator.instance;
-        boolean var19 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_ - 1, p_147788_4_, false);
-        boolean var20 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_, p_147788_4_, true) || !this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_ - 1, p_147788_4_, false);
-        boolean var21 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ - 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ - 1, false);
-        boolean var22 = BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_, p_147788_4_ + 1, true) || !this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ - 1, p_147788_4_ + 1, false);
+        boolean var19 = BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y, z, true) || !this.chunkCache.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y - 1, z, false);
+        boolean var20 = BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y, z, true) || !this.chunkCache.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y - 1, z, false);
+        boolean var21 = BlockRedstoneWire.shouldConnect(this.chunkCache, x, y, z - 1, true) || !this.chunkCache.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y - 1, z - 1, false);
+        boolean var22 = BlockRedstoneWire.shouldConnect(this.chunkCache, x, y, z + 1, true) || !this.chunkCache.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y - 1, z + 1, false);
 
-        if (!this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_).isSolid())
+        if (!this.chunkCache.getBlock(x, y + 1, z).isSolid())
         {
-            if (this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ - 1, p_147788_3_ + 1, p_147788_4_, false))
+            if (this.chunkCache.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y + 1, z, false))
             {
                 var19 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_ + 1, p_147788_3_ + 1, p_147788_4_, false))
+            if (this.chunkCache.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y + 1, z, false))
             {
                 var20 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ - 1, false))
+            if (this.chunkCache.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y + 1, z - 1, false))
             {
                 var21 = true;
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, p_147788_2_, p_147788_3_ + 1, p_147788_4_ + 1, false))
+            if (this.chunkCache.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y + 1, z + 1, false))
             {
                 var22 = true;
             }
         }
 
-        float var23 = (float)(p_147788_2_ + 0);
-        float var24 = (float)(p_147788_2_ + 1);
-        float var25 = (float)(p_147788_4_ + 0);
-        float var26 = (float)(p_147788_4_ + 1);
+        float var23 = (float)(x + 0);
+        float var24 = (float)(x + 1);
+        float var25 = (float)(z + 0);
+        float var26 = (float)(z + 1);
 
         if (!var19)
         {
@@ -167,86 +164,86 @@ public class RenderBlocks
             var26 -= 0.3125F;
         }
 
-        var5.addVertex((double)var24, (double)p_147788_3_ + 0.015625D, (double)var26);
-        var5.addVertex((double)var24, (double)p_147788_3_ + 0.015625D, (double)var25);
-        var5.addVertex((double)var23, (double)p_147788_3_ + 0.015625D, (double)var25);
-        var5.addVertex((double)var23, (double)p_147788_3_ + 0.015625D, (double)var26);
+        var5.addVertex((double)var24, (double)y + 0.015625D, (double)var26);
+        var5.addVertex((double)var24, (double)y + 0.015625D, (double)var25);
+        var5.addVertex((double)var23, (double)y + 0.015625D, (double)var25);
+        var5.addVertex((double)var23, (double)y + 0.015625D, (double)var26);
 
-        if (!this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_).isSolid())
+        if (!this.chunkCache.getBlock(x, y + 1, z).isSolid())
         {
-            if (this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_, p_147788_4_).isSolid() && this.chunkCache.getBlock(p_147788_2_ - 1, p_147788_3_ + 1, p_147788_4_) == Block.redstone_wire)
+            if (this.chunkCache.getBlock(x - 1, y, z).isSolid() && this.chunkCache.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
             {
-                var5.addVertex((double)p_147788_2_ + 0.015625D, (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 1 - 0.3125F));
-                var5.addVertex((double)p_147788_2_ + 0.015625D, (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 1 - 0.3125F));
-                var5.addVertex((double)p_147788_2_ + 0.015625D, (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 0.3125F));
-                var5.addVertex((double)p_147788_2_ + 0.015625D, (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 0.3125F));
+                var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
+                var5.addVertex((double)x + 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
+                var5.addVertex((double)x + 0.015625D, (double)(y + 0), (double)(z + 0.3125F));
+                var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 0.3125F));
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_, p_147788_4_).isSolid() && this.chunkCache.getBlock(p_147788_2_ + 1, p_147788_3_ + 1, p_147788_4_) == Block.redstone_wire)
+            if (this.chunkCache.getBlock(x + 1, y, z).isSolid() && this.chunkCache.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
             {
-                var5.addVertex((double)(p_147788_2_ + 1) - 0.015625D, (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 1 - 0.3125F));
-                var5.addVertex((double)(p_147788_2_ + 1) - 0.015625D, (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 1 - 0.3125F));
-                var5.addVertex((double)(p_147788_2_ + 1) - 0.015625D, (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 0.3125F));
-                var5.addVertex((double)(p_147788_2_ + 1) - 0.015625D, (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 0.3125F));
+                var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
+                var5.addVertex((double)(x + 1) - 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
+                var5.addVertex((double)(x + 1) - 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 0.3125F));
+                var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 0.3125F));
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ - 1).isSolid() && this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_ - 1) == Block.redstone_wire)
+            if (this.chunkCache.getBlock(x, y, z - 1).isSolid() && this.chunkCache.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
             {
-                var5.addVertex((double)(p_147788_2_ + 1 - 0.3125F), (double)(p_147788_3_ + 0), (double)p_147788_4_ + 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 1 - 0.3125F), (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)p_147788_4_ + 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 0.3125F), (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)p_147788_4_ + 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 0.3125F), (double)(p_147788_3_ + 0), (double)p_147788_4_ + 0.015625D);
+                var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)z + 0.015625D);
+                var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)z + 0.015625D);
+                var5.addVertex((double)(x + 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)z + 0.015625D);
+                var5.addVertex((double)(x + 0.3125F), (double)(y + 0), (double)z + 0.015625D);
             }
 
-            if (this.chunkCache.getBlock(p_147788_2_, p_147788_3_, p_147788_4_ + 1).isSolid() && this.chunkCache.getBlock(p_147788_2_, p_147788_3_ + 1, p_147788_4_ + 1) == Block.redstone_wire)
+            if (this.chunkCache.getBlock(x, y, z + 1).isSolid() && this.chunkCache.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
             {
-                var5.addVertex((double)(p_147788_2_ + 1 - 0.3125F), (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 1) - 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 1 - 0.3125F), (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 1) - 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 0.3125F), (double)(p_147788_3_ + 0), (double)(p_147788_4_ + 1) - 0.015625D);
-                var5.addVertex((double)(p_147788_2_ + 0.3125F), (double)((float)(p_147788_3_ + 1) + 0.021875F), (double)(p_147788_4_ + 1) - 0.015625D);
+                var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)(z + 1) - 0.015625D);
+                var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)(z + 1) - 0.015625D);
+                var5.addVertex((double)(x + 0.3125F), (double)(y + 0), (double)(z + 1) - 0.015625D);
+                var5.addVertex((double)(x + 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)(z + 1) - 0.015625D);
             }
         }
 
         return true;
     }
 
-    private boolean renderStandardBlock(Block p_147736_1_, int p_147736_2_, int p_147736_3_, int p_147736_4_, boolean renderAllFaces)
+    private boolean renderStandardBlock(Block block, int x, int y, int z, boolean renderAllFaces)
     {
         boolean var9 = false;
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_, p_147736_3_ - 1, p_147736_4_, 0))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y - 1, z, 0))
         {
-            this.renderFaceYNeg(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceYNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_, p_147736_3_ + 1, p_147736_4_, 1))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y + 1, z, 1))
         {
-            this.renderFaceYPos(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceYPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_, p_147736_3_, p_147736_4_ - 1, 2))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y, z - 1, 2))
         {
-            this.renderFaceZNeg(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceZNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_, p_147736_3_, p_147736_4_ + 1, 3))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y, z + 1, 3))
         {
-            this.renderFaceZPos(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceZPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_ - 1, p_147736_3_, p_147736_4_, 4))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x - 1, y, z, 4))
         {
-            this.renderFaceXNeg(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceXNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || p_147736_1_.shouldSideBeRendered(this.chunkCache, p_147736_2_ + 1, p_147736_3_, p_147736_4_, 5))
+        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x + 1, y, z, 5))
         {
-            this.renderFaceXPos(p_147736_1_, (double)p_147736_2_, (double)p_147736_3_, (double)p_147736_4_);
+            this.renderFaceXPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
