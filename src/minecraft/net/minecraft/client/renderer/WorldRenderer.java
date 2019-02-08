@@ -147,7 +147,7 @@ public class WorldRenderer
                 this.skipRenderPass[var8] = true;
             }
             
-            ChunkCache cache = new ChunkCache(this.worldObj, xmin - 1, ymin - 1, zmin - 1, xmax + 1, ymax + 1, zmax + 1, 1);
+            ChunkCache cache = new ChunkCache(this.worldObj, xmin - 1, ymin - 1, zmin - 1, xmax + 1, ymax + 1, zmax + 1);
 
             if (!cache.extendedLevelsInChunkCache())
             {

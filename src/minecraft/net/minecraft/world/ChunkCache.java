@@ -13,12 +13,12 @@ public class ChunkCache
     /** True if the chunk cache is empty. */
     private boolean isEmpty;
 
-	public ChunkCache(WorldClient world, int p_i1964_2_, int p_i1964_3_, int p_i1964_4_, int p_i1964_5_, int p_i1964_6_, int p_i1964_7_, int p_i1964_8_)
+	public ChunkCache(WorldClient world, int xmin, int ymin, int zmin, int xmax, int ymax, int zmax)
     {
-        this.chunkX = p_i1964_2_ - p_i1964_8_ >> 4;
-        this.chunkZ = p_i1964_4_ - p_i1964_8_ >> 4;
-        int var9 = p_i1964_5_ + p_i1964_8_ >> 4;
-        int var10 = p_i1964_7_ + p_i1964_8_ >> 4;
+        this.chunkX = xmin - 1 >> 4;
+        this.chunkZ = zmin - 1 >> 4;
+        int var9 = xmax + 1 >> 4;
+        int var10 = zmax + 1 >> 4;
         this.chunkArray = new Chunk[var9 - this.chunkX + 1][var10 - this.chunkZ + 1];
         this.isEmpty = true;
         int var11;
@@ -38,13 +38,13 @@ public class ChunkCache
             }
         }
 
-        for (var11 = p_i1964_2_ >> 4; var11 <= p_i1964_5_ >> 4; ++var11)
+        for (var11 = xmin >> 4; var11 <= xmax >> 4; ++var11)
         {
-            for (var12 = p_i1964_4_ >> 4; var12 <= p_i1964_7_ >> 4; ++var12)
+            for (var12 = zmin >> 4; var12 <= zmax >> 4; ++var12)
             {
                 var13 = this.chunkArray[var11 - this.chunkX][var12 - this.chunkZ];
 
-                if (var13 != null && !var13.getAreLevelsEmpty(p_i1964_3_, p_i1964_6_))
+                if (var13 != null && !var13.getAreLevelsEmpty(ymin, ymax))
                 {
                     this.isEmpty = false;
                 }
