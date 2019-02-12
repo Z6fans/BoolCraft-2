@@ -143,47 +143,47 @@ public class WorldRenderer
             
             ChunkCache cache = new ChunkCache(this.worldObj, this.posX, this.posY, this.posZ);
 
-            if (!cache.extendedLevelsInChunkCache())
+            if (cache.extendedLevelsInChunkCache())
             {
-                RenderBlocks var16 = new RenderBlocks(cache);
+                RenderBlocks renderBlocks = new RenderBlocks(cache);
                 this.vertexState = null;
-                boolean var19 = false;
-                boolean var20 = false;
+                boolean doRenderPass = false;
+                boolean doPostRenderBlocks = false;
 
-                for (int var21 = this.posY; var21 < this.posY + 16; ++var21)
+                for (int y = this.posY; y < this.posY + 16; ++y)
                 {
-                    for (int var22 = this.posZ; var22 < this.posZ + 16; ++var22)
+                    for (int z = this.posZ; z < this.posZ + 16; ++z)
                     {
-                        for (int var23 = this.posX; var23 < this.posX + 16; ++var23)
+                        for (int x = this.posX; x < this.posX + 16; ++x)
                         {
-                            Block var24 = cache.getBlock(var23, var21, var22);
+                            Block block = cache.getBlock(x, y, z);
 
-                            if (!var24.isReplaceable())
+                            if (!block.isReplaceable())
                             {
-                                if (!var20)
+                                if (!doPostRenderBlocks)
                                 {
-                                    var20 = true;
+                                    doPostRenderBlocks = true;
                                     this.preRenderBlocks(0);
                                 }
 
-                                var19 |= var16.renderBlockByRenderType(var24, var23, var21, var22);
+                                doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
                             }
                         }
                     }
                 }
 
-                if (var19)
+                if (doRenderPass)
                 {
                     this.skipRenderPass[0] = false;
                 }
 
-                if (var20)
+                if (doPostRenderBlocks)
                 {
                     this.postRenderBlocks(0, player);
                 }
                 else
                 {
-                    var19 = false;
+                    doRenderPass = false;
                 }
             }
             this.isInitialized = true;
