@@ -126,6 +126,7 @@ public class Minecraft
      * Delays the first damage on the block after the first click on the block
      */
     private int blockHitDelay;
+    public int currentItem;
 
     public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
     {
@@ -374,16 +375,16 @@ public class Minecraft
                                             mouseScroll = -1;
                                         }
                                         
-                                        this.thePlayer.currentItem -= mouseScroll;
+                                        this.currentItem -= mouseScroll;
                                         
-                                        while (this.thePlayer.currentItem < 0)
+                                        while (this.currentItem < 0)
                                         {
-                                        	this.thePlayer.currentItem += 4;
+                                        	this.currentItem += 4;
                                         }
 
-                                        while (this.thePlayer.currentItem >= 4)
+                                        while (this.currentItem >= 4)
                                         {
-                                            this.thePlayer.currentItem -= 4;
+                                            this.currentItem -= 4;
                                         }
                                     }
 
@@ -790,7 +791,7 @@ public class Minecraft
 
         if (this.objectMouseOver != null)
         {
-        	Block block = this.mainInventory[this.thePlayer.currentItem];
+        	Block block = this.mainInventory[this.currentItem];
         	
         	int x = this.objectMouseOver.blockX;
             int y = this.objectMouseOver.blockY;
@@ -855,12 +856,7 @@ public class Minecraft
                 this.renderGlobal.setWorldAndLoadRenderers(this.worldClient);
             }
 
-            if (this.thePlayer == null)
-            {
-                this.thePlayer = new EntityPlayer(this.worldClient);
-            }
-
-            this.thePlayer.preparePlayerToSpawn();
+            this.thePlayer = new EntityPlayer(this.worldClient);
             int chunkX = MathHelper.floor_double(this.thePlayer.posX / 16.0D);
         	int chunkY = MathHelper.floor_double(this.thePlayer.posY / 16.0D);
             int chunkZ = MathHelper.floor_double(this.thePlayer.posZ / 16.0D);

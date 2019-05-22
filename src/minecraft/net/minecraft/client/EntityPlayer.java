@@ -45,9 +45,6 @@ public class EntityPlayer
     /** Entity motion Z */
     private double motionZ;
 
-    /** The index of the currently held item (0-8). */
-    public int currentItem;
-
     /** used to check whether entity is jumping. */
     private boolean isJumping;
     private float moveStrafing;
@@ -61,14 +58,10 @@ public class EntityPlayer
 
     /** Axis aligned bounding box. */
     private final AxisAlignedBB boundingBox;
-    public float yOffset;
     private float ySize;
 
     /** How wide this entity is considered to be */
     private float width;
-
-    /** How high this entity is considered to be */
-    private float height;
     private double prevPosX;
     private double prevPosY;
     private double prevPosZ;
@@ -100,25 +93,31 @@ public class EntityPlayer
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldObj = world;
-        this.yOffset = 1.62F;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.width = 0.6F;
-        this.height = 1.8F;
-        this.setPosition(0.0D, 0.0D, 0.0D);
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.ySize = 0.0F;
-        this.motionX = this.motionY = this.motionZ = 0.0D;
-        this.prevPosX = this.posX = 0;
+        this.ySize = 0;
+        this.motionX = this.motionY = this.motionZ = 0;
+        this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
         this.prevPosY = this.posY = Minecraft.getMinecraft().worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
-        this.prevPosZ = this.posZ = 0;
-        this.prevRotationYaw = this.rotationYaw = 0;
-        this.prevRotationPitch = this.rotationPitch = 0;
-        this.ySize = 0.0F;
-        this.setPosition(this.posX, this.posY, this.posZ);
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
+        this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
         Minecraft.getMinecraft().displayGuiScreenNull();
+        
+        while (this.posY > 0.0D)
+        {
+            this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset() + (double)this.ySize, -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + (double)this.ySize + 1.8F, this.width/2.0F);
+
+            if (this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
+            {
+                break;
+            }
+
+            ++this.posY;
+        }
+    }
+    
+    public float getYOffset()
+    {
+    	return 1.62F;
     }
     
     /**
@@ -255,7 +254,7 @@ public class EntityPlayer
 
             this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
             this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
-            this.posY = this.boundingBox.minY + (double)this.yOffset - (double)this.ySize;
+            this.posY = this.boundingBox.minY + (double)this.getYOffset() - (double)this.ySize;
             this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
 
             if (var13 != this.motionX)
@@ -450,70 +449,37 @@ public class EntityPlayer
             }
         }
     }
-    
-    /**
-     * Keeps moving the entity up so it isn't colliding with blocks and other requirements for this entity to be spawned
-     * (only actually used on players though its also on Entity)
-     */
-    public void preparePlayerToSpawn()
-    {
-    	this.yOffset = 1.62F;
-    	
-        if (0.6F != this.width || 1.8F != this.height)
-        {
-            this.width = 0.6F;
-            this.height = 1.8F;
-            this.boundingBox.maxX = this.boundingBox.minX + (double)this.width;
-            this.boundingBox.maxZ = this.boundingBox.minZ + (double)this.width;
-            this.boundingBox.maxY = this.boundingBox.minY + (double)this.height;
-        }
-        
-        while (this.posY > 0.0D)
-        {
-            this.setPosition(this.posX, this.posY, this.posZ);
-
-            if (this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
-            {
-                break;
-            }
-
-            ++this.posY;
-        }
-
-        this.motionX = this.motionY = this.motionZ = 0.0D;
-        this.rotationPitch = 0.0F;
-    }
 
     /**
-     * Performs a ray trace for the distance specified and using the partial tick time. Args: distance, partialTickTime
+     * Pure function. Performs a ray trace for the distance specified and using the partial tick time. Args: distance, partialTickTime
      */
     public MovingObjectPosition rayTrace8(float ptt)
     {
         double x = this.prevPosX + (this.posX - this.prevPosX) * (double)ptt;
         double y = this.prevPosY + (this.posY - this.prevPosY) * (double)ptt;
         double z = this.prevPosZ + (this.posZ - this.prevPosZ) * (double)ptt;
-        Vec3 v1 = Vec3.createVectorHelper(x, y, z);
+        Vec3 playerPos = Vec3.createVectorHelper(x, y, z);
         Vec3 lookVec = this.getLook(ptt);
-        Vec3 v2 = v1.addVector(lookVec.x * 8, lookVec.y * 8, lookVec.z * 8);
-        if (!Double.isNaN(v1.x) && !Double.isNaN(v1.y) && !Double.isNaN(v1.z))
+        Vec3 viewVec = playerPos.addVector(lookVec.x * 8, lookVec.y * 8, lookVec.z * 8);
+        if (!Double.isNaN(playerPos.x) && !Double.isNaN(playerPos.y) && !Double.isNaN(playerPos.z))
         {
-            if (!Double.isNaN(v2.x) && !Double.isNaN(v2.y) && !Double.isNaN(v2.z))
+            if (!Double.isNaN(viewVec.x) && !Double.isNaN(viewVec.y) && !Double.isNaN(viewVec.z))
             {
-                int var6 = MathHelper.floor_double(v2.x);
-                int var7 = MathHelper.floor_double(v2.y);
-                int var8 = MathHelper.floor_double(v2.z);
-                int var9 = MathHelper.floor_double(v1.x);
-                int var10 = MathHelper.floor_double(v1.y);
-                int var11 = MathHelper.floor_double(v1.z);
-                Block var12 = this.worldObj.getBlock(var9, var10, var11);
+                int viewBlockX = MathHelper.floor_double(viewVec.x);
+                int viewBlockY = MathHelper.floor_double(viewVec.y);
+                int viewBlockZ = MathHelper.floor_double(viewVec.z);
+                int playerBlockX = MathHelper.floor_double(playerPos.x);
+                int playerBlockY = MathHelper.floor_double(playerPos.y);
+                int playerBlockZ = MathHelper.floor_double(playerPos.z);
+                Block playerBlock = this.worldObj.getBlock(playerBlockX, playerBlockY, playerBlockZ);
 
-                if (!var12.isReplaceable())
+                if (!playerBlock.isReplaceable())
                 {
-                    MovingObjectPosition var14 = var12.collisionRayTrace(this.worldObj, var9, var10, var11, v1, v2);
+                    MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldObj, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
-                    if (var14 != null)
+                    if (playerBlockPos != null)
                     {
-                        return var14;
+                        return playerBlockPos;
                     }
                 }
 
@@ -521,12 +487,12 @@ public class EntityPlayer
 
                 while (var13-- >= 0)
                 {
-                    if (Double.isNaN(v1.x) || Double.isNaN(v1.y) || Double.isNaN(v1.z))
+                    if (Double.isNaN(playerPos.x) || Double.isNaN(playerPos.y) || Double.isNaN(playerPos.z))
                     {
                         return null;
                     }
 
-                    if (var9 == var6 && var10 == var7 && var11 == var8)
+                    if (playerBlockX == viewBlockX && playerBlockY == viewBlockY && playerBlockZ == viewBlockZ)
                     {
                         return null;
                     }
@@ -538,39 +504,39 @@ public class EntityPlayer
                     double var19 = 999.0D;
                     double var21 = 999.0D;
 
-                    if (var6 > var9)
+                    if (viewBlockX > playerBlockX)
                     {
-                        var17 = (double)var9 + 1.0D;
+                        var17 = (double)playerBlockX + 1.0D;
                     }
-                    else if (var6 < var9)
+                    else if (viewBlockX < playerBlockX)
                     {
-                        var17 = (double)var9 + 0.0D;
+                        var17 = (double)playerBlockX + 0.0D;
                     }
                     else
                     {
                         var41 = false;
                     }
 
-                    if (var7 > var10)
+                    if (viewBlockY > playerBlockY)
                     {
-                        var19 = (double)var10 + 1.0D;
+                        var19 = (double)playerBlockY + 1.0D;
                     }
-                    else if (var7 < var10)
+                    else if (viewBlockY < playerBlockY)
                     {
-                        var19 = (double)var10 + 0.0D;
+                        var19 = (double)playerBlockY + 0.0D;
                     }
                     else
                     {
                         var15 = false;
                     }
 
-                    if (var8 > var11)
+                    if (viewBlockZ > playerBlockZ)
                     {
-                        var21 = (double)var11 + 1.0D;
+                        var21 = (double)playerBlockZ + 1.0D;
                     }
-                    else if (var8 < var11)
+                    else if (viewBlockZ < playerBlockZ)
                     {
-                        var21 = (double)var11 + 0.0D;
+                        var21 = (double)playerBlockZ + 0.0D;
                     }
                     else
                     {
@@ -580,30 +546,30 @@ public class EntityPlayer
                     double var23 = 999.0D;
                     double var25 = 999.0D;
                     double var27 = 999.0D;
-                    double var29 = v2.x - v1.x;
-                    double var31 = v2.y - v1.y;
-                    double var33 = v2.z - v1.z;
+                    double var29 = viewVec.x - playerPos.x;
+                    double var31 = viewVec.y - playerPos.y;
+                    double var33 = viewVec.z - playerPos.z;
 
                     if (var41)
                     {
-                        var23 = (var17 - v1.x) / var29;
+                        var23 = (var17 - playerPos.x) / var29;
                     }
 
                     if (var15)
                     {
-                        var25 = (var19 - v1.y) / var31;
+                        var25 = (var19 - playerPos.y) / var31;
                     }
 
                     if (var16)
                     {
-                        var27 = (var21 - v1.z) / var33;
+                        var27 = (var21 - playerPos.z) / var33;
                     }
 
                     byte var42;
 
                     if (var23 < var25 && var23 < var27)
                     {
-                        if (var6 > var9)
+                        if (viewBlockX > playerBlockX)
                         {
                             var42 = 4;
                         }
@@ -612,13 +578,13 @@ public class EntityPlayer
                             var42 = 5;
                         }
 
-                        v1.x = var17;
-                        v1.y += var31 * var23;
-                        v1.z += var33 * var23;
+                        playerPos.x = var17;
+                        playerPos.y += var31 * var23;
+                        playerPos.z += var33 * var23;
                     }
                     else if (var25 < var27)
                     {
-                        if (var7 > var10)
+                        if (viewBlockY > playerBlockY)
                         {
                             var42 = 0;
                         }
@@ -627,13 +593,13 @@ public class EntityPlayer
                             var42 = 1;
                         }
 
-                        v1.x += var29 * var25;
-                        v1.y = var19;
-                        v1.z += var33 * var25;
+                        playerPos.x += var29 * var25;
+                        playerPos.y = var19;
+                        playerPos.z += var33 * var25;
                     }
                     else
                     {
-                        if (var8 > var11)
+                        if (viewBlockZ > playerBlockZ)
                         {
                             var42 = 2;
                         }
@@ -642,41 +608,41 @@ public class EntityPlayer
                             var42 = 3;
                         }
 
-                        v1.x += var29 * var27;
-                        v1.y += var31 * var27;
-                        v1.z = var21;
+                        playerPos.x += var29 * var27;
+                        playerPos.y += var31 * var27;
+                        playerPos.z = var21;
                     }
 
-                    Vec3 var36 = Vec3.createVectorHelper(v1.x, v1.y, v1.z);
-                    var9 = (int)(var36.x = (double)MathHelper.floor_double(v1.x));
+                    Vec3 var36 = Vec3.createVectorHelper(playerPos.x, playerPos.y, playerPos.z);
+                    playerBlockX = (int)(var36.x = (double)MathHelper.floor_double(playerPos.x));
 
                     if (var42 == 5)
                     {
-                        --var9;
+                        --playerBlockX;
                         ++var36.x;
                     }
 
-                    var10 = (int)(var36.y = (double)MathHelper.floor_double(v1.y));
+                    playerBlockY = (int)(var36.y = (double)MathHelper.floor_double(playerPos.y));
 
                     if (var42 == 1)
                     {
-                        --var10;
+                        --playerBlockY;
                         ++var36.y;
                     }
 
-                    var11 = (int)(var36.z = (double)MathHelper.floor_double(v1.z));
+                    playerBlockZ = (int)(var36.z = (double)MathHelper.floor_double(playerPos.z));
 
                     if (var42 == 3)
                     {
-                        --var11;
+                        --playerBlockZ;
                         ++var36.z;
                     }
 
-                    Block var37 = this.worldObj.getBlock(var9, var10, var11);
+                    Block var37 = this.worldObj.getBlock(playerBlockX, playerBlockY, playerBlockZ);
 
                     if (!var37.isReplaceable())
                     {
-                        MovingObjectPosition var39 = var37.collisionRayTrace(this.worldObj, var9, var10, var11, v1, v2);
+                        MovingObjectPosition var39 = var37.collisionRayTrace(this.worldObj, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
                         if (var39 != null)
                         {
@@ -699,7 +665,7 @@ public class EntityPlayer
     }
 
     /**
-     * interpolated look vector
+     * Pure function. interpolated look vector
      */
     private Vec3 getLook(float ptt)
     {
@@ -711,22 +677,9 @@ public class EntityPlayer
         float var7 = MathHelper.sin(-var2 * 0.017453292F);
         return Vec3.createVectorHelper((double)(var5 * var6), (double)var7, (double)(var4 * var6));
     }
-
-    /**
-     * Sets the x,y,z of the entity from the given parameters. Also seems to set up a bounding box.
-     */
-    private void setPosition(double x, double y, double z)
-    {
-        this.posX = x;
-        this.posY = y;
-        this.posZ = z;
-        float w = this.width / 2.0F;
-        float h = this.height;
-        this.boundingBox.setBounds(x - (double)w, y - (double)this.yOffset + (double)this.ySize, z - (double)w, x + (double)w, y - (double)this.yOffset + (double)this.ySize + (double)h, z + (double)w);
-    }
     
     /**
-     * Returns a list of bounding boxes that collide with aabb excluding the passed in entity's collision. Args: entity,
+     * Pure function. Returns a list of bounding boxes that collide with aabb excluding the passed in entity's collision. Args: entity,
      * aabb
      */
     private List<AxisAlignedBB> getCollidingBoundingBoxes(AxisAlignedBB aabb)

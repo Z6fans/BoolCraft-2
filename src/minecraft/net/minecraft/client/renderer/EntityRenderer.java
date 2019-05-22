@@ -118,7 +118,7 @@ public class EntityRenderer
                 GL11.glTranslatef(0.0F, 0.0F, -0.1F);
                 GL11.glRotatef(player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTickTime, 1.0F, 0.0F, 0.0F);
                 GL11.glRotatef(player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTickTime + 180.0F, 0.0F, 1.0F, 0.0F);
-                GL11.glTranslatef(0.0F, player.yOffset - 1.62F, 0.0F);
+                GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
                 
                 ActiveRenderInfo.updateRenderInfo();
 
@@ -172,7 +172,7 @@ public class EntityRenderer
                 int sWidth = resolution.getScaledWidth();
                 int sHeight = resolution.getScaledHeight();
                 this.mc.entityRenderer.setupOverlayRendering();
-                drawRect(sWidth / 2 - 41 - 1 + this.mc.thePlayer.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.mc.thePlayer.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
+                drawRect(sWidth / 2 - 41 - 1 + this.mc.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.mc.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
                 drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
                 for (int index = 0; index < 4; ++index)
                 {
