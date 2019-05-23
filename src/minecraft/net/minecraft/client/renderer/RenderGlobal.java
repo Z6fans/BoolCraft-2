@@ -300,14 +300,14 @@ public class RenderGlobal
         double var13 = p_72719_1_.posY - this.prevSortY;
         double var15 = p_72719_1_.posZ - this.prevSortZ;
 
-        if (this.prevChunkSortX != p_72719_1_.chunkCoordX || this.prevChunkSortY != p_72719_1_.chunkCoordY || this.prevChunkSortZ != p_72719_1_.chunkCoordZ || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
+        if (this.prevChunkSortX != p_72719_1_.getChunkCoordX() || this.prevChunkSortY != p_72719_1_.getChunkCoordY() || this.prevChunkSortZ != p_72719_1_.getChunkCoordZ() || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
         {
             this.prevSortX = p_72719_1_.posX;
             this.prevSortY = p_72719_1_.posY;
             this.prevSortZ = p_72719_1_.posZ;
-            this.prevChunkSortX = p_72719_1_.chunkCoordX;
-            this.prevChunkSortY = p_72719_1_.chunkCoordY;
-            this.prevChunkSortZ = p_72719_1_.chunkCoordZ;
+            this.prevChunkSortX = p_72719_1_.getChunkCoordX();
+            this.prevChunkSortY = p_72719_1_.getChunkCoordY();
+            this.prevChunkSortZ = p_72719_1_.getChunkCoordZ();
             this.markRenderersForNewPosition(MathHelper.floor_double(p_72719_1_.posX), MathHelper.floor_double(p_72719_1_.posY), MathHelper.floor_double(p_72719_1_.posZ));
         }
 

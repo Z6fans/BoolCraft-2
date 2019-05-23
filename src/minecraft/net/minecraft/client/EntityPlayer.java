@@ -20,12 +20,6 @@ public class EntityPlayer
 
     /** Entity position Z */
     public double posZ;
-
-    /** Has this entity been added to the chunk its within */
-    public boolean addedToChunk;
-    public int chunkCoordX;
-    public int chunkCoordY;
-    public int chunkCoordZ;
 	private WorldClient worldObj;
     
     private double oldPosX;
@@ -45,11 +39,6 @@ public class EntityPlayer
     /** Entity motion Z */
     private double motionZ;
 
-    /** used to check whether entity is jumping. */
-    private boolean isJumping;
-    private float moveStrafing;
-    private float moveForward;
-
     /**
      * Counter used to ensure that the server sends a move packet (Packet11, 12 or 13) to the client at least once a
      * second.
@@ -58,10 +47,9 @@ public class EntityPlayer
 
     /** Axis aligned bounding box. */
     private final AxisAlignedBB boundingBox;
-    private float ySize;
 
     /** How wide this entity is considered to be */
-    private float width;
+    private final double width = 0.6F;
     private double prevPosX;
     private double prevPosY;
     private double prevPosZ;
@@ -94,24 +82,18 @@ public class EntityPlayer
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldObj = world;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        this.width = 0.6F;
-        this.ySize = 0;
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
         this.prevPosY = this.posY = Minecraft.getMinecraft().worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
         Minecraft.getMinecraft().displayGuiScreenNull();
         
-        while (this.posY > 0.0D)
+        this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
+        
+        while (!this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
         {
-            this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset() + (double)this.ySize, -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + (double)this.ySize + 1.8F, this.width/2.0F);
-
-            if (this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
-            {
-                break;
-            }
-
             ++this.posY;
+            this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
         }
     }
     
@@ -125,205 +107,188 @@ public class EntityPlayer
      */
     public void onUpdate()
     {
-    	this.lastTickPosX = this.posX;
-    	this.lastTickPosY = this.posY;
-    	this.lastTickPosZ = this.posZ;
+    	this.lastTickPosX = this.prevPosX = this.posX;
+    	this.lastTickPosY = this.prevPosY = this.posY;
+    	this.lastTickPosZ = this.prevPosZ = this.posZ;
     	this.prevRotationYaw = this.rotationYaw;
     	this.prevRotationPitch = this.rotationPitch;
+        
+        float strafe = 0.0F;
+    	float forward = 0.0F;
 
-        if (this.addedToChunk)
+        if (KeyBinding.keyBindForward.getIsKeyPressed())
         {
-        	this.prevPosX = this.posX;
-            this.prevPosY = this.posY;
-            this.prevPosZ = this.posZ;
-            this.prevRotationPitch = this.rotationPitch;
-            this.prevRotationYaw = this.rotationYaw;
-            this.prevRotationYaw = this.rotationYaw;
-            this.prevRotationPitch = this.rotationPitch;
-            
-            this.moveStrafing = 0.0F;
-            this.moveForward = 0.0F;
+            ++forward;
+        }
 
-            if (KeyBinding.keyBindForward.getIsKeyPressed())
+        if (KeyBinding.keyBindBack.getIsKeyPressed())
+        {
+            --forward;
+        }
+
+        if (KeyBinding.keyBindLeft.getIsKeyPressed())
+        {
+            ++strafe;
+        }
+
+        if (KeyBinding.keyBindRight.getIsKeyPressed())
+        {
+            --strafe;
+        }
+        
+        strafe *= 0.98F;
+        forward *= 0.98F;
+
+        this.pushPlayerOutOfBlock(this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
+
+        if (KeyBinding.keyBindSneak.getIsKeyPressed())
+        {
+            this.motionY -= 0.15D;
+        }
+
+        if (KeyBinding.keyBindJump.getIsKeyPressed())
+        {
+            this.motionY += 0.15D;
+        }
+
+        if (Math.abs(this.motionX) < 0.005D)
+        {
+            this.motionX = 0.0D;
+        }
+
+        if (Math.abs(this.motionY) < 0.005D)
+        {
+            this.motionY = 0.0D;
+        }
+
+        if (Math.abs(this.motionZ) < 0.005D)
+        {
+            this.motionZ = 0.0D;
+        }
+    	double xMov = this.motionX;
+    	double yMov = this.motionY;
+    	double zMov = this.motionZ;
+    	
+    	float magnitude = strafe * strafe + forward * forward;
+
+        if (magnitude >= 1.0E-4F)
+        {
+            magnitude = (float)Math.sqrt(magnitude);
+
+            if (magnitude < 1.0F)
             {
-                ++this.moveForward;
+                magnitude = 1.0F;
             }
 
-            if (KeyBinding.keyBindBack.getIsKeyPressed())
-            {
-                --this.moveForward;
-            }
+            magnitude = 0.41999998688697815F / magnitude;
+            strafe *= magnitude;
+            forward *= magnitude;
+            double var5 = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
+            double var6 = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
+            this.motionX += strafe * var6 - forward * var5;
+            this.motionZ += forward * var6 + strafe * var5;
+        }
 
-            if (KeyBinding.keyBindLeft.getIsKeyPressed())
-            {
-                ++this.moveStrafing;
-            }
+        double var13 = this.motionX;
+        double var15 = this.motionY;
+        double var17 = this.motionZ;
 
-            if (KeyBinding.keyBindRight.getIsKeyPressed())
-            {
-                --this.moveStrafing;
-            }
+        List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
 
-            this.isJumping = KeyBinding.keyBindJump.getIsKeyPressed();
+        for (int var22 = 0; var22 < var36.size(); ++var22)
+        {
+        	this.motionY = var36.get(var22).calculateYOffset(this.boundingBox, this.motionY);
+        }
 
-            this.pushPlayerOutOfBlock(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
-            this.pushPlayerOutOfBlock(this.posX - (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-            this.pushPlayerOutOfBlock(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - (double)this.width * 0.35D);
-            this.pushPlayerOutOfBlock(this.posX + (double)this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + (double)this.width * 0.35D);
+        this.boundingBox.offset(0.0D, this.motionY, 0.0D);
+        int var23;
 
-            if (KeyBinding.keyBindSneak.getIsKeyPressed())
-            {
-                this.motionY -= 0.15D;
-            }
+        for (var23 = 0; var23 < var36.size(); ++var23)
+        {
+        	this.motionX = var36.get(var23).calculateXOffset(this.boundingBox, this.motionX);
+        }
 
-            if (this.isJumping)
-            {
-                this.motionY += 0.15D;
-            }
+        this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
 
-            if (Math.abs(this.motionX) < 0.005D)
-            {
-                this.motionX = 0.0D;
-            }
+        for (var23 = 0; var23 < var36.size(); ++var23)
+        {
+        	this.motionZ = var36.get(var23).calculateZOffset(this.boundingBox, this.motionZ);
+        }
 
-            if (Math.abs(this.motionY) < 0.005D)
-            {
-                this.motionY = 0.0D;
-            }
+        this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
+        this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
+        this.posY = this.boundingBox.minY + (double)this.getYOffset();
+        this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
 
-            if (Math.abs(this.motionZ) < 0.005D)
-            {
-                this.motionZ = 0.0D;
-            }
-            this.moveStrafing *= 0.98F;
-            this.moveForward *= 0.98F;
-            
-            float strafe = this.moveStrafing;
-        	float forward = this.moveForward;
-        	double xMov = this.motionX;
-        	double yMov = this.motionY;
-        	double zMov = this.motionZ;
-        	
-        	float magnitude = strafe * strafe + forward * forward;
+        if (var13 != this.motionX)
+        {
+            this.motionX = 0.0D;
+        }
 
-            if (magnitude >= 1.0E-4F)
-            {
-                magnitude = (float)Math.sqrt(magnitude);
+        if (var15 != this.motionY)
+        {
+            this.motionY = 0.0D;
+        }
 
-                if (magnitude < 1.0F)
-                {
-                    magnitude = 1.0F;
-                }
+        if (var17 != this.motionZ)
+        {
+            this.motionZ = 0.0D;
+        }
+        
+        this.motionX = xMov * 0.6D;
+        this.motionY = yMov * 0.6D;
+        this.motionZ = zMov * 0.6D;
 
-                magnitude = 0.41999998688697815F / magnitude;
-                strafe *= magnitude;
-                forward *= magnitude;
-                float var5 = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
-                float var6 = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
-                this.motionX += (double)(strafe * var6 - forward * var5);
-                this.motionZ += (double)(forward * var6 + strafe * var5);
-            }
-            
-            this.ySize *= 0.4F;
+        while (this.rotationYaw - this.prevRotationYaw < -180.0F)
+        {
+            this.prevRotationYaw -= 360.0F;
+        }
 
-            double var13 = this.motionX;
-            double var15 = this.motionY;
-            double var17 = this.motionZ;
+        while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
+        {
+            this.prevRotationYaw += 360.0F;
+        }
 
-            List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
+        while (this.rotationPitch - this.prevRotationPitch < -180.0F)
+        {
+            this.prevRotationPitch -= 360.0F;
+        }
 
-            for (int var22 = 0; var22 < var36.size(); ++var22)
-            {
-            	this.motionY = var36.get(var22).calculateYOffset(this.boundingBox, this.motionY);
-            }
+        while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
+        {
+            this.prevRotationPitch += 360.0F;
+        }
+        
+        double dx = this.posX - this.oldPosX;
+        double dy = this.boundingBox.minY - this.oldMinY;
+        double dz = this.posZ - this.oldPosZ;
+        double dyaw = (double)(this.rotationYaw - this.oldRotationYaw);
+        double dpitch = (double)(this.rotationPitch - this.oldRotationPitch);
+        boolean hasMoved = dx * dx + dy * dy + dz * dz > 9.0E-4D || this.ticksSinceMovePacket >= 20;
+        boolean hasTurned = dyaw != 0.0D || dpitch != 0.0D;
 
-            this.boundingBox.offset(0.0D, this.motionY, 0.0D);
-            int var23;
+        if (hasMoved)
+        {
+            Minecraft.getMinecraft().worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
+        }
 
-            for (var23 = 0; var23 < var36.size(); ++var23)
-            {
-            	this.motionX = var36.get(var23).calculateXOffset(this.boundingBox, this.motionX);
-            }
+        ++this.ticksSinceMovePacket;
 
-            this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
+        if (hasMoved)
+        {
+            this.oldPosX = this.posX;
+            this.oldMinY = this.boundingBox.minY;
+            this.oldPosZ = this.posZ;
+            this.ticksSinceMovePacket = 0;
+        }
 
-            for (var23 = 0; var23 < var36.size(); ++var23)
-            {
-            	this.motionZ = var36.get(var23).calculateZOffset(this.boundingBox, this.motionZ);
-            }
-
-            this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
-            this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
-            this.posY = this.boundingBox.minY + (double)this.getYOffset() - (double)this.ySize;
-            this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
-
-            if (var13 != this.motionX)
-            {
-                this.motionX = 0.0D;
-            }
-
-            if (var15 != this.motionY)
-            {
-                this.motionY = 0.0D;
-            }
-
-            if (var17 != this.motionZ)
-            {
-                this.motionZ = 0.0D;
-            }
-            
-            this.motionX = xMov * 0.6D;
-            this.motionY = yMov * 0.6D;
-            this.motionZ = zMov * 0.6D;
-
-            while (this.rotationYaw - this.prevRotationYaw < -180.0F)
-            {
-                this.prevRotationYaw -= 360.0F;
-            }
-
-            while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
-            {
-                this.prevRotationYaw += 360.0F;
-            }
-
-            while (this.rotationPitch - this.prevRotationPitch < -180.0F)
-            {
-                this.prevRotationPitch -= 360.0F;
-            }
-
-            while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
-            {
-                this.prevRotationPitch += 360.0F;
-            }
-            
-            double dx = this.posX - this.oldPosX;
-            double dy = this.boundingBox.minY - this.oldMinY;
-            double dz = this.posZ - this.oldPosZ;
-            double dyaw = (double)(this.rotationYaw - this.oldRotationYaw);
-            double dpitch = (double)(this.rotationPitch - this.oldRotationPitch);
-            boolean hasMoved = dx * dx + dy * dy + dz * dz > 9.0E-4D || this.ticksSinceMovePacket >= 20;
-            boolean hasTurned = dyaw != 0.0D || dpitch != 0.0D;
-
-            if (hasMoved)
-            {
-                Minecraft.getMinecraft().worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
-            }
-
-            ++this.ticksSinceMovePacket;
-
-            if (hasMoved)
-            {
-                this.oldPosX = this.posX;
-                this.oldMinY = this.boundingBox.minY;
-                this.oldPosZ = this.posZ;
-                this.ticksSinceMovePacket = 0;
-            }
-
-            if (hasTurned)
-            {
-                this.oldRotationYaw = this.rotationYaw;
-                this.oldRotationPitch = this.rotationPitch;
-            }
+        if (hasTurned)
+        {
+            this.oldRotationYaw = this.rotationYaw;
+            this.oldRotationPitch = this.rotationPitch;
         }
 
         if (Double.isNaN(this.posX) || Double.isInfinite(this.posX))
@@ -350,11 +315,21 @@ public class EntityPlayer
         {
         	this.rotationYaw = this.prevRotationYaw;
         }
-        
-        this.addedToChunk = true;
-        this.chunkCoordX = MathHelper.floor_double(this.posX / 16.0D);
-        this.chunkCoordY = MathHelper.floor_double(this.posY / 16.0D);
-        this.chunkCoordZ = MathHelper.floor_double(this.posZ / 16.0D);
+    }
+    
+    public int getChunkCoordX()
+    {
+    	return MathHelper.floor_double(this.posX / 16.0D);
+    }
+    
+    public int getChunkCoordY()
+    {
+    	return MathHelper.floor_double(this.posY / 16.0D);
+    }
+    
+    public int getChunkCoordZ()
+    {
+    	return MathHelper.floor_double(this.posZ / 16.0D);
     }
 
     /**
@@ -669,13 +644,13 @@ public class EntityPlayer
      */
     private Vec3 getLook(float ptt)
     {
-        float var2 = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
-        float var3 = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
-        float var4 = MathHelper.cos(-var3 * 0.017453292F - (float)Math.PI);
-        float var5 = MathHelper.sin(-var3 * 0.017453292F - (float)Math.PI);
-        float var6 = -MathHelper.cos(-var2 * 0.017453292F);
-        float var7 = MathHelper.sin(-var2 * 0.017453292F);
-        return Vec3.createVectorHelper((double)(var5 * var6), (double)var7, (double)(var4 * var6));
+        float pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
+        float yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+        double cy = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
+        double sy = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
+        double cp = -MathHelper.cos(-pitch * 0.017453292F);
+        double sp = MathHelper.sin(-pitch * 0.017453292F);
+        return Vec3.createVectorHelper(sy * cp, sp, cy * cp);
     }
     
     /**

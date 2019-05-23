@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.util.KeyBinding;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.MouseHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
@@ -857,19 +856,6 @@ public class Minecraft
             }
 
             this.thePlayer = new EntityPlayer(this.worldClient);
-            int chunkX = MathHelper.floor_double(this.thePlayer.posX / 16.0D);
-        	int chunkY = MathHelper.floor_double(this.thePlayer.posY / 16.0D);
-            int chunkZ = MathHelper.floor_double(this.thePlayer.posZ / 16.0D);
-
-            if (chunkY < 0)
-            {
-                chunkY = 0;
-            }
-            
-            this.thePlayer.addedToChunk = true;
-            this.thePlayer.chunkCoordX = chunkX;
-            this.thePlayer.chunkCoordY = chunkY;
-            this.thePlayer.chunkCoordZ = chunkZ;
             this.renderViewEntity = this.thePlayer;
 
             System.gc();
