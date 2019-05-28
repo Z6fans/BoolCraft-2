@@ -13,14 +13,15 @@ import net.minecraft.util.Vec3;
 public class EntityPlayer
 {
     /** Entity position X */
-    public double posX;
+    private double posX;
 
     /** Entity position Y */
-    public double posY;
+    private double posY;
 
     /** Entity position Z */
-    public double posZ;
-	private WorldClient worldObj;
+    private double posZ;
+	private final WorldClient worldObj;
+	private final Minecraft minecraft;
     
     private double oldPosX;
 
@@ -55,38 +56,39 @@ public class EntityPlayer
     private double prevPosZ;
 
     /** Entity rotation Yaw */
-    public float rotationYaw;
+    private float rotationYaw;
 
     /** Entity rotation Pitch */
-    public float rotationPitch;
-    public float prevRotationYaw;
-    public float prevRotationPitch;
+    private float rotationPitch;
+    private float prevRotationYaw;
+    private float prevRotationPitch;
 
     /**
      * The entity's X coordinate at the previous tick, used to calculate position during rendering routines
      */
-    public double lastTickPosX;
+    private double lastTickPosX;
 
     /**
      * The entity's Y coordinate at the previous tick, used to calculate position during rendering routines
      */
-    public double lastTickPosY;
+    private double lastTickPosY;
 
     /**
      * The entity's Z coordinate at the previous tick, used to calculate position during rendering routines
      */
-    public double lastTickPosZ;
+    private double lastTickPosZ;
 
-    public EntityPlayer(WorldClient world)
+    public EntityPlayer(WorldClient world, Minecraft mc)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldObj = world;
+        this.minecraft = mc;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
-        this.prevPosY = this.posY = Minecraft.getMinecraft().worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
+        this.prevPosY = this.posY = this.minecraft.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
-        Minecraft.getMinecraft().displayGuiScreenNull();
+        this.minecraft.displayGuiScreenNull();
         
         this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
         
@@ -192,10 +194,6 @@ public class EntityPlayer
             this.motionZ += forward * var6 + strafe * var5;
         }
 
-        double var13 = this.motionX;
-        double var15 = this.motionY;
-        double var17 = this.motionZ;
-
         List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
 
         for (int var22 = 0; var22 < var36.size(); ++var22)
@@ -222,21 +220,6 @@ public class EntityPlayer
         this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
         this.posY = this.boundingBox.minY + (double)this.getYOffset();
         this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
-
-        if (var13 != this.motionX)
-        {
-            this.motionX = 0.0D;
-        }
-
-        if (var15 != this.motionY)
-        {
-            this.motionY = 0.0D;
-        }
-
-        if (var17 != this.motionZ)
-        {
-            this.motionZ = 0.0D;
-        }
         
         this.motionX = xMov * 0.6D;
         this.motionY = yMov * 0.6D;
@@ -272,7 +255,7 @@ public class EntityPlayer
 
         if (hasMoved)
         {
-            Minecraft.getMinecraft().worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
+        	this.minecraft.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
         }
 
         ++this.ticksSinceMovePacket;
@@ -317,6 +300,46 @@ public class EntityPlayer
         }
     }
     
+    public double getPosX()
+    {
+    	return this.posX;
+    }
+    
+    public double getPosY()
+    {
+    	return this.posY;
+    }
+    
+    public double getPosZ()
+    {
+    	return this.posZ;
+    }
+    
+    public double getPartialPosX(double ptt)
+    {
+    	return this.lastTickPosX + (this.posX - this.lastTickPosX) * ptt;
+    }
+    
+    public double getPartialPosY(double ptt)
+    {
+    	return this.lastTickPosY + (this.posY - this.lastTickPosY) * ptt;
+    }
+    
+    public double getPartialPosZ(double ptt)
+    {
+    	return this.lastTickPosZ + (this.posZ - this.lastTickPosZ) * ptt;
+    }
+    
+    public float getPartialRotationYaw(float ptt)
+    {
+    	return this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+    }
+    
+    public float getPartialRotationPitch(float ptt)
+    {
+    	return this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
+    }
+    
     public int getChunkCoordX()
     {
     	return MathHelper.floor_double(this.posX / 16.0D);
@@ -336,12 +359,12 @@ public class EntityPlayer
      * Adds par1*0.15 to the entity's yaw, and *subtracts* par2*0.15 from the pitch. Clamps pitch from -90 to 90. Both
      * arguments in degrees.
      */
-    public void setAngles(float dYaw, float dPitch)
+    public void setAngles(double dYaw, double dPitch)
     {
         float oldPitch = this.rotationPitch;
         float oldYaw = this.rotationYaw;
-        this.rotationYaw = (float)((double)this.rotationYaw + (double)dYaw * 0.15D);
-        this.rotationPitch = (float)((double)this.rotationPitch - (double)dPitch * 0.15D);
+        this.rotationYaw = (float)((double)this.rotationYaw + dYaw * 0.15D);
+        this.rotationPitch = (float)((double)this.rotationPitch - dPitch * 0.15D);
 
         if (this.rotationPitch < -90.0F)
         {

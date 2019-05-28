@@ -207,7 +207,7 @@ public class WorldRenderer
     {
         if (p_147891_1_ == 1 && !this.skipRenderPass[p_147891_1_])
         {
-            this.vertexState = tessellator.getVertexState((float)p_147891_2_.posX, (float)p_147891_2_.posY, (float)p_147891_2_.posZ);
+            this.vertexState = tessellator.getVertexState((float)p_147891_2_.getPosX(), (float)p_147891_2_.getPosY(), (float)p_147891_2_.getPosZ());
         }
 
         tessellator.draw();
@@ -232,9 +232,9 @@ public class WorldRenderer
      */
     public float quadranceToPlayer(EntityPlayer player)
     {
-        float var2 = (float)(player.posX - (double)this.posXPlus);
-        float var3 = (float)(player.posY - (double)this.posYPlus);
-        float var4 = (float)(player.posZ - (double)this.posZPlus);
+        float var2 = (float)(player.getPosX() - (double)this.posXPlus);
+        float var3 = (float)(player.getPosY() - (double)this.posYPlus);
+        float var4 = (float)(player.getPosZ() - (double)this.posZPlus);
         return var2 * var2 + var3 * var3 + var4 * var4;
     }
 

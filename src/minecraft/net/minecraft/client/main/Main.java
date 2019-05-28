@@ -26,7 +26,7 @@ public class Main
         {
             public void run()
             {
-                Minecraft.stopIntegratedServer();
+                mc.stopServer();
             }
         });
 

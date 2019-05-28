@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.util.KeyBinding;
-import net.minecraft.util.MouseHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
@@ -37,16 +36,11 @@ import org.lwjgl.util.glu.GLU;
 public class Minecraft
 {
     private static final Logger logger = LogManager.getLogger();
-
-    /**
-     * Set to 'this' in Minecraft constructor; used by some settings get methods
-     */
-    private static Minecraft theMinecraft;
     public int displayWidth;
     public int displayHeight;
     private Timer timer = new Timer();
     public WorldClient worldClient;
-    public RenderGlobal renderGlobal;
+    private RenderGlobal renderGlobal;
     public EntityPlayer thePlayer;
 
     /**
@@ -60,19 +54,15 @@ public class Minecraft
 
     /** The GuiScreen that's being displayed at the moment. */
     public GuiScreen currentScreen;
-    public EntityRenderer entityRenderer;
+    private EntityRenderer entityRenderer;
 
     /** Mouse left click counter */
     private int leftClickCounter;
 
-    /** Skip render world */
-    public boolean skipRenderWorld;
-
     /** The ray trace hit that the mouse is over. */
-    public MovingObjectPosition objectMouseOver;
+    private MovingObjectPosition objectMouseOver;
 
     /** Mouse helper instance. */
-    public MouseHelper mouseHelper;
     private final File mcDataDir;
     private AnvilSaveConverter saveLoader;
 
@@ -84,7 +74,7 @@ public class Minecraft
     /**
      * Does the actual gameplay have focus. If so then mouse and keys will effect the player instead of menus.
      */
-    public boolean inGameHasFocus;
+    private boolean inGameHasFocus;
     private long systemTime = getSystemTime();
     private long lastSystemTime = -1L;
 
@@ -129,7 +119,6 @@ public class Minecraft
 
     public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
     {
-        theMinecraft = this;
         this.mcDataDir = mcDataDir;
         this.displayWidth = displayWidth;
         this.displayHeight = displayHeight;
@@ -169,7 +158,6 @@ public class Minecraft
         int var3 = var2.getScaledWidth();
         int var4 = var2.getScaledHeight();
         this.currentScreen.setWorldAndResolution(this, var3, var4);
-        this.skipRenderWorld = false;
     }
     
     /**
@@ -198,7 +186,6 @@ public class Minecraft
             int var3 = var2.getScaledWidth();
             int var4 = var2.getScaledHeight();
             p_147108_1_.setWorldAndResolution(this, var3, var4);
-            this.skipRenderWorld = false;
         }
         else
         {
@@ -272,8 +259,6 @@ public class Minecraft
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glFlush();
             this.updateDisplaySize();
-            this.entityRenderer = new EntityRenderer(this);
-            this.mouseHelper = new MouseHelper();
             this.checkGLError("Pre startup");
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             GL11.glShadeModel(GL11.GL_SMOOTH);
@@ -288,6 +273,7 @@ public class Minecraft
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             this.checkGLError("Startup");
             this.renderGlobal = new RenderGlobal(this);
+            this.entityRenderer = new EntityRenderer(this, this.renderGlobal);
             GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
             this.checkGLError("Post startup");
             this.displayGuiScreen();
@@ -327,7 +313,7 @@ public class Minecraft
                             --this.rightClickDelayTimer;
                         }
 
-                        this.entityRenderer.getMouseOver(1.0F);
+                        this.computeMouseOver(1.0F);
 
                         if (this.currentScreen != null)
                         {
@@ -538,12 +524,7 @@ public class Minecraft
                     GL11.glPushMatrix();
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-                    if (!this.skipRenderWorld)
-                    {
-                        this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks);
-                    }
-
+                    this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks);
                     GL11.glFlush();
                     GL11.glPopMatrix();
                     GL11.glPushMatrix();
@@ -753,7 +734,7 @@ public class Minecraft
     	if (Display.isActive() && !this.inGameHasFocus)
         {
             this.inGameHasFocus = true;
-            this.mouseHelper.grabMouseCursor();
+            Mouse.setGrabbed(true);
             this.displayGuiScreenNull();
             this.leftClickCounter = 10000;
         }
@@ -768,8 +749,14 @@ public class Minecraft
         {
             KeyBinding.unPressAllKeys();
             this.inGameHasFocus = false;
-            this.mouseHelper.ungrabMouseCursor();
+            Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
+            Mouse.setGrabbed(false);
         }
+    }
+    
+    public boolean getInGameHasFocus()
+    {
+    	return this.inGameHasFocus;
     }
 
     /**
@@ -855,7 +842,7 @@ public class Minecraft
                 this.renderGlobal.setWorldAndLoadRenderers(this.worldClient);
             }
 
-            this.thePlayer = new EntityPlayer(this.worldClient);
+            this.thePlayer = new EntityPlayer(this.worldClient, this);
             this.renderViewEntity = this.thePlayer;
 
             System.gc();
@@ -884,22 +871,6 @@ public class Minecraft
     }
 
     /**
-     * Return the singleton Minecraft instance for the game
-     */
-    public static Minecraft getMinecraft()
-    {
-        return theMinecraft;
-    }
-
-    public static void stopIntegratedServer()
-    {
-        if (theMinecraft != null)
-        {
-        	theMinecraft.stopServer();
-        }
-    }
-
-    /**
      * Gets the system time in milliseconds.
      */
     public static long getSystemTime()
@@ -910,7 +881,7 @@ public class Minecraft
     /**
      * Saves all necessary data as preparation for stopping the server.
      */
-    private void stopServer()
+    public void stopServer()
     {
     	logger.info("Stopping server");
 
@@ -938,5 +909,24 @@ public class Minecraft
                 logger.warn(e.getMessage());
             }
         }
+    }
+
+    /**
+     * Finds what block or object the mouse is over at the specified partial tick time. Args: partialTickTime
+     */
+    public void computeMouseOver(float partialTickTime)
+    {
+        if (this.renderViewEntity != null)
+        {
+            if (this.worldClient != null)
+            {
+                this.objectMouseOver = this.renderViewEntity.rayTrace8(partialTickTime);
+            }
+        }
+    }
+    
+    public MovingObjectPosition getMouseOver()
+    {
+    	return this.objectMouseOver;
     }
 }

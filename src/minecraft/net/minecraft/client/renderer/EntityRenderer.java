@@ -13,15 +13,17 @@ import org.lwjgl.util.glu.Project;
 public class EntityRenderer
 {
     /** A reference to the Minecraft object. */
-    private Minecraft mc;
+    private Minecraft minecraft;
 
     /** Previous frame time in milliseconds */
     private long prevFrameTime;
+    private RenderGlobal renderGlobal;
 
-    public EntityRenderer(Minecraft p_i45076_1_)
+    public EntityRenderer(Minecraft mc, RenderGlobal rg)
     {
         this.prevFrameTime = Minecraft.getSystemTime();
-        this.mc = p_i45076_1_;
+        this.minecraft = mc;
+        this.renderGlobal = rg;
     }
 
     /**
@@ -29,23 +31,9 @@ public class EntityRenderer
      */
     public void updateRenderer()
     {
-        if (this.mc.renderViewEntity == null)
+        if (this.minecraft.renderViewEntity == null)
         {
-            this.mc.renderViewEntity = this.mc.thePlayer;
-        }
-    }
-
-    /**
-     * Finds what block or object the mouse is over at the specified partial tick time. Args: partialTickTime
-     */
-    public void getMouseOver(float partialTickTime)
-    {
-        if (this.mc.renderViewEntity != null)
-        {
-            if (this.mc.worldClient != null)
-            {
-                this.mc.objectMouseOver = this.mc.renderViewEntity.rayTrace8(partialTickTime);
-            }
+            this.minecraft.renderViewEntity = this.minecraft.thePlayer;
         }
     }
 
@@ -60,7 +48,7 @@ public class EntityRenderer
         {
             if (Minecraft.getSystemTime() - this.prevFrameTime > 500L)
             {
-                this.mc.displayInGameMenu();
+                this.minecraft.displayInGameMenu();
             }
         }
         else
@@ -68,149 +56,144 @@ public class EntityRenderer
             this.prevFrameTime = Minecraft.getSystemTime();
         }
 
-        if (this.mc.inGameHasFocus && isDisplayActive)
+        if (this.minecraft.getInGameHasFocus() && isDisplayActive)
         {
-            this.mc.mouseHelper.mouseXYChange();
-            float mouseDX = (float)this.mc.mouseHelper.deltaX;
-            float mouseDY = (float)this.mc.mouseHelper.deltaY;
+            float mouseDX = (float)Mouse.getDX();
+            float mouseDY = (float)Mouse.getDY();
 
-            this.mc.thePlayer.setAngles(mouseDX, mouseDY);
+            this.minecraft.thePlayer.setAngles(mouseDX, mouseDY);
         }
 
-        if (!this.mc.skipRenderWorld)
+        final ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
+        int scaledWidth = sr.getScaledWidth();
+        int scaledHeight = sr.getScaledHeight();
+        final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
+        final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.minecraft.displayHeight - 1;
+
+        if (this.minecraft.worldClient != null)
         {
-            final ScaledResolution sr = new ScaledResolution(this.mc.displayWidth, this.mc.displayHeight);
-            int scaledWidth = sr.getScaledWidth();
-            int scaledHeight = sr.getScaledHeight();
-            final int mouseX = Mouse.getX() * scaledWidth / this.mc.displayWidth;
-            final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.mc.displayHeight - 1;
+        	GL11.glEnable(GL11.GL_CULL_FACE);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.5F);
 
-            if (this.mc.worldClient != null)
+            if (this.minecraft.renderViewEntity == null)
             {
-            	GL11.glEnable(GL11.GL_CULL_FACE);
-                GL11.glEnable(GL11.GL_DEPTH_TEST);
+                this.minecraft.renderViewEntity = this.minecraft.thePlayer;
+            }
+            
+            this.minecraft.computeMouseOver(partialTickTime);
+            EntityPlayer player = this.minecraft.renderViewEntity;
+            double partialX = player.getPartialPosX(partialTickTime);
+            double partialY = player.getPartialPosY(partialTickTime);
+            double partialZ = player.getPartialPosZ(partialTickTime);
+
+            GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glLoadIdentity();
+            /**FOV*/
+            Project.gluPerspective(110, (float)this.minecraft.displayWidth / (float)this.minecraft.displayHeight, 0.05F, 512.0F);
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glLoadIdentity();
+            GL11.glRotatef(0.0F, 0.0F, 0.0F, 1.0F);
+            GL11.glTranslatef(0.0F, 0.0F, -0.1F);
+            GL11.glRotatef(player.getPartialRotationPitch(partialTickTime), 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
+            
+            ActiveRenderInfo.updateRenderInfo();
+
+            Frustrum frustrum = new Frustrum();
+            frustrum.setPosition(partialX, partialY, partialZ);
+            this.renderGlobal.clipRenderersByFrustum(frustrum, partialTickTime);
+            this.renderGlobal.updateRenderers(player);
+            RenderHelper.disableStandardItemLighting();
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPushMatrix();
+            this.renderGlobal.sortAndRender(player, 0, (double)partialTickTime);
+            GL11.glShadeModel(GL11.GL_FLAT);
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPopMatrix();
+
+            if (this.minecraft.getMouseOver() != null)
+            {
+                GL11.glDisable(GL11.GL_ALPHA_TEST);
+                this.renderGlobal.drawSelectionBox(player, this.minecraft.getMouseOver(), partialTickTime);
                 GL11.glEnable(GL11.GL_ALPHA_TEST);
-                GL11.glAlphaFunc(GL11.GL_GREATER, 0.5F);
-
-                if (this.mc.renderViewEntity == null)
-                {
-                    this.mc.renderViewEntity = this.mc.thePlayer;
-                }
-                
-                this.getMouseOver(partialTickTime);
-                EntityPlayer player = this.mc.renderViewEntity;
-                RenderGlobal renderGlobal = this.mc.renderGlobal;
-                double partialX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTickTime;
-                double partialY = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTickTime;
-                double partialZ = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTickTime;
-
-                GL11.glViewport(0, 0, this.mc.displayWidth, this.mc.displayHeight);
-                GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-                GL11.glEnable(GL11.GL_CULL_FACE);
-                
-                GL11.glMatrixMode(GL11.GL_PROJECTION);
-                GL11.glLoadIdentity();
-                /**FOV*/
-                Project.gluPerspective(110, (float)this.mc.displayWidth / (float)this.mc.displayHeight, 0.05F, 512.0F);
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glLoadIdentity();
-                GL11.glRotatef(0.0F, 0.0F, 0.0F, 1.0F);
-                GL11.glTranslatef(0.0F, 0.0F, -0.1F);
-                GL11.glRotatef(player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * partialTickTime, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * partialTickTime + 180.0F, 0.0F, 1.0F, 0.0F);
-                GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
-                
-                ActiveRenderInfo.updateRenderInfo();
-
-                Frustrum frustrum = new Frustrum();
-                frustrum.setPosition(partialX, partialY, partialZ);
-                this.mc.renderGlobal.clipRenderersByFrustum(frustrum, partialTickTime);
-                this.mc.renderGlobal.updateRenderers(player);
-                RenderHelper.disableStandardItemLighting();
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glPushMatrix();
-                renderGlobal.sortAndRender(player, 0, (double)partialTickTime);
-                GL11.glShadeModel(GL11.GL_FLAT);
-                GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glPopMatrix();
-
-                if (this.mc.objectMouseOver != null)
-                {
-                    GL11.glDisable(GL11.GL_ALPHA_TEST);
-                    renderGlobal.drawSelectionBox(player, this.mc.objectMouseOver, partialTickTime);
-                    GL11.glEnable(GL11.GL_ALPHA_TEST);
-                }
-
-                GL11.glEnable(GL11.GL_BLEND);
-                OpenGlHelper.glBlendFunc(770, 1, 1, 0);
-                GL11.glDisable(GL11.GL_BLEND);
-                RenderHelper.disableStandardItemLighting();
-                GL11.glDepthMask(false);
-                GL11.glEnable(GL11.GL_CULL_FACE);
-                GL11.glDepthMask(true);
-                GL11.glDisable(GL11.GL_BLEND);
-                GL11.glEnable(GL11.GL_CULL_FACE);
-                OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-                GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-                GL11.glNormal3f(0.0F, -1.0F, 0.0F);
-                GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-                GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-                GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
-                GL11.glEnable(GL11.GL_BLEND);
-                GL11.glDepthMask(false);
-
-                renderGlobal.sortAndRender(player, 1, (double)partialTickTime);
-
-                GL11.glDepthMask(true);
-                GL11.glEnable(GL11.GL_CULL_FACE);
-                GL11.glDisable(GL11.GL_BLEND);
-                GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-            	
-                GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-                ScaledResolution resolution = new ScaledResolution(this.mc.displayWidth, this.mc.displayHeight);
-                int sWidth = resolution.getScaledWidth();
-                int sHeight = resolution.getScaledHeight();
-                this.mc.entityRenderer.setupOverlayRendering();
-                drawRect(sWidth / 2 - 41 - 1 + this.mc.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.mc.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
-                drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
-                for (int index = 0; index < 4; ++index)
-                {
-                    int x = sWidth / 2 - 40 + index * 20 + 2;
-                    int y = sHeight - 16 - 3;
-                    int color = 0xFF000000;
-                    switch(index){
-                    case 0: color = 0xFF444444; break;
-                    case 1: color = 0xFF39EEEE; break;
-                    case 2: color = 0xFFEE39E4; break;
-                    case 3: color = 0xFFE91A64; break;
-                    default: break;
-                    }
-                    drawRect(x, y, x + 16, y + 16, color);
-                }
-            }
-            else
-            {
-                GL11.glViewport(0, 0, this.mc.displayWidth, this.mc.displayHeight);
-                GL11.glMatrixMode(GL11.GL_PROJECTION);
-                GL11.glLoadIdentity();
-                GL11.glMatrixMode(GL11.GL_MODELVIEW);
-                GL11.glLoadIdentity();
-                this.setupOverlayRendering();
             }
 
-            if (this.mc.currentScreen != null)
-            {
-                GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+            GL11.glEnable(GL11.GL_BLEND);
+            OpenGlHelper.glBlendFunc(770, 1, 1, 0);
+            GL11.glDisable(GL11.GL_BLEND);
+            RenderHelper.disableStandardItemLighting();
+            GL11.glDepthMask(false);
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            GL11.glDepthMask(true);
+            GL11.glDisable(GL11.GL_BLEND);
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+            GL11.glNormal3f(0.0F, -1.0F, 0.0F);
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+            GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glDepthMask(false);
 
-                try
-                {
-                    this.mc.currentScreen.drawScreen(mouseX, mouseY);
+            this.renderGlobal.sortAndRender(player, 1, (double)partialTickTime);
+
+            GL11.glDepthMask(true);
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            GL11.glDisable(GL11.GL_BLEND);
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        	
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+            ScaledResolution resolution = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
+            int sWidth = resolution.getScaledWidth();
+            int sHeight = resolution.getScaledHeight();
+            this.setupOverlayRendering();
+            drawRect(sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
+            drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
+            for (int index = 0; index < 4; ++index)
+            {
+                int x = sWidth / 2 - 40 + index * 20 + 2;
+                int y = sHeight - 16 - 3;
+                int color = 0xFF000000;
+                switch(index){
+                case 0: color = 0xFF444444; break;
+                case 1: color = 0xFF39EEEE; break;
+                case 2: color = 0xFFEE39E4; break;
+                case 3: color = 0xFFE91A64; break;
+                default: break;
                 }
-                catch (Throwable t)
-                {
-                    throw new ReportedException(CrashReport.makeCrashReport(t, "Rendering screen"));
-                }
+                drawRect(x, y, x + 16, y + 16, color);
+            }
+        }
+        else
+        {
+            GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glLoadIdentity();
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glLoadIdentity();
+            this.setupOverlayRendering();
+        }
+
+        if (this.minecraft.currentScreen != null)
+        {
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
+            try
+            {
+                this.minecraft.currentScreen.drawScreen(mouseX, mouseY);
+            }
+            catch (Throwable t)
+            {
+                throw new ReportedException(CrashReport.makeCrashReport(t, "Rendering screen"));
             }
         }
     }
@@ -245,7 +228,7 @@ public class EntityRenderer
     public void setupOverlayRendering()
     {
     	GL11.glEnable(GL11.GL_TEXTURE_2D);
-        ScaledResolution var1 = new ScaledResolution(this.mc.displayWidth, this.mc.displayHeight);
+        ScaledResolution var1 = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();

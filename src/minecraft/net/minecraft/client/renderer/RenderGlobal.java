@@ -183,7 +183,7 @@ public class RenderGlobal
 
                 if (var7 != null)
                 {
-                    this.markRenderersForNewPosition(MathHelper.floor_double(var7.posX), MathHelper.floor_double(var7.posY), MathHelper.floor_double(var7.posZ));
+                    this.markRenderersForNewPosition(MathHelper.floor_double(var7.getPosX()), MathHelper.floor_double(var7.getPosY()), MathHelper.floor_double(var7.getPosZ()));
                 }
             }
         }
@@ -296,31 +296,31 @@ public class RenderGlobal
             }
         }
         
-        double var11 = p_72719_1_.posX - this.prevSortX;
-        double var13 = p_72719_1_.posY - this.prevSortY;
-        double var15 = p_72719_1_.posZ - this.prevSortZ;
+        double var11 = p_72719_1_.getPosX() - this.prevSortX;
+        double var13 = p_72719_1_.getPosY() - this.prevSortY;
+        double var15 = p_72719_1_.getPosZ() - this.prevSortZ;
 
         if (this.prevChunkSortX != p_72719_1_.getChunkCoordX() || this.prevChunkSortY != p_72719_1_.getChunkCoordY() || this.prevChunkSortZ != p_72719_1_.getChunkCoordZ() || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
         {
-            this.prevSortX = p_72719_1_.posX;
-            this.prevSortY = p_72719_1_.posY;
-            this.prevSortZ = p_72719_1_.posZ;
+            this.prevSortX = p_72719_1_.getPosX();
+            this.prevSortY = p_72719_1_.getPosY();
+            this.prevSortZ = p_72719_1_.getPosZ();
             this.prevChunkSortX = p_72719_1_.getChunkCoordX();
             this.prevChunkSortY = p_72719_1_.getChunkCoordY();
             this.prevChunkSortZ = p_72719_1_.getChunkCoordZ();
-            this.markRenderersForNewPosition(MathHelper.floor_double(p_72719_1_.posX), MathHelper.floor_double(p_72719_1_.posY), MathHelper.floor_double(p_72719_1_.posZ));
+            this.markRenderersForNewPosition(MathHelper.floor_double(p_72719_1_.getPosX()), MathHelper.floor_double(p_72719_1_.getPosY()), MathHelper.floor_double(p_72719_1_.getPosZ()));
         }
 
-        double var17 = p_72719_1_.posX - this.prevRenderSortX;
-        double var19 = p_72719_1_.posY - this.prevRenderSortY;
-        double var21 = p_72719_1_.posZ - this.prevRenderSortZ;
+        double var17 = p_72719_1_.getPosX() - this.prevRenderSortX;
+        double var19 = p_72719_1_.getPosY() - this.prevRenderSortY;
+        double var21 = p_72719_1_.getPosZ() - this.prevRenderSortZ;
         int var23;
 
         if (var17 * var17 + var19 * var19 + var21 * var21 > 1.0D)
         {
-            this.prevRenderSortX = p_72719_1_.posX;
-            this.prevRenderSortY = p_72719_1_.posY;
-            this.prevRenderSortZ = p_72719_1_.posZ;
+            this.prevRenderSortX = p_72719_1_.getPosX();
+            this.prevRenderSortY = p_72719_1_.getPosY();
+            this.prevRenderSortZ = p_72719_1_.getPosZ();
 
             for (var23 = 0; var23 < 27; ++var23)
             {
@@ -337,7 +337,7 @@ public class RenderGlobal
      * Renders the sorted renders for the specified render pass. Args: startRenderer, numRenderers, renderPass,
      * partialTickTime
      */
-    private int renderSortedRenderers(int p_72724_1_, int p_72724_2_, int p_72724_3_, double p_72724_4_)
+    private int renderSortedRenderers(int p_72724_1_, int p_72724_2_, int p_72724_3_, double ptt)
     {
         this.glRenderLists.clear();
         int var6 = 0;
@@ -367,9 +367,9 @@ public class RenderGlobal
         }
 
         EntityPlayer var22 = this.mc.renderViewEntity;
-        double var23 = var22.lastTickPosX + (var22.posX - var22.lastTickPosX) * p_72724_4_;
-        double var13 = var22.lastTickPosY + (var22.posY - var22.lastTickPosY) * p_72724_4_;
-        double var15 = var22.lastTickPosZ + (var22.posZ - var22.lastTickPosZ) * p_72724_4_;
+        double var23 = var22.getPartialPosX(ptt);
+        double var13 = var22.getPartialPosY(ptt);
+        double var15 = var22.getPartialPosZ(ptt);
         int var17 = 0;
         int var18;
 
@@ -402,7 +402,7 @@ public class RenderGlobal
 
             this.allRenderLists[var20].addGLRenderList(var19.getGLCallListForPass(p_72724_3_));
         }
-        this.renderAllRenderLists(p_72724_3_, p_72724_4_);
+        this.renderAllRenderLists(p_72724_3_, ptt);
         return var6;
     }
 
@@ -573,9 +573,9 @@ public class RenderGlobal
         GL11.glDepthMask(false);
         double var5 = 0.002F;
         Block var6 = this.theWorld.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-        double var7 = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double)partialTickTime;
-        double var9 = player.lastTickPosY + (player.posY - player.lastTickPosY) * (double)partialTickTime;
-        double var11 = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * (double)partialTickTime;
+        double var7 = player.getPartialPosX(partialTickTime);
+        double var9 = player.getPartialPosY(partialTickTime);
+        double var11 = player.getPartialPosZ(partialTickTime);
         drawOutlinedBoundingBox(var6.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(var5, var5, var5).getOffsetBoundingBox(-var7, -var9, -var11));
         GL11.glDepthMask(true);
         GL11.glDisable(GL11.GL_BLEND);

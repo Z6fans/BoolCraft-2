@@ -1210,7 +1210,7 @@ public class WorldServer
                     int localX = localKey >> 12 & 15;
                     int localZ = localKey >> 8 & 15;
                     int localY = localKey & 255;
-                    Minecraft.getMinecraft().worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
+                    WorldServer.this.minecraft.worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
                 }
         	}
 
