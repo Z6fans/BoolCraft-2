@@ -36,14 +36,11 @@ public class WorldServer
 
     /** All work to do in future ticks. */
     private TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet;
-
-    /** Whether or not level saving is enabled */
-    private boolean levelSaving;
     private int updateEntityTick;
-    private List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
+    private final List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
     /** Positions to update */
-    private Set<ChunkCoordIntPair> activeChunkSet = new HashSet<ChunkCoordIntPair>();
+    private final Set<ChunkCoordIntPair> activeChunkSet = new HashSet<ChunkCoordIntPair>();
     
     /**
      * Contains the current Linear Congruential Generator seed for block updates. Used with an A value of 3 and a C
@@ -59,13 +56,13 @@ public class WorldServer
      * used by unload100OldestChunks to iterate the loadedChunkHashMap for unload (underlying assumption, first in,
      * first out)
      */
-    private Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
-    private AnvilChunkLoader currentChunkLoader;
-    private LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
-    private List<Chunk> loadedChunks = new ArrayList<Chunk>();
+    private final Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
+    private final AnvilChunkLoader currentChunkLoader;
+    private final LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
+    private final List<Chunk> loadedChunks = new ArrayList<Chunk>();
 
     /** RNG for World. */
-    private Random rand = new Random();
+    private final Random rand = new Random();
 
     /**
      * holds information about a world (size on disk, time, spawn point, seed, ...)
@@ -98,7 +95,7 @@ public class WorldServer
     /**
      * Number of chunks the server sends to the client. Valid 3<=x<=15. In server.properties.
      */
-    private int playerViewRadius;
+    private final int playerViewRadius;
 
     /** time what is using to check if InhabitedTime should be calculated */
     private long previousTotalWorldTime;
@@ -106,7 +103,7 @@ public class WorldServer
     /** x, z direction vectors: east, south, west, north */
     private final int[][] xzDirectionsConst = new int[][] {{1, 0}, {0, 1}, { -1, 0}, {0, -1}};
     
-	private Minecraft minecraft;
+	private final Minecraft minecraft;
 
     /** LinkedList that holds the loaded chunks. */
     private final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
@@ -166,24 +163,21 @@ public class WorldServer
      */
     public void tick()
     {
-    	if (!this.levelSaving)
+    	for (int var1 = 0; var1 < 100; ++var1)
         {
-            for (int var1 = 0; var1 < 100; ++var1)
+            if (!this.chunksToUnload.isEmpty())
             {
-                if (!this.chunksToUnload.isEmpty())
+                Long var2 = (Long)this.chunksToUnload.iterator().next();
+                Chunk var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
+
+                if (var3 != null)
                 {
-                    Long var2 = (Long)this.chunksToUnload.iterator().next();
-                    Chunk var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
-
-                    if (var3 != null)
-                    {
-                        this.safeSaveChunk(var3);
-                        this.loadedChunks.remove(var3);
-                    }
-
-                    this.chunksToUnload.remove(var2);
-                    this.loadedChunkHashMap.remove(var2.longValue());
+                    this.safeSaveChunk(var3);
+                    this.loadedChunks.remove(var3);
                 }
+
+                this.chunksToUnload.remove(var2);
+                this.loadedChunkHashMap.remove(var2.longValue());
             }
         }
     	
@@ -568,39 +562,36 @@ public class WorldServer
      */
     public void saveAllChunks() throws MinecraftException
     {
-        if (!this.levelSaving)
+    	this.checkSessionLock();
+        this.saveHandler.saveWorldInfo(this.worldInfo);
+
+        ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
+
+        for (int i = 0; i < chunkList.size(); ++i)
         {
-        	this.checkSessionLock();
-            this.saveHandler.saveWorldInfo(this.worldInfo);
+            Chunk chunk = chunkList.get(i);
 
-            ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
-
-            for (int i = 0; i < chunkList.size(); ++i)
+            if (chunk.isModified)
             {
-                Chunk chunk = chunkList.get(i);
-
-                if (chunk.isModified)
-                {
-                    this.safeSaveChunk(chunk);
-                    chunk.isModified = false;
-                }
+                this.safeSaveChunk(chunk);
+                chunk.isModified = false;
             }
-            
-            Iterator<Chunk> var4 = Lists.newArrayList(this.getLoadedChunks()).iterator();
+        }
+        
+        Iterator<Chunk> var4 = Lists.newArrayList(this.getLoadedChunks()).iterator();
 
-            while (var4.hasNext())
+        while (var4.hasNext())
+        {
+            Chunk chunk = var4.next();
+
+            if (chunk != null && this.playerInstances.getValueByKey((long)chunk.xPosition + 2147483647L | (long)chunk.zPosition + 2147483647L << 32) == null)
             {
-                Chunk chunk = var4.next();
+                int x = chunk.xPosition * 16 + 8;
+                int z = chunk.zPosition * 16 + 8;
 
-                if (chunk != null && this.playerInstances.getValueByKey((long)chunk.xPosition + 2147483647L | (long)chunk.zPosition + 2147483647L << 32) == null)
+                if (x < -128 || x > 128 || z < -128 || z > 128)
                 {
-                    int x = chunk.xPosition * 16 + 8;
-                    int z = chunk.zPosition * 16 + 8;
-
-                    if (x < -128 || x > 128 || z < -128 || z > 128)
-                    {
-                        this.chunksToUnload.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
-                    }
+                    this.chunksToUnload.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
                 }
             }
         }

@@ -18,6 +18,7 @@ import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
+import net.minecraft.world.chunk.storage.RegionFileCache;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 
@@ -864,7 +865,7 @@ public class Minecraft
         this.stopServer();
         this.renderViewEntity = null;
         this.worldClient = null;
-        this.saveLoader.flushCache();
+        RegionFileCache.clearRegionFileReferences();
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;

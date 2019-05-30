@@ -12,42 +12,36 @@ public class AnvilSaveConverter
      */
     private final File savesDirectory;
 
-    public AnvilSaveConverter(File p_i2144_1_)
+    public AnvilSaveConverter(File file)
     {
-    	if (!p_i2144_1_.exists())
+    	if (!file.exists())
         {
-    		p_i2144_1_.mkdirs();
+    		file.mkdirs();
         }
 
-        this.savesDirectory = p_i2144_1_;
+        this.savesDirectory = file;
     }
 
     public List<String> getSaveList()
     {
-        ArrayList<String> var1 = new ArrayList<String>();
+        ArrayList<String> saveList = new ArrayList<String>();
         if (this.savesDirectory != null && this.savesDirectory.isDirectory())
         {
-            File[] var2 = this.savesDirectory.listFiles();
-            File[] var3 = var2;
-            int var4 = var2.length;
+            File[] fileList = this.savesDirectory.listFiles();
+            int length = fileList.length;
 
-            for (int var5 = 0; var5 < var4; ++var5)
+            for (int i = 0; i < length; ++i)
             {
-                File var6 = var3[var5];
+                File file = fileList[i];
 
-                if (var6.isDirectory())
+                if (file.isDirectory())
                 {
-                    var1.add(var6.getName());
+                    saveList.add(file.getName());
                 }
             }
         }
 
-        return var1;
-    }
-
-    public void flushCache()
-    {
-        RegionFileCache.clearRegionFileReferences();
+        return saveList;
     }
 
     /**
@@ -61,8 +55,8 @@ public class AnvilSaveConverter
     /**
      * Return whether the given world can be loaded.
      */
-    public boolean canLoadWorld(String p_90033_1_)
+    public boolean canLoadWorld(String name)
     {
-        return new File(this.savesDirectory, p_90033_1_).isDirectory();
+        return new File(this.savesDirectory, name).isDirectory();
     }
 }
