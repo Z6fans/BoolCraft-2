@@ -15,7 +15,7 @@ public class NBTTagCompound extends NBTBase
     /**
      * The key-value pairs for the tag. Each key is a UTF string, each value is a tag.
      */
-    private Map<String, NBTBase> tagMap = new HashMap<String, NBTBase>();
+    private final Map<String, NBTBase> tagMap = new HashMap<String, NBTBase>();
 
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes

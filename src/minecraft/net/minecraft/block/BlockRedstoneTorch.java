@@ -14,8 +14,8 @@ import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneTorch extends Block
 {
-    private boolean isLit;
-    private static Map<WorldServer, List<Toggle>> field_150112_b = new HashMap<WorldServer, List<Toggle>>();
+    private final boolean isLit;
+    private static final Map<WorldServer, List<Toggle>> field_150112_b = new HashMap<WorldServer, List<Toggle>>();
 
     private boolean func_150111_a(WorldServer p_150111_1_, int p_150111_2_, int p_150111_3_, int p_150111_4_, boolean p_150111_5_)
     {

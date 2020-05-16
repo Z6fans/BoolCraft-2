@@ -9,6 +9,7 @@ import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldServer;
 
 public class EntityPlayer
 {
@@ -21,6 +22,7 @@ public class EntityPlayer
     /** Entity position Z */
     private double posZ;
 	private final WorldClient worldObj;
+	private final WorldServer worldServer;
 	private final Minecraft minecraft;
     
     private double oldPosX;
@@ -78,15 +80,16 @@ public class EntityPlayer
      */
     private double lastTickPosZ;
 
-    public EntityPlayer(WorldClient world, Minecraft mc)
+    public EntityPlayer(WorldClient world, Minecraft mc, WorldServer worldServ)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldObj = world;
+        this.worldServer = worldServ;
         this.minecraft = mc;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
-        this.prevPosY = this.posY = this.minecraft.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
+        this.prevPosY = this.posY = this.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
         this.minecraft.displayGuiScreenNull();
         
@@ -255,7 +258,7 @@ public class EntityPlayer
 
         if (hasMoved)
         {
-        	this.minecraft.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
+        	this.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
         }
 
         ++this.ticksSinceMovePacket;

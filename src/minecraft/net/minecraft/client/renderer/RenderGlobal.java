@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL11;
 public class RenderGlobal
 {
     private WorldClient theWorld;
-    private List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
+    private final List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
     private WorldRenderer[] sortedWorldRenderers;
     private WorldRenderer[] worldRenderers;
     private int renderChunksWide;
@@ -25,10 +25,10 @@ public class RenderGlobal
     private int renderChunksDeep;
 
     /** OpenGL render lists base */
-    private int glRenderListBase;
+    private final int glRenderListBase;
 
     /** A reference to the Minecraft object. */
-    private Minecraft mc;
+    private final Minecraft mc;
 
     /** Minimum block X */
     private int minBlockX;
@@ -52,10 +52,10 @@ public class RenderGlobal
     private int worldRenderersCheckIndex;
 
     /** List of OpenGL lists for the current render pass */
-    private List<WorldRenderer> glRenderLists = new ArrayList<WorldRenderer>();
+    private final List<WorldRenderer> glRenderLists = new ArrayList<WorldRenderer>();
 
     /** All render lists (fixed length 4) */
-    private RenderList[] allRenderLists = new RenderList[] {new RenderList(), new RenderList(), new RenderList(), new RenderList()};
+    private final RenderList[] allRenderLists = new RenderList[] {new RenderList(), new RenderList(), new RenderList(), new RenderList()};
 
     /**
      * Previous x position when the renderers were sorted. (Once the distance moves more than 4 units they will be
@@ -571,12 +571,12 @@ public class RenderGlobal
         GL11.glLineWidth(2.0F);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDepthMask(false);
-        double var5 = 0.002F;
-        Block var6 = this.theWorld.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-        double var7 = player.getPartialPosX(partialTickTime);
-        double var9 = player.getPartialPosY(partialTickTime);
-        double var11 = player.getPartialPosZ(partialTickTime);
-        drawOutlinedBoundingBox(var6.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(var5, var5, var5).getOffsetBoundingBox(-var7, -var9, -var11));
+        double d = 0.002F;
+        Block block = this.theWorld.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
+        double playerX = player.getPartialPosX(partialTickTime);
+        double playerY = player.getPartialPosY(partialTickTime);
+        double playerZ = player.getPartialPosZ(partialTickTime);
+        drawOutlinedBoundingBox(block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ));
         GL11.glDepthMask(true);
         GL11.glDisable(GL11.GL_BLEND);
     }

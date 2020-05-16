@@ -15,12 +15,12 @@ public class WorldClient
      * The completely empty chunk used by ChunkProviderClient when chunkMapping doesn't contain the requested
      * coordinates.
      */
-    private Chunk blankChunk;
+    private final Chunk blankChunk;
 
     /**
      * The mapping between ChunkCoordinates and Chunks that ChunkProviderClient maintains.
      */
-    private LongHashMap<Chunk> chunkMapping = new LongHashMap<Chunk>();
+    private final LongHashMap<Chunk> chunkMapping = new LongHashMap<Chunk>();
 
     public WorldClient()
     {

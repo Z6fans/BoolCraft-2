@@ -9,20 +9,20 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
     private final Block block;
 
     /** X position this tick is occuring at */
-    public int xCoord;
+    public final int xCoord;
 
     /** Y position this tick is occuring at */
-    public int yCoord;
+    public final int yCoord;
 
     /** Z position this tick is occuring at */
-    public int zCoord;
+    public final int zCoord;
 
     /** Time this tick is scheduled to occur at */
     public long scheduledTime;
     public int priority;
 
     /** The id of the tick entry */
-    private long tickEntryID;
+    private final long tickEntryID;
 
     public NextTickListEntry(int x, int y, int z, Block b)
     {

@@ -92,9 +92,9 @@ public class RegionFile
     /**
      * args: x, y - get uncompressed chunk stream from the region file
      */
-    public synchronized DataInputStream getChunkDataInputStream(int p_76704_1_, int p_76704_2_)
+    public synchronized DataInputStream getChunkDataInputStream(int x, int y)
     {
-        if (this.outOfBounds(p_76704_1_, p_76704_2_))
+        if (this.outOfBounds(x, y))
         {
             return null;
         }
@@ -102,7 +102,7 @@ public class RegionFile
         {
             try
             {
-                int var3 = this.getOffset(p_76704_1_, p_76704_2_);
+                int var3 = this.getOffset(x, y);
 
                 if (var3 == 0)
                 {

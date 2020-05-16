@@ -7,28 +7,28 @@ import net.minecraft.client.EntityPlayer;
 public class RenderSorter implements Comparator<WorldRenderer>
 {
     /** The entity (usually the player) that the camera is inside. */
-    private EntityPlayer baseEntity;
+    private final EntityPlayer baseEntity;
 
-    public RenderSorter(EntityPlayer p_i1241_1_)
+    public RenderSorter(EntityPlayer entity)
     {
-        this.baseEntity = p_i1241_1_;
+        this.baseEntity = entity;
     }
 
-    public int compare(WorldRenderer p_compare_1_, WorldRenderer p_compare_2_)
+    public int compare(WorldRenderer wr1, WorldRenderer wr2)
     {
-        if (p_compare_1_.isInFrustum && !p_compare_2_.isInFrustum)
+        if (wr1.isInFrustum && !wr2.isInFrustum)
         {
             return 1;
         }
-        else if (p_compare_2_.isInFrustum && !p_compare_1_.isInFrustum)
+        else if (wr2.isInFrustum && !wr1.isInFrustum)
         {
             return -1;
         }
         else
         {
-            double var3 = (double)p_compare_1_.quadranceToPlayer(this.baseEntity);
-            double var5 = (double)p_compare_2_.quadranceToPlayer(this.baseEntity);
-            return var3 < var5 ? 1 : (var3 > var5 ? -1 : (p_compare_1_.chunkIndex < p_compare_2_.chunkIndex ? 1 : -1));
+            double quad1 = (double)wr1.quadranceToPlayer(this.baseEntity);
+            double quad2 = (double)wr2.quadranceToPlayer(this.baseEntity);
+            return quad1 < quad2 ? 1 : (quad1 > quad2 ? -1 : (wr1.chunkIndex < wr2.chunkIndex ? 1 : -1));
         }
     }
 }

@@ -5,13 +5,13 @@ import org.lwjgl.opengl.GL11;
 
 public class ClippingHelper
 {
-    private static ClippingHelper instance = new ClippingHelper();
-    private float[][] frustum = new float[16][16];
-    private float[] projectionMatrix = new float[16];
-    private float[] modelviewMatrix = new float[16];
-    private float[] clippingMatrix = new float[16];
-    private FloatBuffer projectionMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
-    private FloatBuffer modelviewMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
+    private final static ClippingHelper instance = new ClippingHelper();
+    private final float[][] frustum = new float[16][16];
+    private final float[] projectionMatrix = new float[16];
+    private final float[] modelviewMatrix = new float[16];
+    private final float[] clippingMatrix = new float[16];
+    private final FloatBuffer projectionMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
+    private final FloatBuffer modelviewMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 
     /**
      * Initialises the ClippingHelper object then returns an instance of it.

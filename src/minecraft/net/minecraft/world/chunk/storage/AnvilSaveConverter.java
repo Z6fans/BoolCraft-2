@@ -24,11 +24,11 @@ public class AnvilSaveConverter
 
     public List<String> getSaveList()
     {
-        ArrayList<String> saveList = new ArrayList<String>();
+        final ArrayList<String> saveList = new ArrayList<String>();
         if (this.savesDirectory != null && this.savesDirectory.isDirectory())
         {
-            File[] fileList = this.savesDirectory.listFiles();
-            int length = fileList.length;
+            final File[] fileList = this.savesDirectory.listFiles();
+            final int length = fileList.length;
 
             for (int i = 0; i < length; ++i)
             {

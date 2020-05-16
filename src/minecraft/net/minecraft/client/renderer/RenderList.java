@@ -20,7 +20,7 @@ public class RenderList
     private double cameraZ;
 
     /** A list of OpenGL render list IDs rendered by this RenderList. */
-    private IntBuffer glLists = GLAllocation.createDirectIntBuffer(65536);
+    private final IntBuffer glLists = GLAllocation.createDirectIntBuffer(65536);
 
     /**
      * Does this RenderList contain properly-initialized and current data for rendering?

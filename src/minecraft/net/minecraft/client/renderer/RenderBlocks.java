@@ -8,7 +8,7 @@ import net.minecraft.world.ChunkCache;
 public class RenderBlocks
 {
     /** The IBlockAccess used by this instance of RenderBlocks */
-    private ChunkCache chunkCache;
+    private final ChunkCache chunkCache;
 
     /** The minimum X value for rendering (default 0.0). */
     private double renderMinX;
@@ -28,9 +28,9 @@ public class RenderBlocks
     /** The maximum Z value for rendering (default 1.0). */
     private double renderMaxZ;
 
-    public RenderBlocks(ChunkCache p_i1251_1_)
+    public RenderBlocks(ChunkCache cc)
     {
-        this.chunkCache = p_i1251_1_;
+        this.chunkCache = cc;
     }
 
     public boolean renderBlockByRenderType(Block block, int x, int y, int z)

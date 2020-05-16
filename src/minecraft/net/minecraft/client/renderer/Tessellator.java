@@ -13,19 +13,19 @@ import org.lwjgl.opengl.GL11;
 public class Tessellator
 {
     /** The byte buffer used for GL allocation. */
-    private ByteBuffer byteBuffer;
+    private final ByteBuffer byteBuffer;
 
     /** The same memory as byteBuffer, but referenced as an integer buffer. */
-    private IntBuffer intBuffer;
+    private final IntBuffer intBuffer;
 
     /** The same memory as byteBuffer, but referenced as an float buffer. */
-    private FloatBuffer floatBuffer;
+    private final FloatBuffer floatBuffer;
 
     /** The same memory as byteBuffer, but referenced as an short buffer. */
-    private ShortBuffer shortBuffer;
+    private final ShortBuffer shortBuffer;
 
     /** Raw integer array. */
-    private int[] rawBuffer;
+    private final int[] rawBuffer;
 
     /**
      * The number of vertices to be drawn in the next draw call. Reset to 0 between draw calls.
@@ -71,9 +71,6 @@ public class Tessellator
      */
     private double zOffset;
 
-    /** The normal to be applied to the face being drawn. */
-    private int normal;
-
     /** The static instance of the Tessellator. */
     public static final Tessellator instance = new Tessellator(2097152);
 
@@ -81,16 +78,16 @@ public class Tessellator
     private boolean isDrawing;
 
     /** The size of the buffers used (in integers). */
-    private int bufferSize;
+    private final int bufferSize;
 
-    private Tessellator(int p_i1250_1_)
+    private Tessellator(int buffSize)
     {
-        this.bufferSize = p_i1250_1_;
-        this.byteBuffer = GLAllocation.createDirectByteBuffer(p_i1250_1_ * 4);
+        this.bufferSize = buffSize;
+        this.byteBuffer = GLAllocation.createDirectByteBuffer(buffSize * 4);
         this.intBuffer = this.byteBuffer.asIntBuffer();
         this.floatBuffer = this.byteBuffer.asFloatBuffer();
         this.shortBuffer = this.byteBuffer.asShortBuffer();
-        this.rawBuffer = new int[p_i1250_1_];
+        this.rawBuffer = new int[buffSize];
     }
 
     /**
@@ -265,7 +262,7 @@ public class Tessellator
 
         if (this.hasNormals)
         {
-            this.rawBuffer[this.rawBufferIndex + 6] = this.normal;
+            this.rawBuffer[this.rawBufferIndex + 6] = 0;
         }
 
         this.rawBuffer[this.rawBufferIndex + 0] = Float.floatToRawIntBits((float)(p_78377_1_ + this.xOffset));

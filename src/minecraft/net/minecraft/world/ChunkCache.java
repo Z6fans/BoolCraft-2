@@ -6,9 +6,9 @@ import net.minecraft.world.chunk.Chunk;
 
 public class ChunkCache
 {
-    private int chunkX;
-    private int chunkZ;
-    private Chunk[][] chunkArray;
+    private final int chunkX;
+    private final int chunkZ;
+    private final Chunk[][] chunkArray;
 
     /** True if the chunk cache is empty. */
     private boolean isNotEmpty;

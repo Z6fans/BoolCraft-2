@@ -8,16 +8,16 @@ import org.lwjgl.util.glu.GLU;
 public class ActiveRenderInfo
 {
     /** The current GL viewport */
-    private static IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
+    private static final IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
 
     /** The current GL modelview matrix */
-    private static FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
+    private static final FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
 
     /** The current GL projection matrix */
-    private static FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
+    private static final FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
 
     /** The computed view object coordinates */
-    private static FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
+    private static final FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
 
     /**
      * Updates the current render info and camera location based on entity look angles and 1st/3rd person view mode

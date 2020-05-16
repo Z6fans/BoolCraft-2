@@ -28,9 +28,9 @@ import org.apache.logging.log4j.Logger;
 public class AnvilChunkLoader
 {
     private static final Logger logger = LogManager.getLogger();
-    private List<AnvilChunkLoader.PendingChunk> chunksToRemove = new ArrayList<AnvilChunkLoader.PendingChunk>();
-    private Set<ChunkCoordIntPair> pendingAnvilChunksCoordinates = new HashSet<ChunkCoordIntPair>();
-    private Object syncLockObject = new Object();
+    private final List<AnvilChunkLoader.PendingChunk> chunksToRemove = new ArrayList<AnvilChunkLoader.PendingChunk>();
+    private final Set<ChunkCoordIntPair> pendingAnvilChunksCoordinates = new HashSet<ChunkCoordIntPair>();
+    private final Object syncLockObject = new Object();
 
     /** Save directory for chunks using the Anvil format */
     private final File chunkSaveLocation;

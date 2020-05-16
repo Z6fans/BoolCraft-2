@@ -13,11 +13,11 @@ import org.lwjgl.util.glu.Project;
 public class EntityRenderer
 {
     /** A reference to the Minecraft object. */
-    private Minecraft minecraft;
+    private final Minecraft minecraft;
 
     /** Previous frame time in milliseconds */
     private long prevFrameTime;
-    private RenderGlobal renderGlobal;
+    private final RenderGlobal renderGlobal;
 
     public EntityRenderer(Minecraft mc, RenderGlobal rg)
     {
@@ -203,10 +203,10 @@ public class EntityRenderer
      */
     private static void drawRect(int x1, int y1, int x2, int y2, int color)
     {
-        float alpha = (float)(color >> 24 & 255) / 255.0F;
-        float red = (float)(color >> 16 & 255) / 255.0F;
-        float green = (float)(color >> 8 & 255) / 255.0F;
-        float blue = (float)(color & 255) / 255.0F;
+        float alpha	= (float)(color >> 24 & 255) / 255.0F;
+        float red	= (float)(color >> 16 & 255) / 255.0F;
+        float green	= (float)(color >> 8  & 255) / 255.0F;
+        float blue	= (float)(color 	  & 255) / 255.0F;
         Tessellator tessellator = Tessellator.instance;
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -228,11 +228,11 @@ public class EntityRenderer
     public void setupOverlayRendering()
     {
     	GL11.glEnable(GL11.GL_TEXTURE_2D);
-        ScaledResolution var1 = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
+        ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0.0D, var1.getScaledWidth(), var1.getScaledHeight(), 0.0D, 0.0D, 1.0D);
+        GL11.glOrtho(0.0D, sr.getScaledWidth(), sr.getScaledHeight(), 0.0D, 0.0D, 1.0D);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
     }

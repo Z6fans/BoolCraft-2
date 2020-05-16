@@ -5,38 +5,38 @@ public class MathHelper
     /**
      * A table of sin values computed from 0 (inclusive) to 2*pi (exclusive), with steps of 2*PI / 65536.
      */
-    private static float[] SIN_TABLE = new float[65536];
+    private static final float[] SIN_TABLE = new float[65536];
 
     /**
      * sin looked up in a table
      */
-    public static final float sin(float p_76126_0_)
+    public static final float sin(float f)
     {
-        return SIN_TABLE[(int)(p_76126_0_ * 10430.378F) & 65535];
+        return SIN_TABLE[(int)(f * 10430.378F) & 65535];
     }
 
     /**
      * cos looked up in the sin table with the appropriate offset
      */
-    public static final float cos(float p_76134_0_)
+    public static final float cos(float f)
     {
-        return SIN_TABLE[(int)(p_76134_0_ * 10430.378F + 16384.0F) & 65535];
+        return SIN_TABLE[(int)(f * 10430.378F + 16384.0F) & 65535];
     }
 
     /**
      * Returns the greatest integer less than or equal to the double argument
      */
-    public static int floor_double(double p_76128_0_)
+    public static final int floor_double(double d)
     {
-        int var2 = (int)p_76128_0_;
-        return p_76128_0_ < (double)var2 ? var2 - 1 : var2;
+        int i = (int)d;
+        return d < (double)i ? i - 1 : i;
     }
 
     static
     {
-        for (int var0 = 0; var0 < 65536; ++var0)
+        for (int i = 0; i < 65536; ++i)
         {
-            SIN_TABLE[var0] = (float)Math.sin((double)var0 * Math.PI * 2.0D / 65536.0D);
+            SIN_TABLE[i] = (float)Math.sin((double)i * Math.PI * 2.0D / 65536.0D);
         }
     }
 }

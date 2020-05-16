@@ -398,9 +398,9 @@ public class WorldServer
 
                             if (chunkCoords != null)
                             {
-                                if (this.minecraft.worldServer.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
+                                if (this.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                                 {
-                                    Chunk chunk = this.minecraft.worldServer.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
+                                    Chunk chunk = this.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
                                     
                                     if (chunk.getLoaded())
                                     {

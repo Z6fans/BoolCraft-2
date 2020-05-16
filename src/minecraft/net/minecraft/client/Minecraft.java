@@ -39,7 +39,7 @@ public class Minecraft
     private static final Logger logger = LogManager.getLogger();
     public int displayWidth;
     public int displayHeight;
-    private Timer timer = new Timer();
+    private final Timer timer = new Timer();
     public WorldClient worldClient;
     private RenderGlobal renderGlobal;
     public EntityPlayer thePlayer;
@@ -87,14 +87,14 @@ public class Minecraft
     /**
      * An array of 36 item stacks indicating the main player inventory (including the visible bar).
      */
-    private Block[] mainInventory = {Block.stone, Block.redstone_wire, Block.lever, Block.redstone_torch};
+    private final Block[] mainInventory = {Block.stone, Block.redstone_wire, Block.lever, Block.redstone_torch};
     
     //server section
 
     private boolean isServerPaused;
     
     /** The server world instance. */
-    public WorldServer worldServer;
+    private WorldServer worldServer;
 
     /**
      * Indicates whether the server is running or not. Set to false to initiate a shutdown.
@@ -103,7 +103,6 @@ public class Minecraft
 
     /** Incremented every tick. */
     private int tickCounter;
-    private String folderName;
 
     /**
      * Set when warned for "Can't keep up", which triggers again after 15 seconds.
@@ -818,10 +817,9 @@ public class Minecraft
 
         try
         {
-            this.folderName = folder;
             this.serverRunning = true;
         	logger.info("Starting integrated minecraft server version 1.7.10");
-            this.worldServer = new WorldServer(this, (new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(this.folderName, true));
+            this.worldServer = new WorldServer(this, (new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(folder, true));
             logger.info("Preparing start region ");
 
             for (int var11 = -192; var11 <= 192 && this.serverRunning; var11 += 16)
@@ -843,7 +841,7 @@ public class Minecraft
                 this.renderGlobal.setWorldAndLoadRenderers(this.worldClient);
             }
 
-            this.thePlayer = new EntityPlayer(this.worldClient, this);
+            this.thePlayer = new EntityPlayer(this.worldClient, this, this.worldServer);
             this.renderViewEntity = this.thePlayer;
 
             System.gc();

@@ -15,7 +15,7 @@ public class WorldRenderer
     /** Reference to the World object. */
     private WorldClient worldObj;
     private int glRenderList = -1;
-    private static Tessellator tessellator = Tessellator.instance;
+    private final static Tessellator tessellator = Tessellator.instance;
     private int posX;
     private int posY;
     private int posZ;
@@ -40,7 +40,7 @@ public class WorldRenderer
     public boolean isInFrustum;
 
     /** Should this renderer skip this render pass */
-    public boolean[] skipRenderPass = new boolean[2];
+    public final boolean[] skipRenderPass = new boolean[2];
 
     /** Pos X plus */
     private int posXPlus;

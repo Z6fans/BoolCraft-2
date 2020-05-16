@@ -2,21 +2,21 @@ package net.minecraft.client.renderer;
 
 public class TesselatorVertexState
 {
-    private int[] rawBuffer;
-    private int rawBufferIndex;
-    private int vertexCount;
-    private boolean hasBrightness;
-    private boolean hasNormals;
-    private boolean hasColor;
+    private final int[] rawBuffer;
+    private final int rawBufferIndex;
+    private final int vertexCount;
+    private final boolean hasBrightness;
+    private final boolean hasNormals;
+    private final boolean hasColor;
 
-    public TesselatorVertexState(int[] p_i45079_1_, int p_i45079_2_, int p_i45079_3_, boolean p_i45079_5_, boolean p_i45079_6_, boolean p_i45079_7_)
+    public TesselatorVertexState(int[] rawBuff, int rawBuffInd, int vertCount, boolean hasBright, boolean hasNorm, boolean hasCol)
     {
-        this.rawBuffer = p_i45079_1_;
-        this.rawBufferIndex = p_i45079_2_;
-        this.vertexCount = p_i45079_3_;
-        this.hasBrightness = p_i45079_5_;
-        this.hasNormals = p_i45079_6_;
-        this.hasColor = p_i45079_7_;
+        this.rawBuffer = rawBuff;
+        this.rawBufferIndex = rawBuffInd;
+        this.vertexCount = vertCount;
+        this.hasBrightness = hasBright;
+        this.hasNormals = hasNorm;
+        this.hasColor = hasCol;
     }
 
     public int[] getRawBuffer()

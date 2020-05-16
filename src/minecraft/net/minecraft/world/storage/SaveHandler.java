@@ -39,8 +39,8 @@ public class SaveHandler
 
         try
         {
-            File sessionLock = new File(this.worldDirectory, "session.lock");
-            DataOutputStream stream = new DataOutputStream(new FileOutputStream(sessionLock));
+            final File sessionLock = new File(this.worldDirectory, "session.lock");
+            final DataOutputStream stream = new DataOutputStream(new FileOutputStream(sessionLock));
 
             try
             {

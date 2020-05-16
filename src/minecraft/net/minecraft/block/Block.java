@@ -20,7 +20,7 @@ public abstract class Block
     public static final Block unlit_redstone_torch = new BlockRedstoneTorch(false);
     public static final Block redstone_torch = new BlockRedstoneTorch(true);
     
-    private static HashBiMap<Integer, Block> registry = HashBiMap.create();
+    private static final HashBiMap<Integer, Block> registry = HashBiMap.create();
     
     static
     {
@@ -85,10 +85,10 @@ public abstract class Block
         return AxisAlignedBB.getBoundingBox((double)x + this.minX, (double)y + this.minY, (double)z + this.minZ, (double)x + this.maxX, (double)y + this.maxY, (double)z + this.maxZ);
     }
 
-    public MovingObjectPosition collisionRayTrace(WorldClient world, int p_149731_2_, int p_149731_3_, int p_149731_4_, Vec3 p_149731_5_, Vec3 p_149731_6_)
+    public MovingObjectPosition collisionRayTrace(WorldClient world, int x, int y, int z, Vec3 p_149731_5_, Vec3 p_149731_6_)
     {
-        p_149731_5_ = p_149731_5_.addVector((double)(-p_149731_2_), (double)(-p_149731_3_), (double)(-p_149731_4_));
-        p_149731_6_ = p_149731_6_.addVector((double)(-p_149731_2_), (double)(-p_149731_3_), (double)(-p_149731_4_));
+        p_149731_5_ = p_149731_5_.addVector((double)(-x), (double)(-y), (double)(-z));
+        p_149731_6_ = p_149731_6_.addVector((double)(-x), (double)(-y), (double)(-z));
         Vec3 var7 = p_149731_5_.getIntermediateWithXValue(p_149731_6_, this.minX);
         Vec3 var8 = p_149731_5_.getIntermediateWithXValue(p_149731_6_, this.maxX);
         Vec3 var9 = p_149731_5_.getIntermediateWithYValue(p_149731_6_, this.minY);
@@ -164,39 +164,39 @@ public abstract class Block
         }
         else
         {
-            byte var14 = -1;
+            byte side = -1;
 
             if (var13 == var7)
             {
-                var14 = 4;
+                side = 4;
             }
 
             if (var13 == var8)
             {
-                var14 = 5;
+                side = 5;
             }
 
             if (var13 == var9)
             {
-                var14 = 0;
+                side = 0;
             }
 
             if (var13 == var10)
             {
-                var14 = 1;
+                side = 1;
             }
 
             if (var13 == var11)
             {
-                var14 = 2;
+                side = 2;
             }
 
             if (var13 == var12)
             {
-                var14 = 3;
+                side = 3;
             }
 
-            return new MovingObjectPosition(p_149731_2_, p_149731_3_, p_149731_4_, var14);
+            return new MovingObjectPosition(x, y, z, side);
         }
     }
 
