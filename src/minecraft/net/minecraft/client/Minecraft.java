@@ -225,18 +225,15 @@ public class Minecraft
             {
                 Display.create((new PixelFormat()).withDepthBits(24));
             }
-            catch (LWJGLException var7)
+            catch (LWJGLException e)
             {
-                logger.error("Couldn\'t set pixel format", var7);
+                logger.error("Couldn\'t set pixel format", e);
 
                 try
                 {
                     Thread.sleep(1000L);
                 }
-                catch (InterruptedException var6)
-                {
-                    ;
-                }
+                catch (InterruptedException ee){;}
 
                 Display.create();
             }
@@ -278,9 +275,9 @@ public class Minecraft
             this.checkGLError("Post startup");
             this.displayGuiScreen();
         }
-        catch (Throwable var11)
+        catch (Throwable e)
         {
-            this.displayCrashReport(CrashReport.makeCrashReport(var11, "Initializing game"));
+            this.displayCrashReport(CrashReport.makeCrashReport(e, "Initializing game"));
             return;
         }
 
@@ -498,11 +495,11 @@ public class Minecraft
                         {
                             if (!this.isGamePaused)
                             {
-                                this.entityRenderer.updateRenderer();
-                            }
-
-                            if (!this.isGamePaused)
-                            {
+                                if (this.renderViewEntity == null)
+                                {
+                                    this.renderViewEntity = this.thePlayer;
+                                }
+                                
                                 if (this.thePlayer != null)
                                 {
                                 	try
@@ -675,10 +672,10 @@ public class Minecraft
 
                 if (this.currentScreen != null)
                 {
-                    ScaledResolution var3 = new ScaledResolution(this.displayWidth, this.displayHeight);
-                    int var4 = var3.getScaledWidth();
-                    int var5 = var3.getScaledHeight();
-                    this.currentScreen.setWorldAndResolution(this, var4, var5);
+                    ScaledResolution sr = new ScaledResolution(this.displayWidth, this.displayHeight);
+                    int sw = sr.getScaledWidth();
+                    int sh = sr.getScaledHeight();
+                    this.currentScreen.setWorldAndResolution(this, sw, sh);
                 }
             }
         }
@@ -690,29 +687,20 @@ public class Minecraft
         {
             this.renderGlobal.deleteAllDisplayLists();
         }
-        catch (Throwable var4)
-        {
-            ;
-        }
+        catch (Throwable t){;}
 
         try
         {
             System.gc();
         }
-        catch (Throwable var3)
-        {
-            ;
-        }
+        catch (Throwable t){;}
 
         try
         {
             System.gc();
             this.loadWorldNull();
         }
-        catch (Throwable var2)
-        {
-            ;
-        }
+        catch (Throwable t){;}
 
         System.gc();
     }
@@ -822,11 +810,11 @@ public class Minecraft
             this.worldServer = new WorldServer(this, (new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(folder, true));
             logger.info("Preparing start region ");
 
-            for (int var11 = -192; var11 <= 192 && this.serverRunning; var11 += 16)
+            for (int x = -192; x <= 192 && this.serverRunning; x += 16)
             {
-                for (int var12 = -192; var12 <= 192 && this.serverRunning; var12 += 16)
+                for (int z = -192; z <= 192 && this.serverRunning; z += 16)
                 {
-                    this.worldServer.loadChunk(var11 >> 4, var12 >> 4);
+                    this.worldServer.loadChunk(x >> 4, z >> 4);
                 }
             }
             
@@ -849,9 +837,9 @@ public class Minecraft
             
             this.worldServer.spawnPlayerInWorld(this);
         }
-        catch (Throwable var10)
+        catch (Throwable t)
         {
-            throw new ReportedException(CrashReport.makeCrashReport(var10, "Starting integrated server"));
+            throw new ReportedException(CrashReport.makeCrashReport(t, "Starting integrated server"));
         }
 
         this.displayGuiScreenNull();

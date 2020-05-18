@@ -1,9 +1,12 @@
 package net.minecraft.client.renderer;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MovingObjectPosition;
 
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -24,17 +27,6 @@ public class EntityRenderer
         this.prevFrameTime = Minecraft.getSystemTime();
         this.minecraft = mc;
         this.renderGlobal = rg;
-    }
-
-    /**
-     * Updates the entity renderer
-     */
-    public void updateRenderer()
-    {
-        if (this.minecraft.renderViewEntity == null)
-        {
-            this.minecraft.renderViewEntity = this.minecraft.thePlayer;
-        }
     }
 
     /**
@@ -108,7 +100,7 @@ public class EntityRenderer
 
             Frustrum frustrum = new Frustrum();
             frustrum.setPosition(partialX, partialY, partialZ);
-            this.renderGlobal.clipRenderersByFrustum(frustrum, partialTickTime);
+            this.renderGlobal.clipRenderersByFrustum(frustrum);
             this.renderGlobal.updateRenderers(player);
             RenderHelper.disableStandardItemLighting();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
@@ -122,7 +114,46 @@ public class EntityRenderer
             if (this.minecraft.getMouseOver() != null)
             {
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
-                this.renderGlobal.drawSelectionBox(player, this.minecraft.getMouseOver(), partialTickTime);
+                MovingObjectPosition rayTraceHit = this.minecraft.getMouseOver();
+                GL11.glEnable(GL11.GL_BLEND);
+                OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+                GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.4F);
+                GL11.glLineWidth(2.0F);
+                GL11.glDisable(GL11.GL_TEXTURE_2D);
+                GL11.glDepthMask(false);
+                double d = 0.002F;
+                Block block = this.minecraft.worldClient.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
+                double playerX = player.getPartialPosX(partialTickTime);
+                double playerY = player.getPartialPosY(partialTickTime);
+                double playerZ = player.getPartialPosZ(partialTickTime);
+                AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
+                Tessellator tess = Tessellator.instance;
+                tess.startDrawing(3);
+                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+                tess.draw();
+                tess.startDrawing(3);
+                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+                tess.draw();
+                tess.startDrawing(1);
+                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
+                tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+                tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
+                tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+                tess.draw();
+                GL11.glDepthMask(true);
+                GL11.glDisable(GL11.GL_BLEND);
                 GL11.glEnable(GL11.GL_ALPHA_TEST);
             }
 

@@ -4,15 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.WorldClient;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-
-import org.lwjgl.opengl.GL11;
 
 public class RenderGlobal
 {
@@ -561,59 +556,6 @@ public class RenderGlobal
     }
 
     /**
-     * Draws the selection box for the player. Args: entityPlayer, rayTraceHit, i, itemStack, partialTickTime
-     */
-    public void drawSelectionBox(EntityPlayer player, MovingObjectPosition rayTraceHit, float partialTickTime)
-    {
-    	GL11.glEnable(GL11.GL_BLEND);
-        OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-        GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.4F);
-        GL11.glLineWidth(2.0F);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glDepthMask(false);
-        double d = 0.002F;
-        Block block = this.theWorld.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-        double playerX = player.getPartialPosX(partialTickTime);
-        double playerY = player.getPartialPosY(partialTickTime);
-        double playerZ = player.getPartialPosZ(partialTickTime);
-        drawOutlinedBoundingBox(block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ));
-        GL11.glDepthMask(true);
-        GL11.glDisable(GL11.GL_BLEND);
-    }
-
-    /**
-     * Draws lines for the edges of the bounding box.
-     */
-    private static void drawOutlinedBoundingBox(AxisAlignedBB aabb)
-    {
-        Tessellator var2 = Tessellator.instance;
-        var2.startDrawing(3);
-        var2.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-        var2.draw();
-        var2.startDrawing(3);
-        var2.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-        var2.draw();
-        var2.startDrawing(1);
-        var2.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-        var2.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-        var2.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-        var2.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-        var2.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-        var2.draw();
-    }
-
-    /**
      * Marks the blocks in the given range for update
      */
     private void markBlocksForUpdate(int x1, int y1, int z1, int x2, int y2, int z2)
@@ -669,31 +611,31 @@ public class RenderGlobal
      * On the client, re-renders the block. On the server, sends the block to the client (which will re-render it),
      * including the tile entity description packet if applicable. Args: x, y, z
      */
-    public void markBlockForUpdate(int p_147586_1_, int p_147586_2_, int p_147586_3_)
+    public void markBlockForUpdate(int x, int y, int z)
     {
-        this.markBlocksForUpdate(p_147586_1_ - 1, p_147586_2_ - 1, p_147586_3_ - 1, p_147586_1_ + 1, p_147586_2_ + 1, p_147586_3_ + 1);
+        this.markBlocksForUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
     }
 
     /**
      * On the client, re-renders all blocks in this range, inclusive. On the server, does nothing. Args: min x, min y,
      * min z, max x, max y, max z
      */
-    public void markBlockRangeForRenderUpdate(int p_147585_1_, int p_147585_2_, int p_147585_3_, int p_147585_4_, int p_147585_5_, int p_147585_6_)
+    public void markBlockRangeForRenderUpdate(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
     {
-        this.markBlocksForUpdate(p_147585_1_ - 1, p_147585_2_ - 1, p_147585_3_ - 1, p_147585_4_ + 1, p_147585_5_ + 1, p_147585_6_ + 1);
+        this.markBlocksForUpdate(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
     /**
      * Checks all renderers that previously weren't in the frustum and 1/16th of those that previously were in the
-     * frustum for frustum clipping Args: frustum, partialTickTime
+     * frustum for frustum clipping Args: frustum
      */
-    public void clipRenderersByFrustum(Frustrum p_72729_1_, float p_72729_2_)
+    public void clipRenderersByFrustum(Frustrum frustrum)
     {
-        for (int var3 = 0; var3 < this.worldRenderers.length; ++var3)
+        for (int i = 0; i < this.worldRenderers.length; ++i)
         {
-            if (!this.worldRenderers[var3].skipAllRenderPasses() && (!this.worldRenderers[var3].isInFrustum || (var3 + this.frustumCheckOffset & 15) == 0))
+            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].isInFrustum || (i + this.frustumCheckOffset & 15) == 0))
             {
-                this.worldRenderers[var3].updateInFrustum(p_72729_1_);
+                this.worldRenderers[i].updateInFrustum(frustrum);
             }
         }
 

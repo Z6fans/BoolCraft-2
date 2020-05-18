@@ -171,8 +171,8 @@ public class GuiScreen
 
         for (int i = 0; i < forbiddenCharacters.length; ++i)
         {
-            char var4 = forbiddenCharacters[i];
-            this.newWorldName = this.newWorldName.replace(var4, '_');
+            char c = forbiddenCharacters[i];
+            this.newWorldName = this.newWorldName.replace(c, '_');
         }
 
         if (this.newWorldName == null || this.newWorldName.length() == 0)
@@ -181,17 +181,6 @@ public class GuiScreen
         }
 
         this.newWorldName = this.newWorldName.replaceAll("[\\./\"]", "_");
-        String[] forbiddenNames = new String[] {"CON", "COM", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
-
-        for (int i = 0; i < forbiddenNames.length; ++i)
-        {
-            String forbiddenName = forbiddenNames[i];
-
-            if (this.newWorldName.equalsIgnoreCase(forbiddenName))
-            {
-            	this.newWorldName = "_" + this.newWorldName + "_";
-            }
-        }
 
         while (this.mc.getSaveLoader().canLoadWorld(this.newWorldName))
         {
@@ -389,45 +378,45 @@ public class GuiScreen
                     this.glTextureId = -1;
                 }
             	
-                InputStream var2 = null;
+                InputStream texStream = null;
 
                 try
                 {
-                    var2 = Texture.class.getResourceAsStream(String.format("/assets/minecraft/textures/font/unicode_page_%02x.png", new Object[] {page}));
+                    texStream = Texture.class.getResourceAsStream(String.format("/assets/minecraft/textures/font/unicode_page_%02x.png", new Object[] {page}));
                     int textureID = this.getGlTextureId();
-                    BufferedImage image = ImageIO.read(var2);
+                    BufferedImage image = ImageIO.read(texStream);
                     GL11.glDeleteTextures(textureID);
                     GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
                     GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
                     GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
                     
-                    int var5 = image.getWidth();
-                    int var6 = image.getHeight();
-                    int var7 = 4194304 / var5;
-                    int[] source = new int[var7 * var5];
+                    int w = image.getWidth();
+                    int h = image.getHeight();
+                    int var7 = 4194304 / w;
+                    int[] source = new int[var7 * w];
                     
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
                     GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
 
-                    for (int var9 = 0; var9 < var5 * var6; var9 += var5 * var7)
+                    for (int i = 0; i < w * h; i += w * var7)
                     {
-                        int var10 = var9 / var5;
-                        int var11 = Math.min(var7, var6 - var10);
-                        int limit = var5 * var11;
-                        image.getRGB(0, var10, var5, var11, source, 0, var5);
+                        int var10 = i / w;
+                        int var11 = Math.min(var7, h - var10);
+                        int limit = w * var11;
+                        image.getRGB(0, var10, w, var11, source, 0, w);
                         IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
                         dataBuffer.put(source, 0, limit);
                         dataBuffer.position(0).limit(limit);
-                        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, var5, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
+                        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
                     }
                 }
                 finally
                 {
-                    if (var2 != null)
+                    if (texStream != null)
                     {
-                        var2.close();
+                        texStream.close();
                     }
                 }
             }

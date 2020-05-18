@@ -91,10 +91,10 @@ public class WorldRenderer
             this.posXMinus = x - this.posXClip;
             this.posYMinus = y - this.posYClip;
             this.posZMinus = z - this.posZClip;
-            float var4 = 6.0F;
-            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)x - var4), (double)((float)y - var4), (double)((float)z - var4), (double)((float)(x + 16) + var4), (double)((float)(y + 16) + var4), (double)((float)(z + 16) + var4));
+            float off = 6.0F;
+            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)x - off), (double)((float)y - off), (double)((float)z - off), (double)((float)(x + 16) + off), (double)((float)(y + 16) + off), (double)((float)(z + 16) + off));
             GL11.glNewList(this.glRenderList + 2, GL11.GL_COMPILE);
-            AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox((double)((float)this.posXClip - var4), (double)((float)this.posYClip - var4), (double)((float)this.posZClip - var4), (double)((float)(this.posXClip + 16) + var4), (double)((float)(this.posYClip + 16) + var4), (double)((float)(this.posZClip + 16) + var4));
+            AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox((double)((float)this.posXClip - off), (double)((float)this.posYClip - off), (double)((float)this.posZClip - off), (double)((float)(this.posXClip + 16) + off), (double)((float)(this.posYClip + 16) + off), (double)((float)(this.posZClip + 16) + off));
             Tessellator tess = Tessellator.instance;
             tess.startDrawingQuads();
             tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
