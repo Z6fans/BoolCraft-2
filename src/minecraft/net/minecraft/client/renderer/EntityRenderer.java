@@ -56,9 +56,8 @@ public class EntityRenderer
             this.minecraft.thePlayer.setAngles(mouseDX, mouseDY);
         }
 
-        final ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
-        int scaledWidth = sr.getScaledWidth();
-        int scaledHeight = sr.getScaledHeight();
+        int scaledWidth = this.minecraft.getScaledWidth();
+        int scaledHeight = this.minecraft.getScaledHeight();
         final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
         final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.minecraft.displayHeight - 1;
 
@@ -181,9 +180,8 @@ public class EntityRenderer
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         	
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            ScaledResolution resolution = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
-            int sWidth = resolution.getScaledWidth();
-            int sHeight = resolution.getScaledHeight();
+            int sWidth = this.minecraft.getScaledWidth();
+            int sHeight = this.minecraft.getScaledHeight();
             this.setupOverlayRendering();
             drawRect(sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
             drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
@@ -257,11 +255,10 @@ public class EntityRenderer
     public void setupOverlayRendering()
     {
     	GL11.glEnable(GL11.GL_TEXTURE_2D);
-        ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0.0D, sr.getScaledWidth(), sr.getScaledHeight(), 0.0D, 0.0D, 1.0D);
+        GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
     }
