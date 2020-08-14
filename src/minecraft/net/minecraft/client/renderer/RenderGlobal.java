@@ -629,13 +629,13 @@ public class RenderGlobal
      * Checks all renderers that previously weren't in the frustum and 1/16th of those that previously were in the
      * frustum for frustum clipping Args: frustum
      */
-    public void clipRenderersByFrustum(double x, double y, double z)
+    public void clipRenderersByFrustum(Frustrum frustrum)
     {
         for (int i = 0; i < this.worldRenderers.length; ++i)
         {
             if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].isInFrustum || (i + this.frustumCheckOffset & 15) == 0))
             {
-                this.worldRenderers[i].updateInFrustum(x, y, z);
+                this.worldRenderers[i].updateInFrustum(frustrum);
             }
         }
 

@@ -8,13 +8,9 @@ import net.minecraft.crash.ReportedException;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.Project;
 
 public class EntityRenderer
@@ -25,18 +21,6 @@ public class EntityRenderer
     /** Previous frame time in milliseconds */
     private long prevFrameTime;
     private final RenderGlobal renderGlobal;
-    
-    /** The current GL viewport */
-    private static final IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
-
-    /** The current GL modelview matrix */
-    private static final FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
-
-    /** The current GL projection matrix */
-    private static final FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
-
-    /** The computed view object coordinates */
-    private static final FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
 
     public EntityRenderer(Minecraft mc, RenderGlobal rg)
     {
@@ -72,8 +56,9 @@ public class EntityRenderer
             this.minecraft.thePlayer.setAngles(mouseDX, mouseDY);
         }
 
-        int scaledWidth = this.minecraft.getScaledWidth();
-        int scaledHeight = this.minecraft.getScaledHeight();
+        final ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
+        int scaledWidth = sr.getScaledWidth();
+        int scaledHeight = sr.getScaledHeight();
         final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
         final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.minecraft.displayHeight - 1;
 
@@ -111,14 +96,11 @@ public class EntityRenderer
             GL11.glRotatef(player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
             GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
             
-            GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
-            GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
-            GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-            float var2 = (float)((viewport.get(0) + viewport.get(2)) / 2);
-            float var3 = (float)((viewport.get(1) + viewport.get(3)) / 2);
-            GLU.gluUnProject(var2, var3, 0.0F, modelview, projection, viewport, objectCoords);
+            ActiveRenderInfo.updateRenderInfo();
 
-            this.renderGlobal.clipRenderersByFrustum(partialX, partialY, partialZ);
+            Frustrum frustrum = new Frustrum();
+            frustrum.setPosition(partialX, partialY, partialZ);
+            this.renderGlobal.clipRenderersByFrustum(frustrum);
             this.renderGlobal.updateRenderers(player);
             RenderHelper.disableStandardItemLighting();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
@@ -201,8 +183,9 @@ public class EntityRenderer
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         	
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            int sWidth = this.minecraft.getScaledWidth();
-            int sHeight = this.minecraft.getScaledHeight();
+            ScaledResolution resolution = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
+            int sWidth = resolution.getScaledWidth();
+            int sHeight = resolution.getScaledHeight();
             this.setupOverlayRendering();
             drawRect(sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
             drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
@@ -276,10 +259,11 @@ public class EntityRenderer
     public void setupOverlayRendering()
     {
     	GL11.glEnable(GL11.GL_TEXTURE_2D);
+        ScaledResolution sr = new ScaledResolution(this.minecraft.displayWidth, this.minecraft.displayHeight);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
+        GL11.glOrtho(0.0D, sr.getScaledWidth(), sr.getScaledHeight(), 0.0D, 0.0D, 1.0D);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
     }
