@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.ScaledResolution;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
 import net.minecraft.util.KeyBinding;
@@ -154,10 +153,7 @@ public class Minecraft
 
         this.currentScreen = new GuiScreen();
         this.setIngameNotInFocus();
-        ScaledResolution var2 = new ScaledResolution(this.displayWidth, this.displayHeight);
-        int var3 = var2.getScaledWidth();
-        int var4 = var2.getScaledHeight();
-        this.currentScreen.setWorldAndResolution(this, var3, var4);
+        this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
     }
     
     /**
@@ -182,10 +178,7 @@ public class Minecraft
         if (p_147108_1_ != null)
         {
             this.setIngameNotInFocus();
-            ScaledResolution var2 = new ScaledResolution(this.displayWidth, this.displayHeight);
-            int var3 = var2.getScaledWidth();
-            int var4 = var2.getScaledHeight();
-            p_147108_1_.setWorldAndResolution(this, var3, var4);
+            p_147108_1_.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
         }
         else
         {
@@ -241,10 +234,9 @@ public class Minecraft
             OpenGlHelper.initializeTextures();
 
             this.saveLoader = new AnvilSaveConverter(new File(this.mcDataDir, "saves"));
-            ScaledResolution sr = new ScaledResolution(this.displayWidth, this.displayHeight);
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
-            GL11.glOrtho(0.0D, sr.getScaledWidth(), sr.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
+            GL11.glOrtho(0.0D, this.getScaledWidth(), this.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
             GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
@@ -672,10 +664,7 @@ public class Minecraft
 
                 if (this.currentScreen != null)
                 {
-                    ScaledResolution sr = new ScaledResolution(this.displayWidth, this.displayHeight);
-                    int sw = sr.getScaledWidth();
-                    int sh = sr.getScaledHeight();
-                    this.currentScreen.setWorldAndResolution(this, sw, sh);
+                    this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
                 }
             }
         }
@@ -915,5 +904,39 @@ public class Minecraft
     public MovingObjectPosition getMouseOver()
     {
     	return this.objectMouseOver;
+    }
+    
+    public int getScaledWidth()
+    {
+    	int scaleFactor = 1;
+
+        while (scaleFactor < 1000 && this.displayWidth / (scaleFactor + 1) >= 320 && this.displayHeight / (scaleFactor + 1) >= 240)
+        {
+            ++scaleFactor;
+        }
+
+        if (scaleFactor % 2 != 0 && scaleFactor != 1)
+        {
+            --scaleFactor;
+        }
+        
+        return (int)Math.ceil((double)this.displayWidth / (double)scaleFactor);
+    }
+
+    public int getScaledHeight()
+    {
+    	int scaleFactor = 1;
+
+        while (scaleFactor < 1000 && this.displayWidth / (scaleFactor + 1) >= 320 && this.displayHeight / (scaleFactor + 1) >= 240)
+        {
+            ++scaleFactor;
+        }
+
+        if (scaleFactor % 2 != 0 && scaleFactor != 1)
+        {
+            --scaleFactor;
+        }
+        
+        return (int)Math.ceil((double)this.displayHeight / (double)scaleFactor);
     }
 }

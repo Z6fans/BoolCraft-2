@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL11;
 public class WorldRenderer
 {
     private TesselatorVertexState vertexState;
+    private final ClippingHelper clippingHelper = ClippingHelper.getInstance();
 
     /** Reference to the World object. */
     private WorldClient worldObj;
@@ -267,9 +268,9 @@ public class WorldRenderer
         return !this.isInFrustum ? -1 : (!this.skipRenderPass[p_78909_1_] ? this.glRenderList + p_78909_1_ : -1);
     }
 
-    public void updateInFrustum(Frustrum p_78908_1_)
+    public void updateInFrustum(double x, double y, double z)
     {
-        this.isInFrustum = p_78908_1_.isBoundingBoxInFrustum(this.rendererBoundingBox);
+        this.isInFrustum = this.clippingHelper.isBoxInFrustum(this.rendererBoundingBox.minX - x, this.rendererBoundingBox.minY - y, this.rendererBoundingBox.minZ - z, this.rendererBoundingBox.maxX - x, this.rendererBoundingBox.maxY - y, this.rendererBoundingBox.maxZ - z);
     }
 
     /**
