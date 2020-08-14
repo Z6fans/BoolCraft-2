@@ -40,7 +40,6 @@ import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.chunk.storage.RegionFileCache;
 import net.minecraft.world.storage.ThreadedFileIOBase;
-import net.minecraft.world.storage.WorldInfo;
 
 public class WorldServer
 {
@@ -82,11 +81,10 @@ public class WorldServer
 
     /** RNG for World. */
     private final Random rand = new Random();
-
-    /**
-     * holds information about a world (size on disk, time, spawn point, seed, ...)
-     */
-    private WorldInfo worldInfo;
+    
+    /** Total time for this world. */
+    private long totalTime;
+    private boolean initialized;
     
     private double playerPosX;
     private double playerPosZ;
@@ -157,14 +155,27 @@ public class WorldServer
             throw new RuntimeException("Failed to check session lock, aborting");
         }
         
-        this.worldInfo = this.loadWorldInfo();
+        NBTTagCompound info = this.loadWorldInfo();
+        
+        if(info == null)
+    	{
+    		this.initialized = false;
+    	}
+    	else
+    	{
+    		this.totalTime = info.getLong("Time");
 
-        if (this.worldInfo == null)
-        {
-            this.worldInfo = new WorldInfo();
-        }
+            if (info.isTagIdEqual("initialized", 99))
+            {
+                this.initialized = info.getBoolean("initialized");
+            }
+            else
+            {
+                this.initialized = true;
+            }
+    	}
 
-        if (!this.worldInfo.isInitialized())
+        if (!this.initialized)
         {
             try
             {
@@ -178,14 +189,14 @@ public class WorldServer
                     this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
                 }
 
-                this.worldInfo.setServerInitialized();
+                this.initialized = true;
             }
             catch (Throwable t)
             {
                 throw new ReportedException(CrashReport.makeCrashReport(t, "Exception initializing level"));
             }
 
-            this.worldInfo.setServerInitialized();
+            this.initialized = true;
         }
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
         this.playerViewRadius = 10;
@@ -204,7 +215,7 @@ public class WorldServer
     /**
      * Loads and returns the world info
      */
-    private WorldInfo loadWorldInfo()
+    private NBTTagCompound loadWorldInfo()
     {
         File file = new File(this.worldDirectory, "level.dat");
 
@@ -224,7 +235,7 @@ public class WorldServer
                     stream.close();
                 }
 
-            	return new WorldInfo(tag.getCompoundTag("Data"));
+            	return tag.getCompoundTag("Data");
             }
             catch (Exception e)
             {
@@ -250,7 +261,7 @@ public class WorldServer
                     stream.close();
                 }
 
-            	return new WorldInfo(tag.getCompoundTag("Data"));
+            	return tag.getCompoundTag("Data");
             }
             catch (Exception e)
             {
@@ -284,7 +295,7 @@ public class WorldServer
             }
         }
     	
-        this.worldInfo.setTotalWorldTime(this.worldInfo.getWorldTotalTime() + 1L);
+    	this.totalTime = this.totalTime + 1L;
         
         int numEntries = this.pendingTickListEntriesTreeSet.size();
 
@@ -303,7 +314,7 @@ public class WorldServer
             {
             	NextTickListEntry entry = (NextTickListEntry)this.pendingTickListEntriesTreeSet.first();
 
-                if (entry.scheduledTime > this.worldInfo.getWorldTotalTime())
+                if (entry.scheduledTime > this.totalTime)
                 {
                     break;
                 }
@@ -434,7 +445,7 @@ public class WorldServer
         	NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
             if (!block.isReplaceable())
             {
-                entry.setScheduledTime((long)delay + this.worldInfo.getWorldTotalTime());
+                entry.setScheduledTime((long)delay + this.totalTime);
                 entry.setPriority(0);
             }
 
@@ -453,7 +464,7 @@ public class WorldServer
 
         if (!block.isReplaceable())
         {
-            entry.setScheduledTime((long)delay + this.worldInfo.getWorldTotalTime());
+            entry.setScheduledTime((long)delay + this.totalTime);
         }
 
         if (!this.pendingTickListEntriesHashSet.contains(entry))
@@ -666,7 +677,9 @@ public class WorldServer
     public void saveAllChunks() throws MinecraftException
     {
     	this.checkSessionLock();
-        NBTTagCompound dataTag = this.worldInfo.getNBTTagCompound();
+        NBTTagCompound dataTag = new NBTTagCompound();
+        dataTag.setLong("Time", this.totalTime);
+        dataTag.setBoolean("initialized", this.initialized);
         NBTTagCompound masterTag = new NBTTagCompound();
         masterTag.setTag("Data", dataTag);
 
@@ -1132,7 +1145,7 @@ public class WorldServer
 
     public final long getTotalWorldTime()
     {
-        return this.worldInfo.getWorldTotalTime();
+        return this.totalTime;
     }
 
     /**
