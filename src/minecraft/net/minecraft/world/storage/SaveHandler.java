@@ -26,16 +26,12 @@ public class SaveHandler
      */
     private final long initializationTime = System.currentTimeMillis();
 
-    public SaveHandler(File file, String name, boolean hasPlayerData)
+    public SaveHandler(File file, String name)
     {
         this.worldDirectory = new File(file, name);
         this.worldDirectory.mkdirs();
         (new File(this.worldDirectory, "data")).mkdirs();
-
-        if (hasPlayerData)
-        {
-            (new File(this.worldDirectory, "playerdata")).mkdirs();
-        }
+        (new File(this.worldDirectory, "playerdata")).mkdirs();
 
         try
         {

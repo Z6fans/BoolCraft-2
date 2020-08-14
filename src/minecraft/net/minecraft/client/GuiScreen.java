@@ -72,7 +72,7 @@ public class GuiScreen
                                 worldFolderName = "World" + id;
                             }
 
-                            if (this.mc.getSaveLoader().canLoadWorld(worldFolderName))
+                            if (this.mc.canLoadWorld(worldFolderName))
                             {
                                 this.mc.launchIntegratedServer(worldFolderName);
                             }
@@ -158,7 +158,7 @@ public class GuiScreen
         this.fontRendererObj = new FontRenderer();
         this.width = w;
         this.height = h;
-        this.worldList = this.mc.getSaveLoader().getSaveList();
+        this.worldList = this.mc.getSaveList();
         Collections.sort(this.worldList);
         Keyboard.enableRepeatEvents(true);
         this.fixWorldName();
@@ -182,7 +182,7 @@ public class GuiScreen
 
         this.newWorldName = this.newWorldName.replaceAll("[\\./\"]", "_");
 
-        while (this.mc.getSaveLoader().canLoadWorld(this.newWorldName))
+        while (this.mc.canLoadWorld(this.newWorldName))
         {
         	this.newWorldName = this.newWorldName + "-";
         }

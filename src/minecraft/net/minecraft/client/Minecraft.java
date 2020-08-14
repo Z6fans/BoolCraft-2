@@ -1,6 +1,8 @@
 package net.minecraft.client;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -16,7 +18,6 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.chunk.storage.RegionFileCache;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
@@ -64,7 +65,6 @@ public class Minecraft
 
     /** Mouse helper instance. */
     private final File mcDataDir;
-    private AnvilSaveConverter saveLoader;
 
     /**
      * When you place a block, it's set to 6, decremented once per tick, when it's 0, you can place another block.
@@ -115,6 +115,11 @@ public class Minecraft
      */
     private int blockHitDelay;
     public int currentItem;
+    
+    /**
+     * Reference to the File object representing the directory for the world saves
+     */
+    private File savesDirectory;
 
     public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
     {
@@ -131,14 +136,6 @@ public class Minecraft
     {
         System.out.println(cr.getCompleteReport());
         System.exit(-1);
-    }
-
-    /**
-     * Returns the save loader that is currently being used
-     */
-    public AnvilSaveConverter getSaveLoader()
-    {
-        return this.saveLoader;
     }
 
     /**
@@ -233,7 +230,12 @@ public class Minecraft
 
             OpenGlHelper.initializeTextures();
 
-            this.saveLoader = new AnvilSaveConverter(new File(this.mcDataDir, "saves"));
+            File saves = new File(this.mcDataDir, "saves");
+            if (!saves.exists())
+            {
+        		saves.mkdirs();
+            }
+            this.savesDirectory = saves;
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
             GL11.glOrtho(0.0D, this.getScaledWidth(), this.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
@@ -783,20 +785,12 @@ public class Minecraft
     {
         this.loadWorldNull();
         System.gc();
-        SaveHandler sh = this.saveLoader.getSaveLoader(folder, false);
-        WorldInfo wi = sh.loadWorldInfo();
-
-        if (wi == null)
-        {
-            wi = new WorldInfo();
-            sh.saveWorldInfo(wi);
-        }
 
         try
         {
             this.serverRunning = true;
         	logger.info("Starting integrated minecraft server version 1.7.10");
-            this.worldServer = new WorldServer(this, (new AnvilSaveConverter(new File(this.mcDataDir, "saves"))).getSaveLoader(folder, true));
+            this.worldServer = new WorldServer(this, new SaveHandler(this.savesDirectory, folder));
             logger.info("Preparing start region ");
 
             for (int x = -192; x <= 192 && this.serverRunning; x += 16)
@@ -938,5 +932,35 @@ public class Minecraft
         }
         
         return (int)Math.ceil((double)this.displayHeight / (double)scaleFactor);
+    }
+    
+    public List<String> getSaveList()
+    {
+        final ArrayList<String> saveList = new ArrayList<String>();
+        if (this.savesDirectory != null && this.savesDirectory.isDirectory())
+        {
+            final File[] fileList = this.savesDirectory.listFiles();
+            final int length = fileList.length;
+
+            for (int i = 0; i < length; ++i)
+            {
+                File file = fileList[i];
+
+                if (file.isDirectory())
+                {
+                    saveList.add(file.getName());
+                }
+            }
+        }
+
+        return saveList;
+    }
+    
+    /**
+     * Return whether the given world can be loaded.
+     */
+    public boolean canLoadWorld(String name)
+    {
+        return new File(this.savesDirectory, name).isDirectory();
     }
 }
