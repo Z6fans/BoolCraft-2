@@ -98,7 +98,9 @@ public class EntityRenderer
             
             ActiveRenderInfo.updateRenderInfo();
 
-            this.renderGlobal.clipRenderersByFrustum(partialX, partialY, partialZ);
+            Frustrum frustrum = new Frustrum();
+            frustrum.setPosition(partialX, partialY, partialZ);
+            this.renderGlobal.clipRenderersByFrustum(frustrum);
             this.renderGlobal.updateRenderers(player);
             RenderHelper.disableStandardItemLighting();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
