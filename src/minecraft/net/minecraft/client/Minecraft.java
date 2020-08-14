@@ -19,8 +19,6 @@ import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.storage.RegionFileCache;
-import net.minecraft.world.storage.SaveHandler;
-import net.minecraft.world.storage.WorldInfo;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -779,9 +777,9 @@ public class Minecraft
     }
 
     /**
-     * Arguments: World foldername,  World ingame name, WorldSettings
+     * Arguments: World name
      */
-    public void launchIntegratedServer(String folder)
+    public void launchIntegratedServer(String name)
     {
         this.loadWorldNull();
         System.gc();
@@ -790,7 +788,7 @@ public class Minecraft
         {
             this.serverRunning = true;
         	logger.info("Starting integrated minecraft server version 1.7.10");
-            this.worldServer = new WorldServer(this, new SaveHandler(this.savesDirectory, folder));
+            this.worldServer = new WorldServer(this, new File(this.savesDirectory, name));
             logger.info("Preparing start region ");
 
             for (int x = -192; x <= 192 && this.serverRunning; x += 16)

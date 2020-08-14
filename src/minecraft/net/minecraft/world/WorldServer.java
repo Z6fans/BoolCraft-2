@@ -2,6 +2,13 @@ package net.minecraft.world;
 
 import com.google.common.collect.Lists;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +20,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,13 +30,16 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.ReportedException;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraft.world.storage.SaveHandler;
+import net.minecraft.world.chunk.storage.RegionFileCache;
+import net.minecraft.world.storage.ThreadedFileIOBase;
 import net.minecraft.world.storage.WorldInfo;
 
 public class WorldServer
@@ -48,7 +60,14 @@ public class WorldServer
      * 16x128x16 field.
      */
     private int updateLCG = (new Random()).nextInt();
-    private final SaveHandler saveHandler;
+    
+    /** The directory in which to save world data. */
+    private final File worldDirectory;
+
+    /**
+     * The time in milliseconds when this field was initialized. Stored in the session lock file.
+     */
+    private final long initializationTime = System.currentTimeMillis();
     
     private static final Logger logger = LogManager.getLogger();
 
@@ -110,10 +129,35 @@ public class WorldServer
 
 	private boolean isSpawned = false;
 
-    public WorldServer(Minecraft mc, SaveHandler sh)
+    public WorldServer(Minecraft mc, File wd)
     {
     	this.minecraft = mc;
-        this.worldInfo = sh.loadWorldInfo();
+    	this.worldDirectory = wd;
+        this.worldDirectory.mkdirs();
+        (new File(this.worldDirectory, "data")).mkdirs();
+        (new File(this.worldDirectory, "playerdata")).mkdirs();
+
+        try
+        {
+            final File sessionLock = new File(this.worldDirectory, "session.lock");
+            final DataOutputStream stream = new DataOutputStream(new FileOutputStream(sessionLock));
+
+            try
+            {
+                stream.writeLong(this.initializationTime);
+            }
+            finally
+            {
+                stream.close();
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to check session lock, aborting");
+        }
+        
+        this.worldInfo = this.loadWorldInfo();
 
         if (this.worldInfo == null)
         {
@@ -143,8 +187,7 @@ public class WorldServer
 
             this.worldInfo.setServerInitialized();
         }
-        this.saveHandler = sh;
-        this.currentChunkLoader = new AnvilChunkLoader(this.saveHandler.getWorldDirectory());
+        this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
         this.playerViewRadius = 10;
 
         if (this.pendingTickListEntriesHashSet == null)
@@ -156,6 +199,66 @@ public class WorldServer
         {
             this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
         }
+    }
+    
+    /**
+     * Loads and returns the world info
+     */
+    private WorldInfo loadWorldInfo()
+    {
+        File file = new File(this.worldDirectory, "level.dat");
+
+        if (file.exists())
+        {
+            try
+            {
+            	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
+                NBTTagCompound tag;
+
+                try
+                {
+                    tag = CompressedStreamTools.read(stream);
+                }
+                finally
+                {
+                    stream.close();
+                }
+
+            	return new WorldInfo(tag.getCompoundTag("Data"));
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        file = new File(this.worldDirectory, "level.dat_old");
+
+        if (file.exists())
+        {
+            try
+            {
+            	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
+                NBTTagCompound tag;
+
+                try
+                {
+                    tag = CompressedStreamTools.read(stream);
+                }
+                finally
+                {
+                    stream.close();
+                }
+
+            	return new WorldInfo(tag.getCompoundTag("Data"));
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -563,7 +666,49 @@ public class WorldServer
     public void saveAllChunks() throws MinecraftException
     {
     	this.checkSessionLock();
-        this.saveHandler.saveWorldInfo(this.worldInfo);
+        NBTTagCompound dataTag = this.worldInfo.getNBTTagCompound();
+        NBTTagCompound masterTag = new NBTTagCompound();
+        masterTag.setTag("Data", dataTag);
+
+        try
+        {
+            File levelNew = new File(this.worldDirectory, "level.dat_new");
+            File levelOld = new File(this.worldDirectory, "level.dat_old");
+            File level = new File(this.worldDirectory, "level.dat");
+            DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(levelNew))));
+
+            try
+            {
+                CompressedStreamTools.write(masterTag, stream);
+            }
+            finally
+            {
+                stream.close();
+            }
+
+            if (levelOld.exists())
+            {
+                levelOld.delete();
+            }
+
+            level.renameTo(levelOld);
+
+            if (level.exists())
+            {
+                level.delete();
+            }
+
+            levelNew.renameTo(level);
+
+            if (levelNew.exists())
+            {
+                levelNew.delete();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
 
@@ -602,7 +747,16 @@ public class WorldServer
      */
     public void flush()
     {
-        this.saveHandler.flush();
+    	try
+        {
+            ThreadedFileIOBase.threadedIOInstance.waitForFinish();
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        RegionFileCache.clearRegionFileReferences();
     }
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)
@@ -640,7 +794,26 @@ public class WorldServer
      */
     public void checkSessionLock() throws MinecraftException
     {
-        this.saveHandler.checkSessionLock();
+    	try
+        {
+            DataInputStream stream = new DataInputStream(new FileInputStream(new File(this.worldDirectory, "session.lock")));
+
+            try
+            {
+                if (stream.readLong() != this.initializationTime)
+                {
+                    throw new MinecraftException("The save is being accessed from another location, aborting");
+                }
+            }
+            finally
+            {
+                stream.close();
+            }
+        }
+        catch (IOException e)
+        {
+            throw new MinecraftException("Failed to check session lock, aborting");
+        }
     }
     
     public void spawnPlayerInWorld(Minecraft mc)
