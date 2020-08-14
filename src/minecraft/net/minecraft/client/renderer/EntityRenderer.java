@@ -8,9 +8,13 @@ import net.minecraft.crash.ReportedException;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.Project;
 
 public class EntityRenderer
@@ -21,6 +25,18 @@ public class EntityRenderer
     /** Previous frame time in milliseconds */
     private long prevFrameTime;
     private final RenderGlobal renderGlobal;
+    
+    /** The current GL viewport */
+    private static final IntBuffer viewport = GLAllocation.createDirectIntBuffer(16);
+
+    /** The current GL modelview matrix */
+    private static final FloatBuffer modelview = GLAllocation.createDirectFloatBuffer(16);
+
+    /** The current GL projection matrix */
+    private static final FloatBuffer projection = GLAllocation.createDirectFloatBuffer(16);
+
+    /** The computed view object coordinates */
+    private static final FloatBuffer objectCoords = GLAllocation.createDirectFloatBuffer(3);
 
     public EntityRenderer(Minecraft mc, RenderGlobal rg)
     {
@@ -95,7 +111,12 @@ public class EntityRenderer
             GL11.glRotatef(player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
             GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
             
-            ActiveRenderInfo.updateRenderInfo();
+            GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
+            GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
+            GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
+            float var2 = (float)((viewport.get(0) + viewport.get(2)) / 2);
+            float var3 = (float)((viewport.get(1) + viewport.get(3)) / 2);
+            GLU.gluUnProject(var2, var3, 0.0F, modelview, projection, viewport, objectCoords);
 
             this.renderGlobal.clipRenderersByFrustum(partialX, partialY, partialZ);
             this.renderGlobal.updateRenderers(player);
