@@ -84,7 +84,6 @@ public class WorldServer
     
     /** Total time for this world. */
     private long totalTime;
-    private boolean initialized;
     
     private double playerPosX;
     private double playerPosZ;
@@ -157,47 +156,11 @@ public class WorldServer
         
         NBTTagCompound info = this.loadWorldInfo();
         
-        if(info == null)
-    	{
-    		this.initialized = false;
-    	}
-    	else
+        if(info != null)
     	{
     		this.totalTime = info.getLong("Time");
-
-            if (info.isTagIdEqual("initialized", 99))
-            {
-                this.initialized = info.getBoolean("initialized");
-            }
-            else
-            {
-                this.initialized = true;
-            }
     	}
-
-        if (!this.initialized)
-        {
-            try
-            {
-                if (this.pendingTickListEntriesHashSet == null)
-                {
-                    this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
-                }
-
-                if (this.pendingTickListEntriesTreeSet == null)
-                {
-                    this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
-                }
-
-                this.initialized = true;
-            }
-            catch (Throwable t)
-            {
-                throw new ReportedException(CrashReport.makeCrashReport(t, "Exception initializing level"));
-            }
-
-            this.initialized = true;
-        }
+        
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
         this.playerViewRadius = 10;
 
@@ -679,7 +642,6 @@ public class WorldServer
     	this.checkSessionLock();
         NBTTagCompound dataTag = new NBTTagCompound();
         dataTag.setLong("Time", this.totalTime);
-        dataTag.setBoolean("initialized", this.initialized);
         NBTTagCompound masterTag = new NBTTagCompound();
         masterTag.setTag("Data", dataTag);
 
