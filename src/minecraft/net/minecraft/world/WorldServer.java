@@ -38,7 +38,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraft.world.chunk.storage.RegionFileCache;
 import net.minecraft.world.storage.ThreadedFileIOBase;
 
 public class WorldServer
@@ -111,7 +110,7 @@ public class WorldServer
     /**
      * Number of chunks the server sends to the client. Valid 3<=x<=15. In server.properties.
      */
-    private final int playerViewRadius;
+    private final int playerViewRadius = 10;
 
     /** time what is using to check if InhabitedTime should be calculated */
     private long previousTotalWorldTime;
@@ -132,7 +131,6 @@ public class WorldServer
     	this.worldDirectory = wd;
         this.worldDirectory.mkdirs();
         (new File(this.worldDirectory, "data")).mkdirs();
-        (new File(this.worldDirectory, "playerdata")).mkdirs();
 
         try
         {
@@ -162,7 +160,6 @@ public class WorldServer
     	}
         
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
-        this.playerViewRadius = 10;
 
         if (this.pendingTickListEntriesHashSet == null)
         {
@@ -731,7 +728,7 @@ public class WorldServer
             e.printStackTrace();
         }
 
-        RegionFileCache.clearRegionFileReferences();
+        ThreadedFileIOBase.threadedIOInstance.clearRegionFileReferences();
     }
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)

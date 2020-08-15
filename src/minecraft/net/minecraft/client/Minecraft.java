@@ -18,7 +18,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.storage.RegionFileCache;
+import net.minecraft.world.storage.ThreadedFileIOBase;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -832,7 +832,7 @@ public class Minecraft
         this.stopServer();
         this.renderViewEntity = null;
         this.worldClient = null;
-        RegionFileCache.clearRegionFileReferences();
+        ThreadedFileIOBase.threadedIOInstance.clearRegionFileReferences();
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;
