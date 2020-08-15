@@ -160,67 +160,70 @@ public class ThreadedFileIOBase implements Runnable
     public static class RegionFile
     {
         private static final byte[] emptySector = new byte[4096];
-        private RandomAccessFile dataFile;
+        private final RandomAccessFile dataFile;
         private final int[] offsets = new int[1024];
         private final int[] chunkTimestamps = new int[1024];
-        private ArrayList<Boolean> sectorFree;
+        private final ArrayList<Boolean> sectorFree;
 
-        public RegionFile(File file)
+        private RegionFile(File file)
         {
+        	RandomAccessFile newDataFile = null;
+        	ArrayList<Boolean> newSectorFree = null;
+        	
             try
             {
-                this.dataFile = new RandomAccessFile(file, "rw");
+            	newDataFile = new RandomAccessFile(file, "rw");
 
-                if (this.dataFile.length() < 4096L)
+                if (newDataFile.length() < 4096L)
                 {
                     for (int i = 0; i < 1024; ++i)
                     {
-                        this.dataFile.writeInt(0);
+                    	newDataFile.writeInt(0);
                     }
 
                     for (int i = 0; i < 1024; ++i)
                     {
-                        this.dataFile.writeInt(0);
+                    	newDataFile.writeInt(0);
                     }
                 }
 
-                if ((this.dataFile.length() & 4095L) != 0L)
+                if ((newDataFile.length() & 4095L) != 0L)
                 {
-                    for (int i = 0; (long)i < (this.dataFile.length() & 4095L); ++i)
+                    for (int i = 0; (long)i < (newDataFile.length() & 4095L); ++i)
                     {
-                        this.dataFile.write(0);
+                    	newDataFile.write(0);
                     }
                 }
 
-                int fileSize = (int)this.dataFile.length() / 4096;
-                this.sectorFree = new ArrayList<Boolean>(fileSize);
+                int fileSize = (int)newDataFile.length() / 4096;
+                newSectorFree = new ArrayList<Boolean>(fileSize);
 
                 for (int i = 0; i < fileSize; ++i)
                 {
-                    this.sectorFree.add(Boolean.valueOf(true));
+                	newSectorFree.add(Boolean.valueOf(true));
                 }
 
-                this.sectorFree.set(0, Boolean.valueOf(false));
-                this.sectorFree.set(1, Boolean.valueOf(false));
-                this.dataFile.seek(0L);
+                newSectorFree.set(0, Boolean.valueOf(false));
+                newSectorFree.set(1, Boolean.valueOf(false));
+                newDataFile.seek(0L);
 
                 for (int i = 0; i < 1024; ++i)
                 {
-                    int offsets = this.dataFile.readInt();
+                    int offsets = newDataFile.readInt();
                     this.offsets[i] = offsets;
 
-                    if (offsets != 0 && (offsets >> 8) + (offsets & 255) <= this.sectorFree.size())
+                    if (offsets != 0 && (offsets >> 8) + (offsets & 255) <= newSectorFree.size())
                     {
                         for (int var5 = 0; var5 < (offsets & 255); ++var5)
                         {
-                            this.sectorFree.set((offsets >> 8) + var5, Boolean.valueOf(false));
+                        	newSectorFree.set((offsets >> 8) + var5, Boolean.valueOf(false));
                         }
                     }
                 }
 
                 for (int i = 0; i < 1024; ++i)
                 {
-                    int timestamp = this.dataFile.readInt();
+                    int timestamp = newDataFile.readInt();
                     this.chunkTimestamps[i] = timestamp;
                 }
             }
@@ -228,6 +231,9 @@ public class ThreadedFileIOBase implements Runnable
             {
                 e.printStackTrace();
             }
+            
+            this.dataFile = newDataFile;
+            this.sectorFree = newSectorFree;
         }
 
         /**

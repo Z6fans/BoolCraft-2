@@ -11,7 +11,7 @@ public class ChunkCache
     private final Chunk[][] chunkArray;
 
     /** True if the chunk cache is empty. */
-    private boolean isNotEmpty;
+    private final boolean isNotEmpty;
 
 	public ChunkCache(WorldClient world, int x, int y, int z)
     {
@@ -20,7 +20,7 @@ public class ChunkCache
         int xmax = x + 18 >> 4;
         int zmax = z + 18 >> 4;
         this.chunkArray = new Chunk[xmax - this.chunkX + 1][zmax - this.chunkZ + 1];
-        this.isNotEmpty = false;
+        boolean notEmpty = false;
 
         for (int xx = this.chunkX; xx <= xmax; ++xx)
         {
@@ -43,10 +43,12 @@ public class ChunkCache
 
                 if (chunk != null && !chunk.getAreLevelsEmpty(y - 1, y + 17))
                 {
-                    this.isNotEmpty = true;
+                    notEmpty = true;
                 }
             }
         }
+        
+        this.isNotEmpty = notEmpty;
     }
 
     /**

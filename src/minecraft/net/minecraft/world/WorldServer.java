@@ -42,10 +42,10 @@ import net.minecraft.world.storage.ThreadedFileIOBase;
 
 public class WorldServer
 {
-    private Set<NextTickListEntry> pendingTickListEntriesHashSet;
+    private final Set<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
 
     /** All work to do in future ticks. */
-    private TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet;
+    private final TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
     private int updateEntityTick;
     private final List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
@@ -160,16 +160,6 @@ public class WorldServer
     	}
         
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
-
-        if (this.pendingTickListEntriesHashSet == null)
-        {
-            this.pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
-        }
-
-        if (this.pendingTickListEntriesTreeSet == null)
-        {
-            this.pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
-        }
     }
     
     /**
