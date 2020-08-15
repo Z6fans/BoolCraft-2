@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.WorldClient;
@@ -323,7 +325,10 @@ public class RenderGlobal
             }
         }
 
-        RenderHelper.disableStandardItemLighting();
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_LIGHT0);
+        GL11.glDisable(GL11.GL_LIGHT1);
+        GL11.glDisable(GL11.GL_COLOR_MATERIAL);
         var23 = this.renderSortedRenderers(0, this.sortedWorldRenderers.length, p_72719_2_, p_72719_3_);
         return var23;
     }
@@ -418,7 +423,7 @@ public class RenderGlobal
     public boolean updateRenderers(EntityPlayer player)
     {
         byte var3 = 2;
-        RenderSorter var4 = new RenderSorter(player);
+        RenderSorter rs = new RenderSorter(player);
         WorldRenderer[] var5 = new WorldRenderer[var3];
         ArrayList<WorldRenderer> var6 = null;
         int var7 = this.worldRenderersToUpdate.size();
@@ -437,7 +442,7 @@ public class RenderGlobal
             {
             	if (var10.quadranceToPlayer(player) > 272.0F)
                 {
-                    for (var11 = 0; var11 < var3 && (var5[var11] == null || var4.compare(var5[var11], var10) <= 0); ++var11)
+                    for (var11 = 0; var11 < var3 && (var5[var11] == null || rs.compare(var5[var11], var10) <= 0); ++var11)
                     {
                         ;
                     }
@@ -480,7 +485,7 @@ public class RenderGlobal
         {
             if (var6.size() > 1)
             {
-                Collections.sort(var6, var4);
+                Collections.sort(var6, rs);
             }
 
             for (var9 = var6.size() - 1; var9 >= 0; --var9)

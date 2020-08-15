@@ -120,7 +120,10 @@ public class EntityRenderer
 
             this.renderGlobal.clipRenderersByFrustum(partialX, partialY, partialZ);
             this.renderGlobal.updateRenderers(player);
-            RenderHelper.disableStandardItemLighting();
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glDisable(GL11.GL_LIGHT0);
+            GL11.glDisable(GL11.GL_LIGHT1);
+            GL11.glDisable(GL11.GL_COLOR_MATERIAL);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glPushMatrix();
             this.renderGlobal.sortAndRender(player, 0, (double)partialTickTime);
@@ -178,7 +181,10 @@ public class EntityRenderer
             GL11.glEnable(GL11.GL_BLEND);
             OpenGlHelper.glBlendFunc(770, 1, 1, 0);
             GL11.glDisable(GL11.GL_BLEND);
-            RenderHelper.disableStandardItemLighting();
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glDisable(GL11.GL_LIGHT0);
+            GL11.glDisable(GL11.GL_LIGHT1);
+            GL11.glDisable(GL11.GL_COLOR_MATERIAL);
             GL11.glDepthMask(false);
             GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glDepthMask(true);
