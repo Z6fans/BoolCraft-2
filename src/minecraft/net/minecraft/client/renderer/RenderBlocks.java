@@ -2,13 +2,13 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRedstoneWire;
+import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.ChunkCache;
 
 public class RenderBlocks
 {
     /** The IBlockAccess used by this instance of RenderBlocks */
-    private final ChunkCache chunkCache;
+    private final WorldClient chunkCache;
 
     /** The minimum X value for rendering (default 0.0). */
     private double renderMinX;
@@ -28,9 +28,9 @@ public class RenderBlocks
     /** The maximum Z value for rendering (default 1.0). */
     private double renderMaxZ;
 
-    public RenderBlocks(ChunkCache cc)
+    public RenderBlocks(WorldClient wc)
     {
-        this.chunkCache = cc;
+        this.chunkCache = wc;
     }
 
     public boolean renderBlockByRenderType(Block block, int x, int y, int z)

@@ -3,7 +3,6 @@ package net.minecraft.world.chunk;
 import net.minecraft.block.Block;
 import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 public class Chunk
 {

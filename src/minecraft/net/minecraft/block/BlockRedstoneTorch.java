@@ -9,7 +9,6 @@ import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkCache;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneTorch extends Block
@@ -350,7 +349,7 @@ public class BlockRedstoneTorch extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(ChunkCache p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
+    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
     {
         return isLit ? 0xE91A64 : 0x5B0A27;
     }

@@ -4,8 +4,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.ChunkCache;
-
 import org.lwjgl.opengl.GL11;
 
 public class WorldRenderer
@@ -140,52 +138,48 @@ public class WorldRenderer
             {
                 this.skipRenderPass[i] = true;
             }
-            
-            ChunkCache cache = new ChunkCache(this.worldObj, this.posX, this.posY, this.posZ);
 
-            if (cache.extendedLevelsInChunkCache())
+            RenderBlocks renderBlocks = new RenderBlocks(this.worldObj);
+            this.vertexState = null;
+            boolean doRenderPass = false;
+            boolean doPostRenderBlocks = false;
+
+            for (int y = this.posY; y < this.posY + 16; ++y)
             {
-                RenderBlocks renderBlocks = new RenderBlocks(cache);
-                this.vertexState = null;
-                boolean doRenderPass = false;
-                boolean doPostRenderBlocks = false;
-
-                for (int y = this.posY; y < this.posY + 16; ++y)
+                for (int z = this.posZ; z < this.posZ + 16; ++z)
                 {
-                    for (int z = this.posZ; z < this.posZ + 16; ++z)
+                    for (int x = this.posX; x < this.posX + 16; ++x)
                     {
-                        for (int x = this.posX; x < this.posX + 16; ++x)
+                        Block block = this.worldObj.getBlock(x, y, z);
+
+                        if (!block.isReplaceable())
                         {
-                            Block block = cache.getBlock(x, y, z);
-
-                            if (!block.isReplaceable())
+                            if (!doPostRenderBlocks)
                             {
-                                if (!doPostRenderBlocks)
-                                {
-                                    doPostRenderBlocks = true;
-                                    this.preRenderBlocks(0);
-                                }
-
-                                doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
+                                doPostRenderBlocks = true;
+                                this.preRenderBlocks(0);
                             }
+
+                            doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
                         }
                     }
                 }
-
-                if (doRenderPass)
-                {
-                    this.skipRenderPass[0] = false;
-                }
-
-                if (doPostRenderBlocks)
-                {
-                    this.postRenderBlocks(0, player);
-                }
-                else
-                {
-                    doRenderPass = false;
-                }
             }
+
+            if (doRenderPass)
+            {
+                this.skipRenderPass[0] = false;
+            }
+
+            if (doPostRenderBlocks)
+            {
+                this.postRenderBlocks(0, player);
+            }
+            else
+            {
+                doRenderPass = false;
+            }
+            
             this.isInitialized = true;
         }
     }

@@ -1,7 +1,7 @@
 package net.minecraft.block;
 
+import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.ChunkCache;
 import net.minecraft.world.WorldServer;
 
 public class BlockAir extends Block
@@ -39,7 +39,7 @@ public class BlockAir extends Block
         return null;
     }
 
-	public int colorMultiplier(ChunkCache cc, int x, int y, int z)
+	public int colorMultiplier(WorldClient cc, int x, int y, int z)
 	{
 		return 0;
 	}

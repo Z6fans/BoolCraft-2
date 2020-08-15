@@ -1,7 +1,7 @@
 package net.minecraft.block;
 
+import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.ChunkCache;
 import net.minecraft.world.WorldServer;
 
 public class BlockStone extends Block {
@@ -31,7 +31,7 @@ public class BlockStone extends Block {
 		return 0;
 	}
 	
-	public int colorMultiplier(ChunkCache p_149720_1_, int x, int y, int z)
+	public int colorMultiplier(WorldClient p_149720_1_, int x, int y, int z)
     {
     	int a = (x%2 + 2)%2;
     	int b = (y%2 + 2)%2;

@@ -1,4 +1,4 @@
-package net.minecraft.world.storage;
+package net.minecraft.world.chunk;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
-
-import net.minecraft.world.chunk.storage.AnvilChunkLoader;
 
 public class ThreadedFileIOBase implements Runnable
 {

@@ -34,11 +34,11 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.chunk.AnvilChunkLoader;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ExtendedBlockStorage;
 import net.minecraft.world.chunk.NibbleArray;
-import net.minecraft.world.chunk.storage.AnvilChunkLoader;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraft.world.storage.ThreadedFileIOBase;
+import net.minecraft.world.chunk.ThreadedFileIOBase;
 
 public class WorldServer
 {

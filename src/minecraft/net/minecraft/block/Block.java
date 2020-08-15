@@ -8,7 +8,6 @@ import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.ChunkCache;
 import net.minecraft.world.WorldServer;
 
 public abstract class Block
@@ -65,7 +64,7 @@ public abstract class Block
         this.maxZ = (double)maxZCoord;
     }
 
-    public final boolean shouldSideBeRendered(ChunkCache cc, int x, int y, int z, int side)
+    public final boolean shouldSideBeRendered(WorldClient cc, int x, int y, int z, int side)
     {
         return side == 0 && this.minY > 0.0D ? true : (side == 1 && this.maxY < 1.0D ? true : (side == 2 && this.minZ > 0.0D ? true : (side == 3 && this.maxZ < 1.0D ? true : (side == 4 && this.minX > 0.0D ? true : (side == 5 && this.maxX < 1.0D ? true : !cc.getBlock(x, y, z).isSolid())))));
     }
@@ -293,7 +292,7 @@ public abstract class Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public abstract int colorMultiplier(ChunkCache cc, int x, int y, int z);
+    public abstract int colorMultiplier(WorldClient cc, int x, int y, int z);
 
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 

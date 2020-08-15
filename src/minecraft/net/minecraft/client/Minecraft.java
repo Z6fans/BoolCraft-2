@@ -18,7 +18,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
 import net.minecraft.world.MinecraftException;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.storage.ThreadedFileIOBase;
+import net.minecraft.world.chunk.ThreadedFileIOBase;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

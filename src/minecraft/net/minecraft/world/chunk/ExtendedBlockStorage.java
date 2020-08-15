@@ -1,7 +1,6 @@
-package net.minecraft.world.chunk.storage;
+package net.minecraft.world.chunk;
 
 import net.minecraft.block.Block;
-import net.minecraft.world.chunk.NibbleArray;
 
 public class ExtendedBlockStorage
 {
