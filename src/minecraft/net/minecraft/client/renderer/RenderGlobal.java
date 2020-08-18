@@ -338,84 +338,72 @@ public class RenderGlobal
      * Renders the sorted renders for the specified render pass. Args: startRenderer, numRenderers, renderPass,
      * partialTickTime
      */
-    private int renderSortedRenderers(int p_72724_1_, int p_72724_2_, int p_72724_3_, double ptt)
+    private int renderSortedRenderers(int startRenderer, int numRenderers, int renderPass, double ptt)
     {
         this.glRenderLists.clear();
         int var6 = 0;
-        int var7 = p_72724_1_;
-        int var8 = p_72724_2_;
-        byte var9 = 1;
+        int start = startRenderer;
+        int num = numRenderers;
+        byte inc = 1;
 
-        if (p_72724_3_ == 1)
+        if (renderPass == 1)
         {
-            var7 = this.sortedWorldRenderers.length - 1 - p_72724_1_;
-            var8 = this.sortedWorldRenderers.length - 1 - p_72724_2_;
-            var9 = -1;
+            start = this.sortedWorldRenderers.length - 1 - startRenderer;
+            num = this.sortedWorldRenderers.length - 1 - numRenderers;
+            inc = -1;
         }
 
-        for (int var10 = var7; var10 != var8; var10 += var9)
+        for (int i = start; i != num; i += inc)
         {
-            if (!this.sortedWorldRenderers[var10].skipRenderPass[p_72724_3_] && this.sortedWorldRenderers[var10].isInFrustum)
+            if (!this.sortedWorldRenderers[i].skipRenderPass[renderPass] && this.sortedWorldRenderers[i].isInFrustum)
             {
-                int var11 = this.sortedWorldRenderers[var10].getGLCallListForPass(p_72724_3_);
-
-                if (var11 >= 0)
+                if (this.sortedWorldRenderers[i].getGLCallListForPass(renderPass) >= 0)
                 {
-                    this.glRenderLists.add(this.sortedWorldRenderers[var10]);
+                    this.glRenderLists.add(this.sortedWorldRenderers[i]);
                     ++var6;
                 }
             }
         }
 
-        EntityPlayer var22 = this.mc.renderViewEntity;
-        double var23 = var22.getPartialPosX(ptt);
-        double var13 = var22.getPartialPosY(ptt);
-        double var15 = var22.getPartialPosZ(ptt);
+        EntityPlayer player = this.mc.renderViewEntity;
+        double ppx = player.getPartialPosX(ptt);
+        double ppy = player.getPartialPosY(ptt);
+        double ppz = player.getPartialPosZ(ptt);
         int var17 = 0;
-        int var18;
 
-        for (var18 = 0; var18 < this.allRenderLists.length; ++var18)
+        for (int i = 0; i < this.allRenderLists.length; ++i)
         {
-            this.allRenderLists[var18].resetList();
+            this.allRenderLists[i].resetList();
         }
 
-        int var20;
-        int var21;
-
-        for (var18 = 0; var18 < this.glRenderLists.size(); ++var18)
+        for (int i = 0; i < this.glRenderLists.size(); ++i)
         {
-            WorldRenderer var19 = (WorldRenderer)this.glRenderLists.get(var18);
-            var20 = -1;
+            WorldRenderer renderer = (WorldRenderer)this.glRenderLists.get(i);
+            int var20 = -1;
 
-            for (var21 = 0; var21 < var17; ++var21)
+            for (int j = 0; j < var17; ++j)
             {
-                if (this.allRenderLists[var21].rendersChunk(var19.posXMinus, var19.posYMinus, var19.posZMinus))
+                if (this.allRenderLists[j].rendersChunk(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus))
                 {
-                    var20 = var21;
+                    var20 = j;
                 }
             }
 
             if (var20 < 0)
             {
                 var20 = var17++;
-                this.allRenderLists[var20].setupRenderList(var19.posXMinus, var19.posYMinus, var19.posZMinus, var23, var13, var15);
+                this.allRenderLists[var20].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppx, ppy, ppz);
             }
 
-            this.allRenderLists[var20].addGLRenderList(var19.getGLCallListForPass(p_72724_3_));
+            this.allRenderLists[var20].addGLRenderList(renderer.getGLCallListForPass(renderPass));
         }
-        this.renderAllRenderLists(p_72724_3_, ptt);
-        return var6;
-    }
 
-    /**
-     * Render all render lists
-     */
-    private void renderAllRenderLists(int p_72733_1_, double p_72733_2_)
-    {
-        for (int var4 = 0; var4 < this.allRenderLists.length; ++var4)
+        for (int i = 0; i < this.allRenderLists.length; ++i)
         {
-            this.allRenderLists[var4].callLists();
+            this.allRenderLists[i].callLists();
         }
+        
+        return var6;
     }
 
     /**
