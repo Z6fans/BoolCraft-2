@@ -8,7 +8,7 @@ import net.minecraft.util.AxisAlignedBB;
 public class RenderBlocks
 {
     /** The IBlockAccess used by this instance of RenderBlocks */
-    private final WorldClient chunkCache;
+    private final WorldClient world;
 
     /** The minimum X value for rendering (default 0.0). */
     private double renderMinX;
@@ -30,7 +30,7 @@ public class RenderBlocks
 
     public RenderBlocks(WorldClient wc)
     {
-        this.chunkCache = wc;
+        this.world = wc;
     }
 
     public boolean renderBlockByRenderType(Block block, int x, int y, int z)
@@ -43,7 +43,7 @@ public class RenderBlocks
         }
         else
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.chunkCache, x, y, z));
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
             AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
         	this.renderMinX = aabb.minX;
             this.renderMaxX = aabb.maxX;
@@ -67,7 +67,7 @@ public class RenderBlocks
 
     private boolean renderBlockLever(Block block, int x, int y, int z)
     {
-        int var6 = this.chunkCache.getBlockMetadata(x, y, z) & 7;
+        int var6 = this.world.getBlockMetadata(x, y, z) & 7;
 
         float d = 0.1875F;
 
@@ -111,29 +111,29 @@ public class RenderBlocks
     private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
     {
         Tessellator var5 = Tessellator.instance;
-        boolean var19 = BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y, z, true) || !this.chunkCache.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y - 1, z, false);
-        boolean var20 = BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y, z, true) || !this.chunkCache.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y - 1, z, false);
-        boolean var21 = BlockRedstoneWire.shouldConnect(this.chunkCache, x, y, z - 1, true) || !this.chunkCache.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y - 1, z - 1, false);
-        boolean var22 = BlockRedstoneWire.shouldConnect(this.chunkCache, x, y, z + 1, true) || !this.chunkCache.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y - 1, z + 1, false);
+        boolean var19 = BlockRedstoneWire.shouldConnect(this.world, x - 1, y, z, true) || !this.world.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x - 1, y - 1, z, false);
+        boolean var20 = BlockRedstoneWire.shouldConnect(this.world, x + 1, y, z, true) || !this.world.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x + 1, y - 1, z, false);
+        boolean var21 = BlockRedstoneWire.shouldConnect(this.world, x, y, z - 1, true) || !this.world.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y - 1, z - 1, false);
+        boolean var22 = BlockRedstoneWire.shouldConnect(this.world, x, y, z + 1, true) || !this.world.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y - 1, z + 1, false);
 
-        if (!this.chunkCache.getBlock(x, y + 1, z).isSolid())
+        if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
-            if (this.chunkCache.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x - 1, y + 1, z, false))
+            if (this.world.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x - 1, y + 1, z, false))
             {
                 var19 = true;
             }
 
-            if (this.chunkCache.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x + 1, y + 1, z, false))
+            if (this.world.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x + 1, y + 1, z, false))
             {
                 var20 = true;
             }
 
-            if (this.chunkCache.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y + 1, z - 1, false))
+            if (this.world.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y + 1, z - 1, false))
             {
                 var21 = true;
             }
 
-            if (this.chunkCache.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.chunkCache, x, y + 1, z + 1, false))
+            if (this.world.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y + 1, z + 1, false))
             {
                 var22 = true;
             }
@@ -169,9 +169,9 @@ public class RenderBlocks
         var5.addVertex((double)var23, (double)y + 0.015625D, (double)var25);
         var5.addVertex((double)var23, (double)y + 0.015625D, (double)var26);
 
-        if (!this.chunkCache.getBlock(x, y + 1, z).isSolid())
+        if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
-            if (this.chunkCache.getBlock(x - 1, y, z).isSolid() && this.chunkCache.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.getBlock(x - 1, y, z).isSolid() && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
             {
                 var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
                 var5.addVertex((double)x + 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
@@ -179,7 +179,7 @@ public class RenderBlocks
                 var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 0.3125F));
             }
 
-            if (this.chunkCache.getBlock(x + 1, y, z).isSolid() && this.chunkCache.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.getBlock(x + 1, y, z).isSolid() && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
             {
                 var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
                 var5.addVertex((double)(x + 1) - 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
@@ -187,7 +187,7 @@ public class RenderBlocks
                 var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 0.3125F));
             }
 
-            if (this.chunkCache.getBlock(x, y, z - 1).isSolid() && this.chunkCache.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
+            if (this.world.getBlock(x, y, z - 1).isSolid() && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
             {
                 var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)z + 0.015625D);
                 var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)z + 0.015625D);
@@ -195,7 +195,7 @@ public class RenderBlocks
                 var5.addVertex((double)(x + 0.3125F), (double)(y + 0), (double)z + 0.015625D);
             }
 
-            if (this.chunkCache.getBlock(x, y, z + 1).isSolid() && this.chunkCache.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
+            if (this.world.getBlock(x, y, z + 1).isSolid() && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
             {
                 var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)(z + 1) - 0.015625D);
                 var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)(z + 1) - 0.015625D);
@@ -211,37 +211,37 @@ public class RenderBlocks
     {
         boolean var9 = false;
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y - 1, z, 0))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y - 1, z, 0))
         {
             this.renderFaceYNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y + 1, z, 1))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y + 1, z, 1))
         {
             this.renderFaceYPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y, z - 1, 2))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z - 1, 2))
         {
             this.renderFaceZNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x, y, z + 1, 3))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z + 1, 3))
         {
             this.renderFaceZPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x - 1, y, z, 4))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x - 1, y, z, 4))
         {
             this.renderFaceXNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.chunkCache, x + 1, y, z, 5))
+        if (renderAllFaces || block.shouldSideBeRendered(this.world, x + 1, y, z, 5))
         {
             this.renderFaceXPos(block, (double)x, (double)y, (double)z);
             var9 = true;

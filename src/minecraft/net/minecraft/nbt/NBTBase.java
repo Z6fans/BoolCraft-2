@@ -20,9 +20,9 @@ public abstract class NBTBase
      */
     public abstract byte getId();
 
-    protected static NBTBase func_150284_a(byte p_150284_0_)
+    protected static NBTBase func_150284_a(byte type)
     {
-        switch (p_150284_0_)
+        switch (type)
         {
             case 0:
                 return new NBTTagEnd();
