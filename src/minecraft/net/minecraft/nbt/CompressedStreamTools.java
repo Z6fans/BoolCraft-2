@@ -5,7 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
 
 public class CompressedStreamTools
 {
@@ -25,7 +24,7 @@ public class CompressedStreamTools
         }
         catch (IOException e)
         {
-            throw new ReportedException(CrashReport.makeCrashReport(e, "Loading NBT data"));
+            throw CrashReport.makeCrashReport(e, "Loading NBT data");
         }
 
         return tag;

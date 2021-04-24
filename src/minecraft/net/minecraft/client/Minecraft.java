@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
@@ -317,7 +316,7 @@ public class Minecraft
                             }
                             catch (Throwable t)
                             {
-                                throw new ReportedException(CrashReport.makeCrashReport(t, "Updating screen events"));
+                                throw CrashReport.makeCrashReport(t, "Updating screen events");
                             }
                         }
 
@@ -390,7 +389,7 @@ public class Minecraft
                                 {
                                     if (getSystemTime() - this.lastSystemTime >= 6000L)
                                     {
-                                        throw new ReportedException(new CrashReport("Manually triggered debug crash", new Throwable()));
+                                        throw CrashReport.makeCrashReport(new Throwable(), "Manually triggered debug crash");
                                     }
 
                                     if (!Keyboard.isKeyDown(46) || !Keyboard.isKeyDown(61))
@@ -500,7 +499,7 @@ public class Minecraft
                                     }
                                     catch (Throwable t)
                                     {
-                                        throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
+                                        throw CrashReport.makeCrashReport(t, "Ticking entity");
                                     }
                                 }
                             }
@@ -574,7 +573,7 @@ public class Minecraft
                             }
                             catch (Throwable t)
                             {
-                                throw new ReportedException(CrashReport.makeCrashReport(t, "Exception ticking world"));
+                                throw CrashReport.makeCrashReport(t, "Exception ticking world");
                             }
 
                             try
@@ -583,7 +582,7 @@ public class Minecraft
                             }
                             catch (Throwable t)
                             {
-                                throw new ReportedException(CrashReport.makeCrashReport(t, "Exception ticking world entities"));
+                                throw CrashReport.makeCrashReport(t, "Exception ticking world entities");
                             }
 
                             if (this.tickCounter % 900 == 0)
@@ -595,15 +594,15 @@ public class Minecraft
             	}
             }
         }
-        catch (ReportedException e)
+        catch (CrashReport e)
         {
             this.freeMemory();
             logger.fatal("Reported exception thrown!", e);
-            this.displayCrashReport(e.getCrashReport());
+            this.displayCrashReport(e);
         }
         catch (Throwable t)
         {
-            CrashReport crashReport = new CrashReport("Unexpected error", t);
+            CrashReport crashReport = CrashReport.makeCrashReport(t, "Unexpected error");
             this.freeMemory();
             logger.fatal("Unreported exception thrown!", t);
             this.displayCrashReport(crashReport);
@@ -820,7 +819,7 @@ public class Minecraft
         }
         catch (Throwable t)
         {
-            throw new ReportedException(CrashReport.makeCrashReport(t, "Starting integrated server"));
+            throw CrashReport.makeCrashReport(t, "Starting integrated server");
         }
 
         this.displayGuiScreenNull();

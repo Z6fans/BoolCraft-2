@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.LongHashMap;
@@ -294,7 +293,7 @@ public class WorldServer
                         }
                         catch (Throwable t)
                         {
-                            throw new ReportedException(CrashReport.makeCrashReport(t, "Exception while ticking a block"));
+                            throw CrashReport.makeCrashReport(t, "Exception while ticking a block");
                         }
                     }
                 }
@@ -500,7 +499,7 @@ public class WorldServer
             }
             catch (Throwable t)
             {
-                throw new ReportedException(CrashReport.makeCrashReport(t, "Ticking entity"));
+                throw CrashReport.makeCrashReport(t, "Ticking entity");
             }
         }
     }
@@ -729,7 +728,7 @@ public class WorldServer
         }
         catch (Throwable t)
         {
-            throw new ReportedException(CrashReport.makeCrashReport(t, "Exception while updating neighbors"));
+            throw CrashReport.makeCrashReport(t, "Exception while updating neighbors");
         }
     }
 	
@@ -872,7 +871,7 @@ public class WorldServer
                 }
                 catch (Throwable t)
                 {
-                    throw new ReportedException(CrashReport.makeCrashReport(t, "Exception generating new chunk at " + x + ", " + z));
+                    throw CrashReport.makeCrashReport(t, "Exception generating new chunk at " + x + ", " + z);
                 }
             }
 

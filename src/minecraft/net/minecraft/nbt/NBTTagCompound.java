@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
 
 public class NBTTagCompound extends NBTBase
 {
@@ -50,7 +49,7 @@ public class NBTTagCompound extends NBTBase
             }
             catch (IOException var9)
             {
-                throw new ReportedException(CrashReport.makeCrashReport(var9, "Loading NBT data"));
+                throw CrashReport.makeCrashReport(var9, "Loading NBT data");
             }
             
             this.tagMap.put(name, tag);
@@ -181,7 +180,7 @@ public class NBTTagCompound extends NBTBase
         }
         catch (ClassCastException var3)
         {
-            throw new ReportedException(this.createCrashReport(p_74770_1_, 7, var3));
+            throw this.createCrashReport(p_74770_1_, 7, var3);
         }
     }
 
@@ -197,7 +196,7 @@ public class NBTTagCompound extends NBTBase
         }
         catch (ClassCastException var3)
         {
-            throw new ReportedException(this.createCrashReport(p_74775_1_, 10, var3));
+            throw this.createCrashReport(p_74775_1_, 10, var3);
         }
     }
 
@@ -220,7 +219,7 @@ public class NBTTagCompound extends NBTBase
         }
         catch (ClassCastException var4)
         {
-            throw new ReportedException(this.createCrashReport(p_150295_1_, 9, var4));
+            throw this.createCrashReport(p_150295_1_, 9, var4);
         }
     }
 

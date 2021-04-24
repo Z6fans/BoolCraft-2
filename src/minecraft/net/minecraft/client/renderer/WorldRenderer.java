@@ -38,10 +38,10 @@ public class WorldRenderer
 
     /** Pos Z clipped */
     private int posZClip;
-    public boolean isInFrustum;
+    private boolean isInFrustrum;
 
     /** Should this renderer skip this render pass */
-    public final boolean[] skipRenderPass = new boolean[2];
+    private final boolean[] skipRenderPass = new boolean[2];
 
     /** Pos X plus */
     private int posXPlus;
@@ -247,12 +247,12 @@ public class WorldRenderer
      */
     private void setDontDraw()
     {
-        for (int var1 = 0; var1 < 2; ++var1)
+        for (int i = 0; i < 2; ++i)
         {
-            this.skipRenderPass[var1] = true;
+            this.skipRenderPass[i] = true;
         }
 
-        this.isInFrustum = false;
+        this.isInFrustrum = false;
         this.isInitialized = false;
         this.vertexState = null;
     }
@@ -268,62 +268,12 @@ public class WorldRenderer
      */
     public int getGLCallListForPass(int p_78909_1_)
     {
-        return !this.isInFrustum ? -1 : (!this.skipRenderPass[p_78909_1_] ? this.glRenderList + p_78909_1_ : -1);
+        return !this.isInFrustrum ? -1 : (!this.skipRenderPass[p_78909_1_] ? this.glRenderList + p_78909_1_ : -1);
     }
 
     public void updateInFrustum(double x, double y, double z)
     {
-    	this.initFrustrum();
-        this.isInFrustum = this.isBoxInFrustum(this.rendererBoundingBox.minX - x, this.rendererBoundingBox.minY - y, this.rendererBoundingBox.minZ - z, this.rendererBoundingBox.maxX - x, this.rendererBoundingBox.maxY - y, this.rendererBoundingBox.maxZ - z);
-    }
-
-    /**
-     * Checks if all render passes are to be skipped. Returns false if the renderer is not initialized
-     */
-    public boolean skipAllRenderPasses()
-    {
-        return !this.isInitialized ? false : this.skipRenderPass[0] && this.skipRenderPass[1];
-    }
-
-    /**
-     * Marks the current renderer data as dirty and needing to be updated.
-     */
-    public void markDirty()
-    {
-        this.needsUpdate = true;
-    }
-    
-    /**
-     * Returns true if the box is inside all 6 clipping planes, otherwise returns false.
-     */
-    private boolean isBoxInFrustum(double p_78553_1_, double p_78553_3_, double p_78553_5_, double p_78553_7_, double p_78553_9_, double p_78553_11_)
-    {
-        for (int i = 0; i < 6; ++i)
-        {
-            if ((double)this.frustum[i][0] * p_78553_1_ + (double)this.frustum[i][1] * p_78553_3_ + (double)this.frustum[i][2] * p_78553_5_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_7_ + (double)this.frustum[i][1] * p_78553_3_ + (double)this.frustum[i][2] * p_78553_5_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_1_ + (double)this.frustum[i][1] * p_78553_9_ + (double)this.frustum[i][2] * p_78553_5_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_7_ + (double)this.frustum[i][1] * p_78553_9_ + (double)this.frustum[i][2] * p_78553_5_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_1_ + (double)this.frustum[i][1] * p_78553_3_ + (double)this.frustum[i][2] * p_78553_11_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_7_ + (double)this.frustum[i][1] * p_78553_3_ + (double)this.frustum[i][2] * p_78553_11_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_1_ + (double)this.frustum[i][1] * p_78553_9_ + (double)this.frustum[i][2] * p_78553_11_ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * p_78553_7_ + (double)this.frustum[i][1] * p_78553_9_ + (double)this.frustum[i][2] * p_78553_11_ + (double)this.frustum[i][3] <= 0.0D)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Normalize the frustum.
-     */
-    private void normalizeFrustrum(int i)
-    {
-        float norm = (float)Math.sqrt(this.frustum[i][0] * this.frustum[i][0] + this.frustum[i][1] * this.frustum[i][1] + this.frustum[i][2] * this.frustum[i][2]);
-        this.frustum[i][0] /= norm;
-        this.frustum[i][1] /= norm;
-        this.frustum[i][2] /= norm;
-        this.frustum[i][3] /= norm;
-    }
-
-    private void initFrustrum()
-    {
-        this.projectionMatrixBuffer.clear();
+    	this.projectionMatrixBuffer.clear();
         this.modelviewMatrixBuffer.clear();
         GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, this.projectionMatrixBuffer);
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, this.modelviewMatrixBuffer);
@@ -331,18 +281,18 @@ public class WorldRenderer
         this.projectionMatrixBuffer.get(this.projectionMatrix);
         this.modelviewMatrixBuffer.flip().limit(16);
         this.modelviewMatrixBuffer.get(this.modelviewMatrix);
-        this.clippingMatrix[0] = this.modelviewMatrix[0] * this.projectionMatrix[0] + this.modelviewMatrix[1] * this.projectionMatrix[4] + this.modelviewMatrix[2] * this.projectionMatrix[8] + this.modelviewMatrix[3] * this.projectionMatrix[12];
-        this.clippingMatrix[1] = this.modelviewMatrix[0] * this.projectionMatrix[1] + this.modelviewMatrix[1] * this.projectionMatrix[5] + this.modelviewMatrix[2] * this.projectionMatrix[9] + this.modelviewMatrix[3] * this.projectionMatrix[13];
-        this.clippingMatrix[2] = this.modelviewMatrix[0] * this.projectionMatrix[2] + this.modelviewMatrix[1] * this.projectionMatrix[6] + this.modelviewMatrix[2] * this.projectionMatrix[10] + this.modelviewMatrix[3] * this.projectionMatrix[14];
-        this.clippingMatrix[3] = this.modelviewMatrix[0] * this.projectionMatrix[3] + this.modelviewMatrix[1] * this.projectionMatrix[7] + this.modelviewMatrix[2] * this.projectionMatrix[11] + this.modelviewMatrix[3] * this.projectionMatrix[15];
-        this.clippingMatrix[4] = this.modelviewMatrix[4] * this.projectionMatrix[0] + this.modelviewMatrix[5] * this.projectionMatrix[4] + this.modelviewMatrix[6] * this.projectionMatrix[8] + this.modelviewMatrix[7] * this.projectionMatrix[12];
-        this.clippingMatrix[5] = this.modelviewMatrix[4] * this.projectionMatrix[1] + this.modelviewMatrix[5] * this.projectionMatrix[5] + this.modelviewMatrix[6] * this.projectionMatrix[9] + this.modelviewMatrix[7] * this.projectionMatrix[13];
-        this.clippingMatrix[6] = this.modelviewMatrix[4] * this.projectionMatrix[2] + this.modelviewMatrix[5] * this.projectionMatrix[6] + this.modelviewMatrix[6] * this.projectionMatrix[10] + this.modelviewMatrix[7] * this.projectionMatrix[14];
-        this.clippingMatrix[7] = this.modelviewMatrix[4] * this.projectionMatrix[3] + this.modelviewMatrix[5] * this.projectionMatrix[7] + this.modelviewMatrix[6] * this.projectionMatrix[11] + this.modelviewMatrix[7] * this.projectionMatrix[15];
-        this.clippingMatrix[8] = this.modelviewMatrix[8] * this.projectionMatrix[0] + this.modelviewMatrix[9] * this.projectionMatrix[4] + this.modelviewMatrix[10] * this.projectionMatrix[8] + this.modelviewMatrix[11] * this.projectionMatrix[12];
-        this.clippingMatrix[9] = this.modelviewMatrix[8] * this.projectionMatrix[1] + this.modelviewMatrix[9] * this.projectionMatrix[5] + this.modelviewMatrix[10] * this.projectionMatrix[9] + this.modelviewMatrix[11] * this.projectionMatrix[13];
-        this.clippingMatrix[10] = this.modelviewMatrix[8] * this.projectionMatrix[2] + this.modelviewMatrix[9] * this.projectionMatrix[6] + this.modelviewMatrix[10] * this.projectionMatrix[10] + this.modelviewMatrix[11] * this.projectionMatrix[14];
-        this.clippingMatrix[11] = this.modelviewMatrix[8] * this.projectionMatrix[3] + this.modelviewMatrix[9] * this.projectionMatrix[7] + this.modelviewMatrix[10] * this.projectionMatrix[11] + this.modelviewMatrix[11] * this.projectionMatrix[15];
+        this.clippingMatrix[ 0] = this.modelviewMatrix[ 0] * this.projectionMatrix[0] + this.modelviewMatrix[ 1] * this.projectionMatrix[4] + this.modelviewMatrix[2] * this.projectionMatrix[8] + this.modelviewMatrix[3] * this.projectionMatrix[12];
+        this.clippingMatrix[ 1] = this.modelviewMatrix[ 0] * this.projectionMatrix[1] + this.modelviewMatrix[ 1] * this.projectionMatrix[5] + this.modelviewMatrix[2] * this.projectionMatrix[9] + this.modelviewMatrix[3] * this.projectionMatrix[13];
+        this.clippingMatrix[ 2] = this.modelviewMatrix[ 0] * this.projectionMatrix[2] + this.modelviewMatrix[ 1] * this.projectionMatrix[6] + this.modelviewMatrix[2] * this.projectionMatrix[10] + this.modelviewMatrix[3] * this.projectionMatrix[14];
+        this.clippingMatrix[ 3] = this.modelviewMatrix[ 0] * this.projectionMatrix[3] + this.modelviewMatrix[ 1] * this.projectionMatrix[7] + this.modelviewMatrix[2] * this.projectionMatrix[11] + this.modelviewMatrix[3] * this.projectionMatrix[15];
+        this.clippingMatrix[ 4] = this.modelviewMatrix[ 4] * this.projectionMatrix[0] + this.modelviewMatrix[ 5] * this.projectionMatrix[4] + this.modelviewMatrix[6] * this.projectionMatrix[8] + this.modelviewMatrix[7] * this.projectionMatrix[12];
+        this.clippingMatrix[ 5] = this.modelviewMatrix[ 4] * this.projectionMatrix[1] + this.modelviewMatrix[ 5] * this.projectionMatrix[5] + this.modelviewMatrix[6] * this.projectionMatrix[9] + this.modelviewMatrix[7] * this.projectionMatrix[13];
+        this.clippingMatrix[ 6] = this.modelviewMatrix[ 4] * this.projectionMatrix[2] + this.modelviewMatrix[ 5] * this.projectionMatrix[6] + this.modelviewMatrix[6] * this.projectionMatrix[10] + this.modelviewMatrix[7] * this.projectionMatrix[14];
+        this.clippingMatrix[ 7] = this.modelviewMatrix[ 4] * this.projectionMatrix[3] + this.modelviewMatrix[ 5] * this.projectionMatrix[7] + this.modelviewMatrix[6] * this.projectionMatrix[11] + this.modelviewMatrix[7] * this.projectionMatrix[15];
+        this.clippingMatrix[ 8] = this.modelviewMatrix[ 8] * this.projectionMatrix[0] + this.modelviewMatrix[ 9] * this.projectionMatrix[4] + this.modelviewMatrix[10] * this.projectionMatrix[8] + this.modelviewMatrix[11] * this.projectionMatrix[12];
+        this.clippingMatrix[ 9] = this.modelviewMatrix[ 8] * this.projectionMatrix[1] + this.modelviewMatrix[ 9] * this.projectionMatrix[5] + this.modelviewMatrix[10] * this.projectionMatrix[9] + this.modelviewMatrix[11] * this.projectionMatrix[13];
+        this.clippingMatrix[10] = this.modelviewMatrix[ 8] * this.projectionMatrix[2] + this.modelviewMatrix[ 9] * this.projectionMatrix[6] + this.modelviewMatrix[10] * this.projectionMatrix[10] + this.modelviewMatrix[11] * this.projectionMatrix[14];
+        this.clippingMatrix[11] = this.modelviewMatrix[ 8] * this.projectionMatrix[3] + this.modelviewMatrix[ 9] * this.projectionMatrix[7] + this.modelviewMatrix[10] * this.projectionMatrix[11] + this.modelviewMatrix[11] * this.projectionMatrix[15];
         this.clippingMatrix[12] = this.modelviewMatrix[12] * this.projectionMatrix[0] + this.modelviewMatrix[13] * this.projectionMatrix[4] + this.modelviewMatrix[14] * this.projectionMatrix[8] + this.modelviewMatrix[15] * this.projectionMatrix[12];
         this.clippingMatrix[13] = this.modelviewMatrix[12] * this.projectionMatrix[1] + this.modelviewMatrix[13] * this.projectionMatrix[5] + this.modelviewMatrix[14] * this.projectionMatrix[9] + this.modelviewMatrix[15] * this.projectionMatrix[13];
         this.clippingMatrix[14] = this.modelviewMatrix[12] * this.projectionMatrix[2] + this.modelviewMatrix[13] * this.projectionMatrix[6] + this.modelviewMatrix[14] * this.projectionMatrix[10] + this.modelviewMatrix[15] * this.projectionMatrix[14];
@@ -377,5 +327,62 @@ public class WorldRenderer
         this.frustum[5][2] = this.clippingMatrix[11] + this.clippingMatrix[10];
         this.frustum[5][3] = this.clippingMatrix[15] + this.clippingMatrix[14];
         this.normalizeFrustrum(5);
+        
+        double minX = this.rendererBoundingBox.minX - x;
+        double minY = this.rendererBoundingBox.minY - y;
+        double minZ = this.rendererBoundingBox.minZ - z;
+        double maxX = this.rendererBoundingBox.maxX - x;
+        double maxY = this.rendererBoundingBox.maxY - y;
+        double maxZ = this.rendererBoundingBox.maxZ - z;
+        
+        this.isInFrustrum = true;
+    	
+        for (int i = 0; i < 6; ++i)
+        {
+        	this.isInFrustrum &= !((double)this.frustum[i][0] * minX + (double)this.frustum[i][1] * minY + (double)this.frustum[i][2] * minZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * maxX + (double)this.frustum[i][1] * minY + (double)this.frustum[i][2] * minZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * minX + (double)this.frustum[i][1] * maxY + (double)this.frustum[i][2] * minZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * maxX + (double)this.frustum[i][1] * maxY + (double)this.frustum[i][2] * minZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * minX + (double)this.frustum[i][1] * minY + (double)this.frustum[i][2] * maxZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * maxX + (double)this.frustum[i][1] * minY + (double)this.frustum[i][2] * maxZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * minX + (double)this.frustum[i][1] * maxY + (double)this.frustum[i][2] * maxZ + (double)this.frustum[i][3] <= 0.0D && (double)this.frustum[i][0] * maxX + (double)this.frustum[i][1] * maxY + (double)this.frustum[i][2] * maxZ + (double)this.frustum[i][3] <= 0.0D);
+        }
+    }
+
+    /**
+     * Checks if all render passes are to be skipped. Returns false if the renderer is not initialized
+     */
+    public boolean skipAllRenderPasses()
+    {
+        return !this.isInitialized ? false : this.skipRenderPass[0] && this.skipRenderPass[1];
+    }
+
+    /**
+     * Marks the current renderer data as dirty and needing to be updated.
+     */
+    public void markDirty()
+    {
+        this.needsUpdate = true;
+    }
+
+    /**
+     * Normalize the frustum.
+     */
+    private void normalizeFrustrum(int i)
+    {
+        float norm = (float)Math.sqrt(this.frustum[i][0] * this.frustum[i][0] + this.frustum[i][1] * this.frustum[i][1] + this.frustum[i][2] * this.frustum[i][2]);
+        this.frustum[i][0] /= norm;
+        this.frustum[i][1] /= norm;
+        this.frustum[i][2] /= norm;
+        this.frustum[i][3] /= norm;
+    }
+    
+    public boolean getInFrustrum()
+    {
+    	return this.isInFrustrum;
+    }
+    
+    public void setInFrustrum()
+    {
+    	this.isInFrustrum = true;
+    }
+    
+    public boolean shouldSkipPass(int pass)
+    {
+    	return this.skipRenderPass[pass];
     }
 }

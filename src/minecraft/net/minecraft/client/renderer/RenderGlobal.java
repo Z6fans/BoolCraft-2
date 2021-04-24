@@ -165,7 +165,7 @@ public class RenderGlobal
                     for (int var6 = 0; var6 < this.renderChunksDeep; ++var6)
                     {
                         this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4] = new WorldRenderer(this.theWorld, var4 * 16, var5 * 16, var6 * 16, this.glRenderListBase + var2);
-                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].isInFrustum = true;
+                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].setInFrustrum();
                         this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].chunkIndex = var3++;
                         this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].markDirty();
                         this.sortedWorldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4] = this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4];
@@ -281,7 +281,7 @@ public class RenderGlobal
     /**
      * Sorts all renderers based on the passed in entity. Args: entityLiving, renderPass, partialTickTime
      */
-    public int sortAndRender(EntityPlayer p_72719_1_, int p_72719_2_, double p_72719_3_)
+    public void sortAndRender(EntityPlayer player, int renderPass, double ptt)
     {
         for (int var5 = 0; var5 < 10; ++var5)
         {
@@ -294,35 +294,34 @@ public class RenderGlobal
             }
         }
         
-        double var11 = p_72719_1_.getPosX() - this.prevSortX;
-        double var13 = p_72719_1_.getPosY() - this.prevSortY;
-        double var15 = p_72719_1_.getPosZ() - this.prevSortZ;
+        double var11 = player.getPosX() - this.prevSortX;
+        double var13 = player.getPosY() - this.prevSortY;
+        double var15 = player.getPosZ() - this.prevSortZ;
 
-        if (this.prevChunkSortX != p_72719_1_.getChunkCoordX() || this.prevChunkSortY != p_72719_1_.getChunkCoordY() || this.prevChunkSortZ != p_72719_1_.getChunkCoordZ() || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
+        if (this.prevChunkSortX != player.getChunkCoordX() || this.prevChunkSortY != player.getChunkCoordY() || this.prevChunkSortZ != player.getChunkCoordZ() || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
         {
-            this.prevSortX = p_72719_1_.getPosX();
-            this.prevSortY = p_72719_1_.getPosY();
-            this.prevSortZ = p_72719_1_.getPosZ();
-            this.prevChunkSortX = p_72719_1_.getChunkCoordX();
-            this.prevChunkSortY = p_72719_1_.getChunkCoordY();
-            this.prevChunkSortZ = p_72719_1_.getChunkCoordZ();
-            this.markRenderersForNewPosition(MathHelper.floor_double(p_72719_1_.getPosX()), MathHelper.floor_double(p_72719_1_.getPosY()), MathHelper.floor_double(p_72719_1_.getPosZ()));
+            this.prevSortX = player.getPosX();
+            this.prevSortY = player.getPosY();
+            this.prevSortZ = player.getPosZ();
+            this.prevChunkSortX = player.getChunkCoordX();
+            this.prevChunkSortY = player.getChunkCoordY();
+            this.prevChunkSortZ = player.getChunkCoordZ();
+            this.markRenderersForNewPosition(MathHelper.floor_double(player.getPosX()), MathHelper.floor_double(player.getPosY()), MathHelper.floor_double(player.getPosZ()));
         }
 
-        double var17 = p_72719_1_.getPosX() - this.prevRenderSortX;
-        double var19 = p_72719_1_.getPosY() - this.prevRenderSortY;
-        double var21 = p_72719_1_.getPosZ() - this.prevRenderSortZ;
-        int var23;
+        double var17 = player.getPosX() - this.prevRenderSortX;
+        double var19 = player.getPosY() - this.prevRenderSortY;
+        double var21 = player.getPosZ() - this.prevRenderSortZ;
 
         if (var17 * var17 + var19 * var19 + var21 * var21 > 1.0D)
         {
-            this.prevRenderSortX = p_72719_1_.getPosX();
-            this.prevRenderSortY = p_72719_1_.getPosY();
-            this.prevRenderSortZ = p_72719_1_.getPosZ();
+            this.prevRenderSortX = player.getPosX();
+            this.prevRenderSortY = player.getPosY();
+            this.prevRenderSortZ = player.getPosZ();
 
-            for (var23 = 0; var23 < 27; ++var23)
+            for (int i = 0; i < 27; ++i)
             {
-                this.sortedWorldRenderers[var23].updateRendererSort(p_72719_1_);
+                this.sortedWorldRenderers[i].updateRendererSort(player);
             }
         }
 
@@ -330,46 +329,31 @@ public class RenderGlobal
         GL11.glDisable(GL11.GL_LIGHT0);
         GL11.glDisable(GL11.GL_LIGHT1);
         GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-        var23 = this.renderSortedRenderers(0, this.sortedWorldRenderers.length, p_72719_2_, p_72719_3_);
-        return var23;
-    }
-
-    /**
-     * Renders the sorted renders for the specified render pass. Args: startRenderer, numRenderers, renderPass,
-     * partialTickTime
-     */
-    private int renderSortedRenderers(int startRenderer, int numRenderers, int renderPass, double ptt)
-    {
+        
         this.glRenderLists.clear();
-        int var6 = 0;
-        int start = startRenderer;
-        int num = numRenderers;
-        byte inc = 1;
 
-        if (renderPass == 1)
+        for (int i = 0; i < this.sortedWorldRenderers.length; i++)
         {
-            start = this.sortedWorldRenderers.length - 1 - startRenderer;
-            num = this.sortedWorldRenderers.length - 1 - numRenderers;
-            inc = -1;
-        }
-
-        for (int i = start; i != num; i += inc)
-        {
-            if (!this.sortedWorldRenderers[i].skipRenderPass[renderPass] && this.sortedWorldRenderers[i].isInFrustum)
+        	int j = i;
+        	
+        	if (renderPass == 1)
+        	{
+        		j = this.sortedWorldRenderers.length - 1 - i;
+        	}
+        	
+            if (!this.sortedWorldRenderers[j].shouldSkipPass(renderPass) && this.sortedWorldRenderers[j].getInFrustrum())
             {
-                if (this.sortedWorldRenderers[i].getGLCallListForPass(renderPass) >= 0)
+                if (this.sortedWorldRenderers[j].getGLCallListForPass(renderPass) >= 0)
                 {
-                    this.glRenderLists.add(this.sortedWorldRenderers[i]);
-                    ++var6;
+                    this.glRenderLists.add(this.sortedWorldRenderers[j]);
                 }
             }
         }
 
-        EntityPlayer player = this.mc.renderViewEntity;
-        double ppx = player.getPartialPosX(ptt);
-        double ppy = player.getPartialPosY(ptt);
-        double ppz = player.getPartialPosZ(ptt);
-        int var17 = 0;
+        double ppx = this.mc.renderViewEntity.getPartialPosX(ptt);
+        double ppy = this.mc.renderViewEntity.getPartialPosY(ptt);
+        double ppz = this.mc.renderViewEntity.getPartialPosZ(ptt);
+        int nextList = 0;
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
         {
@@ -379,68 +363,58 @@ public class RenderGlobal
         for (int i = 0; i < this.glRenderLists.size(); ++i)
         {
             WorldRenderer renderer = (WorldRenderer)this.glRenderLists.get(i);
-            int var20 = -1;
+            int whichList = -1;
 
-            for (int j = 0; j < var17; ++j)
+            for (int j = 0; j < nextList; ++j)
             {
                 if (this.allRenderLists[j].rendersChunk(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus))
                 {
-                    var20 = j;
+                    whichList = j;
                 }
             }
 
-            if (var20 < 0)
+            if (whichList < 0)
             {
-                var20 = var17++;
-                this.allRenderLists[var20].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppx, ppy, ppz);
+                whichList = nextList++;
+                this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppx, ppy, ppz);
             }
 
-            this.allRenderLists[var20].addGLRenderList(renderer.getGLCallListForPass(renderPass));
+            this.allRenderLists[whichList].addGLRenderList(renderer.getGLCallListForPass(renderPass));
         }
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
         {
             this.allRenderLists[i].callLists();
         }
-        
-        return var6;
     }
 
     /**
      * Updates some of the renderers sorted by distance from the player
      */
-    public boolean updateRenderers(EntityPlayer player)
+    public void updateRenderers(EntityPlayer player)
     {
-        byte var3 = 2;
         RenderSorter rs = new RenderSorter(player);
-        WorldRenderer[] var5 = new WorldRenderer[var3];
-        ArrayList<WorldRenderer> var6 = null;
-        int var7 = this.worldRenderersToUpdate.size();
-        int var8 = 0;
-        int var9;
-        WorldRenderer var10;
-        int var11;
-        int var12;
+        WorldRenderer[] rendererArray = new WorldRenderer[2];
+        ArrayList<WorldRenderer> rendererList = null;
+        int initialSize = this.worldRenderersToUpdate.size();
         label136:
 
-        for (var9 = 0; var9 < var7; ++var9)
+        for (int i = 0; i < initialSize; ++i)
         {
-            var10 = (WorldRenderer)this.worldRenderersToUpdate.get(var9);
+        	WorldRenderer wr = (WorldRenderer)this.worldRenderersToUpdate.get(i);
 
-            if (var10 != null)
+            if (wr != null)
             {
-            	if (var10.quadranceToPlayer(player) > 272.0F)
+            	if (wr.quadranceToPlayer(player) > 272.0F)
                 {
-                    for (var11 = 0; var11 < var3 && (var5[var11] == null || rs.compare(var5[var11], var10) <= 0); ++var11)
-                    {
-                        ;
-                    }
+            		int var11;
+                    for (var11 = 0; var11 < 2 && (rendererArray[var11] == null || rs.compare(rendererArray[var11], wr) <= 0); ++var11){;}
 
                     --var11;
 
                     if (var11 > 0)
                     {
-                        var12 = var11;
+                        int var12 = var11;
 
                         while (true)
                         {
@@ -448,104 +422,87 @@ public class RenderGlobal
 
                             if (var12 == 0)
                             {
-                                var5[var11] = var10;
+                                rendererArray[var11] = wr;
                                 continue label136;
                             }
 
-                            var5[var12 - 1] = var5[var12];
+                            rendererArray[var12 - 1] = rendererArray[var12];
                         }
                     }
 
                     continue;
                 }
 
-                if (var6 == null)
+                if (rendererList == null)
                 {
-                    var6 = new ArrayList<WorldRenderer>();
+                    rendererList = new ArrayList<WorldRenderer>();
                 }
 
-                ++var8;
-                var6.add(var10);
-                this.worldRenderersToUpdate.set(var9, (WorldRenderer)null);
+                rendererList.add(wr);
+                this.worldRenderersToUpdate.set(i, (WorldRenderer)null);
             }
         }
 
-        if (var6 != null)
+        if (rendererList != null)
         {
-            if (var6.size() > 1)
+            if (rendererList.size() > 1)
             {
-                Collections.sort(var6, rs);
+                Collections.sort(rendererList, rs);
             }
 
-            for (var9 = var6.size() - 1; var9 >= 0; --var9)
+            for (int i = rendererList.size() - 1; i >= 0; --i)
             {
-                var10 = (WorldRenderer)var6.get(var9);
-                var10.updateRenderer(player);
-                var10.needsUpdate = false;
+            	WorldRenderer wr = (WorldRenderer)rendererList.get(i);
+                wr.updateRenderer(player);
+                wr.needsUpdate = false;
             }
         }
-        var9 = 0;
-        int var16;
 
-        for (var16 = var3 - 1; var16 >= 0; --var16)
+        for (int i = 1; i >= 0; --i)
         {
-            WorldRenderer var17 = var5[var16];
+            WorldRenderer wr = rendererArray[i];
 
-            if (var17 != null)
+            if (wr != null)
             {
-                if (!var17.isInFrustum && var16 != var3 - 1)
+                if (!wr.getInFrustrum() && i != 1)
                 {
-                    var5[var16] = null;
-                    var5[0] = null;
+                    rendererArray[i] = null;
+                    rendererArray[0] = null;
                     break;
                 }
 
-                var5[var16].updateRenderer(player);
-                var5[var16].needsUpdate = false;
-                ++var9;
+                rendererArray[i].updateRenderer(player);
+                rendererArray[i].needsUpdate = false;
             }
         }
-        var16 = 0;
-        var11 = 0;
+        
+        int i = 0;
+        int var11 = 0;
 
-        for (var12 = this.worldRenderersToUpdate.size(); var16 != var12; ++var16)
+        for (int var12 = this.worldRenderersToUpdate.size(); i != var12; ++i)
         {
-            WorldRenderer var13 = (WorldRenderer)this.worldRenderersToUpdate.get(var16);
+            WorldRenderer wr = (WorldRenderer)this.worldRenderersToUpdate.get(i);
 
-            if (var13 != null)
+            if (wr != null)
             {
-                boolean var14 = false;
-
-                for (int var15 = 0; var15 < var3 && !var14; ++var15)
+                if (!(wr == rendererArray[0] || wr == rendererArray[1]))
                 {
-                    if (var13 == var5[var15])
+                    if (var11 != i)
                     {
-                        var14 = true;
-                    }
-                }
-
-                if (!var14)
-                {
-                    if (var11 != var16)
-                    {
-                        this.worldRenderersToUpdate.set(var11, var13);
+                        this.worldRenderersToUpdate.set(var11, wr);
                     }
 
                     ++var11;
                 }
             }
         }
-
-        while (true)
+        
+        --i;
+        
+        while (i >= var11)
         {
-            --var16;
-
-            if (var16 < var11)
-            {
-                return var7 == var8 + var9;
-            }
-
-            this.worldRenderersToUpdate.remove(var16);
+        	this.worldRenderersToUpdate.remove(i);
+        	--i;
         }
     }
 
@@ -627,7 +584,7 @@ public class RenderGlobal
     {
         for (int i = 0; i < this.worldRenderers.length; ++i)
         {
-            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].isInFrustum || (i + this.frustumCheckOffset & 15) == 0))
+            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].getInFrustrum() || (i + this.frustumCheckOffset & 15) == 0))
             {
                 this.worldRenderers[i].updateInFrustum(x, y, z);
             }
@@ -656,11 +613,11 @@ public class RenderGlobal
 
         public int compare(WorldRenderer wr1, WorldRenderer wr2)
         {
-            if (wr1.isInFrustum && !wr2.isInFrustum)
+            if (wr1.getInFrustrum() && !wr2.getInFrustrum())
             {
                 return 1;
             }
-            else if (wr2.isInFrustum && !wr1.isInFrustum)
+            else if (wr2.getInFrustrum() && !wr1.getInFrustrum())
             {
                 return -1;
             }

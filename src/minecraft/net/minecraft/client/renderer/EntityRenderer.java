@@ -4,7 +4,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.ReportedException;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 
@@ -247,7 +246,7 @@ public class EntityRenderer
             }
             catch (Throwable t)
             {
-                throw new ReportedException(CrashReport.makeCrashReport(t, "Rendering screen"));
+                throw CrashReport.makeCrashReport(t, "Rendering screen");
             }
         }
     }

@@ -4,15 +4,20 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.apache.commons.io.IOUtils;
 
-public class CrashReport
+public class CrashReport extends RuntimeException
 {
-    /** Description of the crash report. */
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 7671683602603126604L;
+
+	/** Description of the crash report. */
     private final String description;
 
     /** The Throwable that is the "cause" for this crash and Crash Report. */
     private final Throwable cause;
 
-    public CrashReport(String p_i1348_1_, Throwable p_i1348_2_)
+    private CrashReport(String p_i1348_1_, Throwable p_i1348_2_)
     {
         this.description = p_i1348_1_;
         this.cause = p_i1348_2_;
@@ -21,7 +26,7 @@ public class CrashReport
     /**
      * Returns the description of the Crash Report.
      */
-    public String getDescription()
+    public String getMessage()
     {
         return this.description;
     }
@@ -29,7 +34,7 @@ public class CrashReport
     /**
      * Returns the Throwable object that is the cause for the crash and Crash Report.
      */
-    public Throwable getCrashCause()
+    public Throwable getCause()
     {
         return this.cause;
     }
@@ -41,9 +46,9 @@ public class CrashReport
     {
         StringWriter var1 = null;
         PrintWriter var2 = null;
-        Object var3 = this.cause;
+        Throwable var3 = this.cause;
 
-        if (((Throwable)var3).getMessage() == null)
+        if (var3.getMessage() == null)
         {
             if (var3 instanceof NullPointerException)
             {
@@ -58,16 +63,16 @@ public class CrashReport
                 var3 = new OutOfMemoryError(this.description);
             }
 
-            ((Throwable)var3).setStackTrace(this.cause.getStackTrace());
+            var3.setStackTrace(this.cause.getStackTrace());
         }
 
-        String var4 = ((Throwable)var3).toString();
+        String var4 = var3.toString();
 
         try
         {
             var1 = new StringWriter();
             var2 = new PrintWriter(var1);
-            ((Throwable)var3).printStackTrace(var2);
+            var3.printStackTrace(var2);
             var4 = var1.toString();
         }
         finally
@@ -85,7 +90,7 @@ public class CrashReport
     public String getCompleteReport()
     {
         StringBuilder var1 = new StringBuilder();
-        var1.append("---- Minecraft Crash Report ----\n");
+        var1.append("---- Boolcraft Crash Report ----\n");
         var1.append("Description: ");
         var1.append(this.description);
         var1.append("\n\n");
@@ -96,19 +101,15 @@ public class CrashReport
     /**
      * Creates a crash report for the exception
      */
-    public static CrashReport makeCrashReport(Throwable p_85055_0_, String p_85055_1_)
+    public static CrashReport makeCrashReport(Throwable cause, String desc)
     {
-        CrashReport var2;
-
-        if (p_85055_0_ instanceof ReportedException)
+        if (cause instanceof CrashReport)
         {
-            var2 = ((ReportedException)p_85055_0_).getCrashReport();
+            return (CrashReport)cause;
         }
         else
         {
-            var2 = new CrashReport(p_85055_1_, p_85055_0_);
+            return new CrashReport(desc, cause);
         }
-
-        return var2;
     }
 }
