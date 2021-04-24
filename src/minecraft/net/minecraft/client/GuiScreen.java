@@ -11,7 +11,6 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.crash.CrashReport;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -315,7 +314,7 @@ public class GuiScreen
                     }
                     catch (Throwable t)
                     {
-                        throw CrashReport.makeCrashReport(t, "Registering texture");
+                        throw new RuntimeException("Registering texture", t);
                     }
 
                     this.mapTextureObjects.put(page, texture);

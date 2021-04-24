@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import net.minecraft.crash.CrashReport;
-
 public class NBTTagCompound extends NBTBase
 {
     /**
@@ -49,7 +47,7 @@ public class NBTTagCompound extends NBTBase
             }
             catch (IOException var9)
             {
-                throw CrashReport.makeCrashReport(var9, "Loading NBT data");
+                throw new RuntimeException("Loading NBT data", var9);
             }
             
             this.tagMap.put(name, tag);
@@ -248,9 +246,9 @@ public class NBTTagCompound extends NBTBase
     /**
      * Create a crash report which indicates a NBT read error.
      */
-    private CrashReport createCrashReport(final String p_82581_1_, final int p_82581_2_, ClassCastException p_82581_3_)
+    private RuntimeException createCrashReport(final String p_82581_1_, final int p_82581_2_, ClassCastException p_82581_3_)
     {
-        return CrashReport.makeCrashReport(p_82581_3_, "Reading NBT data");
+        return new RuntimeException("Reading NBT data", p_82581_3_);
     }
 
     /**
