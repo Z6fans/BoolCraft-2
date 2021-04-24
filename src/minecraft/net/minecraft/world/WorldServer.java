@@ -622,7 +622,7 @@ public class WorldServer
     /**
      * Saves all chunks to disk while updating progress bar.
      */
-    public void saveAllChunks() throws MinecraftException
+    public void saveAllChunks() throws SessionLockException
     {
     	this.checkSessionLock();
         NBTTagCompound dataTag = new NBTTagCompound();
@@ -639,7 +639,9 @@ public class WorldServer
 
             try
             {
-                CompressedStreamTools.write(masterTag, stream);
+                stream.writeByte(masterTag.getId());
+                stream.writeUTF("");
+            	masterTag.write(stream);
             }
             finally
             {
@@ -752,7 +754,7 @@ public class WorldServer
     /**
      * Checks whether the session lock file was modified by another process
      */
-    public void checkSessionLock() throws MinecraftException
+    public void checkSessionLock() throws SessionLockException
     {
     	try
         {
@@ -762,7 +764,7 @@ public class WorldServer
             {
                 if (stream.readLong() != this.initializationTime)
                 {
-                    throw new MinecraftException("The save is being accessed from another location, aborting");
+                    throw new SessionLockException("The save is being accessed from another location, aborting");
                 }
             }
             finally
@@ -772,7 +774,7 @@ public class WorldServer
         }
         catch (IOException e)
         {
-            throw new MinecraftException("Failed to check session lock, aborting");
+            throw new SessionLockException("Failed to check session lock, aborting");
         }
     }
     
@@ -906,7 +908,7 @@ public class WorldServer
             {
                 logger.error("Couldn\'t save chunk", var3);
             }
-            catch (MinecraftException var4)
+            catch (SessionLockException var4)
             {
                 logger.error("Couldn\'t save chunk; already in use by another instance of Minecraft?", var4);
             }

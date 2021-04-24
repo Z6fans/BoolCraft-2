@@ -17,7 +17,7 @@ public class NBTTagCompound extends NBTBase
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes
      */
-    void write(DataOutput p_74734_1_) throws IOException
+    public void write(DataOutput p_74734_1_) throws IOException
     {
         Iterator<String> var2 = this.tagMap.keySet().iterator();
 

@@ -27,11 +27,4 @@ public class CompressedStreamTools
 
         return tag;
     }
-
-    public static void write(NBTTagCompound tag, DataOutput out) throws IOException
-    {
-    	out.writeByte(tag.getId());
-    	out.writeUTF("");
-        tag.write(out);
-    }
 }

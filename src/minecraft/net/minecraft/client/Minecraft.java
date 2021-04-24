@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
-import net.minecraft.world.MinecraftException;
+import net.minecraft.world.SessionLockException;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.ThreadedFileIOBase;
 
@@ -866,7 +866,7 @@ public class Minecraft
             {
             	this.worldServer.saveAllChunks();
             }
-            catch (MinecraftException e)
+            catch (SessionLockException e)
             {
                 logger.warn(e.getMessage());
             }

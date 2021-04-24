@@ -15,7 +15,7 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.MinecraftException;
+import net.minecraft.world.SessionLockException;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.WorldServer;
 
@@ -141,7 +141,7 @@ public class AnvilChunkLoader
         }
     }
 
-    public void saveChunk(WorldServer world, Chunk chunk) throws MinecraftException, IOException
+    public void saveChunk(WorldServer world, Chunk chunk) throws SessionLockException, IOException
     {
         world.checkSessionLock();
 
@@ -260,7 +260,9 @@ public class AnvilChunkLoader
             try
             {
             	DataOutputStream stream = ThreadedFileIOBase.threadedIOInstance.createOrLoadRegionFile(this.chunkSaveLocation, pendingChunk.chunkCoordinate.chunkXPos, pendingChunk.chunkCoordinate.chunkZPos).getChunkDataOutputStream(pendingChunk.chunkCoordinate.chunkXPos & 31, pendingChunk.chunkCoordinate.chunkZPos & 31);
-                CompressedStreamTools.write(pendingChunk.nbtTags, stream);
+                stream.writeByte(pendingChunk.nbtTags.getId());
+                stream.writeUTF("");
+            	pendingChunk.nbtTags.write(stream);
                 stream.close();
             }
             catch (Exception e)
