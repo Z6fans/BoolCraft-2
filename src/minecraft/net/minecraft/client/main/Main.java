@@ -10,7 +10,6 @@ public class Main
 {
     public static void main(String[] args)
     {
-        System.setProperty("java.net.preferIPv4Stack", "true");
         OptionParser parser = new OptionParser();
         parser.allowsUnrecognizedOptions();
         ArgumentAcceptingOptionSpec<File> argGameDir = parser.accepts("gameDir").withRequiredArg().ofType(File.class).defaultsTo(new File("."), new File[0]);

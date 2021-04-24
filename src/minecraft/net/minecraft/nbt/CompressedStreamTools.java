@@ -1,7 +1,6 @@
 package net.minecraft.nbt;
 
 import java.io.DataInputStream;
-import java.io.DataOutput;
 import java.io.IOException;
 
 public class CompressedStreamTools
