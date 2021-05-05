@@ -31,12 +31,13 @@ public class BlockStone extends Block {
 		return 0;
 	}
 	
-	public int colorMultiplier(WorldClient p_149720_1_, int x, int y, int z)
+	public int colorMultiplier(WorldClient p_149720_1_, int x, int y, int z, int level)
     {
     	int a = (x%2 + 2)%2;
     	int b = (y%2 + 2)%2;
     	int c = (z%2 + 2)%2;
-    	return 0x333333 + 0x060000 * a + 0x000300 * b + 0x000006 * c;
+    	int base = level == 0 ? 0x606060 : level == 1 ? 0x505050 : 0x404040;
+    	return base + 0x060000 * a + 0x000300 * b + 0x000006 * c;
     }
 
 	public int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)

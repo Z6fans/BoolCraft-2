@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockRedstoneWire;
 import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 
@@ -43,7 +42,7 @@ public class RenderBlocks
         }
         else
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 0));
             AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
         	this.renderMinX = aabb.minX;
             this.renderMaxX = aabb.maxX;
@@ -110,97 +109,45 @@ public class RenderBlocks
 
     private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
     {
-        Tessellator var5 = Tessellator.instance;
-        boolean var19 = BlockRedstoneWire.shouldConnect(this.world, x - 1, y, z, true) || !this.world.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x - 1, y - 1, z, false);
-        boolean var20 = BlockRedstoneWire.shouldConnect(this.world, x + 1, y, z, true) || !this.world.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x + 1, y - 1, z, false);
-        boolean var21 = BlockRedstoneWire.shouldConnect(this.world, x, y, z - 1, true) || !this.world.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y - 1, z - 1, false);
-        boolean var22 = BlockRedstoneWire.shouldConnect(this.world, x, y, z + 1, true) || !this.world.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y - 1, z + 1, false);
-
-        if (!this.world.getBlock(x, y + 1, z).isSolid())
-        {
-            if (this.world.getBlock(x - 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x - 1, y + 1, z, false))
-            {
-                var19 = true;
-            }
-
-            if (this.world.getBlock(x + 1, y, z).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x + 1, y + 1, z, false))
-            {
-                var20 = true;
-            }
-
-            if (this.world.getBlock(x, y, z - 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y + 1, z - 1, false))
-            {
-                var21 = true;
-            }
-
-            if (this.world.getBlock(x, y, z + 1).isSolid() && BlockRedstoneWire.shouldConnect(this.world, x, y + 1, z + 1, false))
-            {
-                var22 = true;
-            }
-        }
-
-        float var23 = (float)(x + 0);
-        float var24 = (float)(x + 1);
-        float var25 = (float)(z + 0);
-        float var26 = (float)(z + 1);
-
-        if (!var19)
-        {
-            var23 += 0.3125F;
-        }
-
-        if (!var20)
-        {
-            var24 -= 0.3125F;
-        }
-
-        if (!var21)
-        {
-            var25 += 0.3125F;
-        }
-
-        if (!var22)
-        {
-            var26 -= 0.3125F;
-        }
-
-        var5.addVertex((double)var24, (double)y + 0.015625D, (double)var26);
-        var5.addVertex((double)var24, (double)y + 0.015625D, (double)var25);
-        var5.addVertex((double)var23, (double)y + 0.015625D, (double)var25);
-        var5.addVertex((double)var23, (double)y + 0.015625D, (double)var26);
+        Tessellator tess = Tessellator.instance;
+        
+        tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 1));
+        tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 0));
+        tess.addVertex((double)(x + 0), (double)y + 0.01D, (double)(z + 0));
+        tess.addVertex((double)(x + 0), (double)y + 0.01D, (double)(z + 1));
 
         if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
             if (this.world.getBlock(x - 1, y, z).isSolid() && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
             {
-                var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
-                var5.addVertex((double)x + 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
-                var5.addVertex((double)x + 0.015625D, (double)(y + 0), (double)(z + 0.3125F));
-                var5.addVertex((double)x + 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 0.3125F));
+                tess.addVertex((double)x + 0.01D, (double)(y + 1), (double)(z + 1));
+                tess.addVertex((double)x + 0.01D, (double)(y + 0), (double)(z + 1));
+                tess.addVertex((double)x + 0.01D, (double)(y + 0), (double)(z + 0));
+                tess.addVertex((double)x + 0.01D, (double)(y + 1), (double)(z + 0));
             }
 
             if (this.world.getBlock(x + 1, y, z).isSolid() && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
             {
-                var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 1 - 0.3125F));
-                var5.addVertex((double)(x + 1) - 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 1 - 0.3125F));
-                var5.addVertex((double)(x + 1) - 0.015625D, (double)((float)(y + 1) + 0.021875F), (double)(z + 0.3125F));
-                var5.addVertex((double)(x + 1) - 0.015625D, (double)(y + 0), (double)(z + 0.3125F));
+                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 0), (double)(z + 1));
+                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 1), (double)(z + 1));
+                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 1), (double)(z + 0));
+                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 0), (double)(z + 0));
             }
 
             if (this.world.getBlock(x, y, z - 1).isSolid() && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
             {
-                var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)z + 0.015625D);
-                var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)z + 0.015625D);
-                var5.addVertex((double)(x + 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)z + 0.015625D);
-                var5.addVertex((double)(x + 0.3125F), (double)(y + 0), (double)z + 0.015625D);
+                tess.addVertex((double)(x + 1), (double)(y + 0), (double)z + 0.01D);
+                tess.addVertex((double)(x + 1), (double)(y + 1), (double)z + 0.01D);
+                tess.addVertex((double)(x + 0), (double)(y + 1), (double)z + 0.01D);
+                tess.addVertex((double)(x + 0), (double)(y + 0), (double)z + 0.01D);
             }
 
             if (this.world.getBlock(x, y, z + 1).isSolid() && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
             {
-                var5.addVertex((double)(x + 1 - 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)(z + 1) - 0.015625D);
-                var5.addVertex((double)(x + 1 - 0.3125F), (double)(y + 0), (double)(z + 1) - 0.015625D);
-                var5.addVertex((double)(x + 0.3125F), (double)(y + 0), (double)(z + 1) - 0.015625D);
-                var5.addVertex((double)(x + 0.3125F), (double)((float)(y + 1) + 0.021875F), (double)(z + 1) - 0.015625D);
+                tess.addVertex((double)(x + 1), (double)(y + 1), (double)(z + 1) - 0.01D);
+                tess.addVertex((double)(x + 1), (double)(y + 0), (double)(z + 1) - 0.01D);
+                tess.addVertex((double)(x + 0), (double)(y + 0), (double)(z + 1) - 0.01D);
+                tess.addVertex((double)(x + 0), (double)(y + 1), (double)(z + 1) - 0.01D);
             }
         }
 
@@ -213,36 +160,42 @@ public class RenderBlocks
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y - 1, z, 0))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 2));
             this.renderFaceYNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y + 1, z, 1))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 0));
             this.renderFaceYPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z - 1, 2))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
             this.renderFaceZNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z + 1, 3))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
             this.renderFaceZPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x - 1, y, z, 4))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
             this.renderFaceXNeg(block, (double)x, (double)y, (double)z);
             var9 = true;
         }
 
         if (renderAllFaces || block.shouldSideBeRendered(this.world, x + 1, y, z, 5))
         {
+        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
             this.renderFaceXPos(block, (double)x, (double)y, (double)z);
             var9 = true;
         }

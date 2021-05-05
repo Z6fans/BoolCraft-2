@@ -292,7 +292,7 @@ public abstract class Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public abstract int colorMultiplier(WorldClient cc, int x, int y, int z);
+    public abstract int colorMultiplier(WorldClient cc, int x, int y, int z, int level);
 
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 

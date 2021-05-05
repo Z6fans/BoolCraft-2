@@ -39,7 +39,7 @@ public class BlockRedstoneWire extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
+    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_, int level)
     {
         int var6 = p_149720_1_.getBlockMetadata(p_149720_2_, p_149720_3_, p_149720_4_);
         float var11 = (float)var6 / 15.0F;
@@ -338,12 +338,6 @@ public class BlockRedstoneWire extends Block
     private static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
     {
         Block block = world.getBlock(x, y, z);
-        return block == Block.redstone_wire || (block.canProvidePower() && flag);
-    }
-    
-    public static boolean shouldConnect(WorldClient cc, int x, int y, int z, boolean flag)
-    {
-        Block block = cc.getBlock(x, y, z);
         return block == Block.redstone_wire || (block.canProvidePower() && flag);
     }
 

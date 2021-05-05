@@ -39,7 +39,7 @@ public class BlockAir extends Block
         return null;
     }
 
-	public int colorMultiplier(WorldClient cc, int x, int y, int z)
+	public int colorMultiplier(WorldClient cc, int x, int y, int z, int level)
 	{
 		return 0;
 	}

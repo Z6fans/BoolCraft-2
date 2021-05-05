@@ -277,7 +277,7 @@ public class BlockLever extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
+    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_, int level)
     {
     	int var5 = p_149720_1_.getBlockMetadata(p_149720_2_, p_149720_3_, p_149720_4_);
         return (var5 & 8) > 0 ? 0xEE39E4 : 0x701B6C;
