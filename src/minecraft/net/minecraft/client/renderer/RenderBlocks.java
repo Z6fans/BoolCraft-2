@@ -42,7 +42,6 @@ public class RenderBlocks
         }
         else
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 0));
             AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
         	this.renderMinX = aabb.minX;
             this.renderMaxX = aabb.maxX;
@@ -50,7 +49,7 @@ public class RenderBlocks
             this.renderMaxY = aabb.maxY;
             this.renderMinZ = aabb.minZ;
             this.renderMaxZ = aabb.maxZ;
-            return rt == 0 ? this.renderStandardBlock(block, x, y, z, false) : (rt == 5 ? this.renderBlockRedstoneWire(block, x, y, z) : (rt == 12 ? this.renderBlockLever(block, x, y, z) : false));
+            return rt == 0 ? this.renderStandardBlock(x, y, z) : (rt == 5 ? this.renderBlockRedstoneWire(block, x, y, z) : (rt == 12 ? this.renderBlockLever(block, x, y, z) : false));
         }
     }
 
@@ -103,13 +102,22 @@ public class RenderBlocks
             this.setRenderBounds((double)(0.5F - d), (double)(1.0F - d), (double)(0.5F - d), (double)(0.5F + d), 1.0D, (double)(0.5F + d));
         }
         
-        this.renderStandardBlock(block, x, y, z, true);
+        Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
+        this.renderFaceYNeg((double)x, (double)y, (double)z);
+        this.renderFaceYPos((double)x, (double)y, (double)z);
+        this.renderFaceZNeg((double)x, (double)y, (double)z);
+        this.renderFaceZPos((double)x, (double)y, (double)z);
+        this.renderFaceXNeg((double)x, (double)y, (double)z);
+        this.renderFaceXPos((double)x, (double)y, (double)z);
+
         return true;
     }
 
     private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
     {
         Tessellator tess = Tessellator.instance;
+        
+        Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
         
         tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 1));
         tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 0));
@@ -154,56 +162,55 @@ public class RenderBlocks
         return true;
     }
 
-    private boolean renderStandardBlock(Block block, int x, int y, int z, boolean renderAllFaces)
+    private boolean renderStandardBlock(int x, int y, int z)
     {
         boolean var9 = false;
+        
+        int shift = ((x + y + z)%2 + 2)%2 == 0 ? 0x060000 : 0x000006;
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y - 1, z, 0))
+    	Tessellator.instance.setColorOpaque_I(0x404040 + shift);
+        if (!this.world.getBlock(x, y - 1, z).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 2));
-            this.renderFaceYNeg(block, (double)x, (double)y, (double)z);
+            this.renderFaceYNeg((double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y + 1, z, 1))
+    	Tessellator.instance.setColorOpaque_I(0x606060 + shift);
+        if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 0));
-            this.renderFaceYPos(block, (double)x, (double)y, (double)z);
+            this.renderFaceYPos((double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z - 1, 2))
+    	Tessellator.instance.setColorOpaque_I(0x505050 + shift);
+        if (!this.world.getBlock(x, y, z - 1).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
-            this.renderFaceZNeg(block, (double)x, (double)y, (double)z);
+            this.renderFaceZNeg((double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x, y, z + 1, 3))
+        if (!this.world.getBlock(x, y, z + 1).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
-            this.renderFaceZPos(block, (double)x, (double)y, (double)z);
+            this.renderFaceZPos((double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x - 1, y, z, 4))
+        if (!this.world.getBlock(x - 1, y, z).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
-            this.renderFaceXNeg(block, (double)x, (double)y, (double)z);
+            this.renderFaceXNeg((double)x, (double)y, (double)z);
             var9 = true;
         }
 
-        if (renderAllFaces || block.shouldSideBeRendered(this.world, x + 1, y, z, 5))
+        if (!this.world.getBlock(x + 1, y, z).isSolid())
         {
-        	Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z, 1));
-            this.renderFaceXPos(block, (double)x, (double)y, (double)z);
+            this.renderFaceXPos((double)x, (double)y, (double)z);
             var9 = true;
         }
 
         return var9;
     }
 
-    private void renderFaceYNeg(Block p_147768_1_, double p_147768_2_, double p_147768_4_, double p_147768_6_)
+    private void renderFaceYNeg(double p_147768_2_, double p_147768_4_, double p_147768_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
@@ -219,7 +226,7 @@ public class RenderBlocks
         var9.addVertex(var28, var30, var34);
     }
 
-    private void renderFaceYPos(Block p_147806_1_, double p_147806_2_, double p_147806_4_, double p_147806_6_)
+    private void renderFaceYPos(double p_147806_2_, double p_147806_4_, double p_147806_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
@@ -235,7 +242,7 @@ public class RenderBlocks
         var9.addVertex(var26, var30, var34);
     }
 
-    private void renderFaceZNeg(Block p_147761_1_, double p_147761_2_, double p_147761_4_, double p_147761_6_)
+    private void renderFaceZNeg(double p_147761_2_, double p_147761_4_, double p_147761_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
@@ -251,7 +258,7 @@ public class RenderBlocks
         var9.addVertex(var26, var30, var34);
     }
 
-    private void renderFaceZPos(Block p_147734_1_, double p_147734_2_, double p_147734_4_, double p_147734_6_)
+    private void renderFaceZPos(double p_147734_2_, double p_147734_4_, double p_147734_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
@@ -267,7 +274,7 @@ public class RenderBlocks
         var9.addVertex(var28, var32, var34);
     }
 
-    private void renderFaceXNeg(Block p_147798_1_, double p_147798_2_, double p_147798_4_, double p_147798_6_)
+    private void renderFaceXNeg(double p_147798_2_, double p_147798_4_, double p_147798_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
@@ -283,7 +290,7 @@ public class RenderBlocks
         var9.addVertex(var26, var28, var34);
     }
 
-    private void renderFaceXPos(Block p_147764_1_, double p_147764_2_, double p_147764_4_, double p_147764_6_)
+    private void renderFaceXPos(double p_147764_2_, double p_147764_4_, double p_147764_6_)
     {
         Tessellator var9 = Tessellator.instance;
 
