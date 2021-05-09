@@ -166,7 +166,7 @@ public class Chunk
 
             storageArray.setBlock(localX, y & 15, localZ, block);
 
-            oldBlock.breakBlock((WorldServer)world, trueX, y, trueZ, oldBlock, oldMeta);
+            oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
 
             if (storageArray.getBlock(localX, y & 15, localZ) != block)
             {
@@ -176,7 +176,7 @@ public class Chunk
             {
                 storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
 
-                block.onBlockAdded((WorldServer)world, trueX, y, trueZ);
+                block.onBlockAdded(world, trueX, y, trueZ);
 
                 this.isModified = true;
                 return true;

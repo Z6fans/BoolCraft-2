@@ -111,11 +111,11 @@ public class BlockLever extends Block
         }
     }
 
-    private boolean func_149820_e(WorldServer p_149820_1_, int p_149820_2_, int p_149820_3_, int p_149820_4_)
+    private boolean func_149820_e(WorldServer world, int x, int y, int z)
     {
-        if (!this.canPlaceBlockAt(p_149820_1_, p_149820_2_, p_149820_3_, p_149820_4_))
+        if (!this.canPlaceBlockAt(world, x, y, z))
         {
-            p_149820_1_.setBlock(p_149820_2_, p_149820_3_, p_149820_4_, Block.air, 0);
+            world.setBlock(x, y, z, Block.air, 0);
             return false;
         }
         else
@@ -173,8 +173,7 @@ public class BlockLever extends Block
     {
     	int meta = world.getBlockMetadata(x, y, z);
         int orientation = meta & 7;
-        int newState = 8 - (meta & 8);
-        world.setBlockMetadataWithNotify(x, y, z, orientation + newState, true);
+        world.setBlockMetadataWithNotify(x, y, z, meta ^ 8, true);
         world.notifyBlocksOfNeighborChange(x, y, z, this);
 
         if (orientation == 1)
@@ -208,39 +207,39 @@ public class BlockLever extends Block
         return true;
     }
 
-    public void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_)
+    public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
     {
-        if ((p_149749_6_ & 8) > 0)
+        if ((meta & 8) > 0)
         {
-            p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_, p_149749_4_, this);
-            int var7 = p_149749_6_ & 7;
+            world.notifyBlocksOfNeighborChange(x, y, z, this);
+            int side = meta & 7;
 
-            if (var7 == 1)
+            if (side == 1)
             {
-                p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_ - 1, p_149749_3_, p_149749_4_, this);
+                world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
             }
-            else if (var7 == 2)
+            else if (side == 2)
             {
-                p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_ + 1, p_149749_3_, p_149749_4_, this);
+                world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
             }
-            else if (var7 == 3)
+            else if (side == 3)
             {
-                p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_, p_149749_4_ - 1, this);
+                world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
             }
-            else if (var7 == 4)
+            else if (side == 4)
             {
-                p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_, p_149749_4_ + 1, this);
+                world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
             }
-            else if (var7 != 5 && var7 != 6)
+            else if (side != 5 && side != 6)
             {
-                if (var7 == 0 || var7 == 7)
+                if (side == 0 || side == 7)
                 {
-                    p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_ + 1, p_149749_4_, this);
+                    world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
                 }
             }
             else
             {
-                p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_ - 1, p_149749_4_, this);
+                world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
             }
         }
     }

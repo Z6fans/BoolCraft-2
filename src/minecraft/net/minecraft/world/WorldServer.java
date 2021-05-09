@@ -918,64 +918,23 @@ public class WorldServer
     /**
      * Is this block powering in the specified direction Args: x, y, z, direction
      */
-    private int isBlockProvidingPowerTo(int p_72879_1_, int p_72879_2_, int p_72879_3_, int p_72879_4_)
+    private int isBlockProvidingPowerTo(int x, int y, int z, int side)
     {
-        return this.getBlock(p_72879_1_, p_72879_2_, p_72879_3_).isProvidingStrongPower(this, p_72879_1_, p_72879_2_, p_72879_3_, p_72879_4_);
+        return this.getBlock(x, y, z).isProvidingStrongPower(this, x, y, z, side);
     }
 
     /**
      * Returns the highest redstone signal strength powering the given block. Args: X, Y, Z.
      */
-    private int getBlockPowerInput(int p_94577_1_, int p_94577_2_, int p_94577_3_)
+    private int getBlockPowerInput(int x, int y, int z)
     {
-        byte var4 = 0;
-        int var5 = Math.max(var4, this.isBlockProvidingPowerTo(p_94577_1_, p_94577_2_ - 1, p_94577_3_, 0));
-
-        if (var5 >= 15)
-        {
-            return var5;
-        }
-        else
-        {
-            var5 = Math.max(var5, this.isBlockProvidingPowerTo(p_94577_1_, p_94577_2_ + 1, p_94577_3_, 1));
-
-            if (var5 >= 15)
-            {
-                return var5;
-            }
-            else
-            {
-                var5 = Math.max(var5, this.isBlockProvidingPowerTo(p_94577_1_, p_94577_2_, p_94577_3_ - 1, 2));
-
-                if (var5 >= 15)
-                {
-                    return var5;
-                }
-                else
-                {
-                    var5 = Math.max(var5, this.isBlockProvidingPowerTo(p_94577_1_, p_94577_2_, p_94577_3_ + 1, 3));
-
-                    if (var5 >= 15)
-                    {
-                        return var5;
-                    }
-                    else
-                    {
-                        var5 = Math.max(var5, this.isBlockProvidingPowerTo(p_94577_1_ - 1, p_94577_2_, p_94577_3_, 4));
-
-                        if (var5 >= 15)
-                        {
-                            return var5;
-                        }
-                        else
-                        {
-                            var5 = Math.max(var5, this.isBlockProvidingPowerTo(p_94577_1_ + 1, p_94577_2_, p_94577_3_, 5));
-                            return var5 >= 15 ? var5 : var5;
-                        }
-                    }
-                }
-            }
-        }
+        int power = Math.max(0, this.isBlockProvidingPowerTo(x, y - 1, z, 0));
+        power = Math.max(power, this.isBlockProvidingPowerTo(x, y + 1, z, 1));
+        power = Math.max(power, this.isBlockProvidingPowerTo(x, y, z - 1, 2));
+        power = Math.max(power, this.isBlockProvidingPowerTo(x, y, z + 1, 3));
+        power = Math.max(power, this.isBlockProvidingPowerTo(x - 1, y, z, 4));
+        power = Math.max(power, this.isBlockProvidingPowerTo(x + 1, y, z, 5));
+        return power;
     }
 
     /**

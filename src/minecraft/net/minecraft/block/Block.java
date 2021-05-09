@@ -16,8 +16,7 @@ public abstract class Block
     public static final Block stone = new BlockStone();
     public static final Block redstone_wire = new BlockRedstoneWire();
     public static final Block lever = new BlockLever();
-    public static final Block unlit_redstone_torch = new BlockRedstoneTorch(false);
-    public static final Block redstone_torch = new BlockRedstoneTorch(true);
+    public static final Block redstone_torch = new BlockRedstoneTorch();
     
     private static final HashBiMap<Integer, Block> registry = HashBiMap.create();
     
@@ -27,7 +26,6 @@ public abstract class Block
     	registry.put(1, stone);
     	registry.put(55, redstone_wire);
     	registry.put(69, lever);
-    	registry.put(75, unlit_redstone_torch);
     	registry.put(76, redstone_torch);
     }
     
@@ -271,7 +269,7 @@ public abstract class Block
 
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
-    public abstract void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_);
+    public abstract void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta);
     
     /**
      * Called upon block activation (right click on the block.)
@@ -296,5 +294,5 @@ public abstract class Block
      */
     public abstract boolean canProvidePower();
 
-    public abstract int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_);
+    public abstract int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side);
 }

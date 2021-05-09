@@ -75,7 +75,7 @@ public class BlockAir extends Block
 
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
-	public void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_){}
+	public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta){}
 
 	public boolean getTickRandomly()
 	{
