@@ -219,24 +219,14 @@ public abstract class Block
     /**
      * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
      */
-    public boolean canPlaceBlockOnSide(WorldServer p_149707_1_, int p_149707_2_, int p_149707_3_, int p_149707_4_, int p_149707_5_)
-    {
-        return this.canPlaceBlockAt(p_149707_1_, p_149707_2_, p_149707_3_, p_149707_4_);
-    }
-
-    protected boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
+    public boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
     	return p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_).isReplaceable();
     }
 
-    protected boolean blockEquals(Block other)
-    {
-        return this == other;
-    }
-
     public static boolean isEqualTo(Block block1, Block block2)
     {
-        return block1 != null && block2 != null ? (block1 == block2 ? true : block1.blockEquals(block2)) : false;
+        return block1 != null && block2 != null && block1 == block2;
     }
 
     public abstract boolean isSolid();
@@ -247,12 +237,6 @@ public abstract class Block
      * The type of render function that is called for this block
      */
     public abstract int getRenderType();
-
-    /**
-     * Returns whether or not this block is of a type that needs random ticking. Called for ref-counting purposes by
-     * ExtendedBlockStorage in order to broadly cull a chunk from the random chunk update list for efficiency's sake.
-     */
-    public abstract boolean getTickRandomly();
 
     /**
      * Returns a bounding box from the pool of bounding boxes (this means this box can change after the pool has been

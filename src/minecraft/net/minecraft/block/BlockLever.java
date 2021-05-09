@@ -30,17 +30,14 @@ public class BlockLever extends Block
         return 12;
     }
 
-    /**
-     * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
-     */
-    public boolean canPlaceBlockOnSide(WorldServer world, int x, int y, int z, int side)
+    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return side == 0 && world.getBlock(x, y + 1, z).isSolid() ? true : (side == 1 && world.getBlock(x, y - 1, z).isSolid() ? true : (side == 2 && world.getBlock(x, y, z + 1).isSolid() ? true : (side == 3 && world.getBlock(x, y, z - 1).isSolid() ? true : (side == 4 && world.getBlock(x + 1, y, z).isSolid() ? true : side == 5 && world.getBlock(x - 1, y, z).isSolid()))));
-    }
-
-    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
-    {
-        return world.getBlock(x - 1, y, z).isSolid() ? true : (world.getBlock(x + 1, y, z).isSolid() ? true : (world.getBlock(x, y, z - 1).isSolid() ? true : (world.getBlock(x, y, z + 1).isSolid() ? true : (world.getBlock(x, y - 1, z).isSolid() ? true : world.getBlock(x, y + 1, z).isSolid()))));
+        return world.getBlock(x - 1, y, z).isSolid()
+        	|| world.getBlock(x + 1, y, z).isSolid()
+        	|| world.getBlock(x, y, z - 1).isSolid()
+        	|| world.getBlock(x, y, z + 1).isSolid()
+        	|| world.getBlock(x, y - 1, z).isSolid()
+        	|| world.getBlock(x, y + 1, z).isSolid();
     }
 
     public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
@@ -53,74 +50,46 @@ public class BlockLever extends Block
         {
         	return (6 - side) % 6;
         }
-
-        return -1;
+        else if (world.getBlock(x - 1, y, z).isSolid())
+        {
+            return 1;
+        }
+        else if (world.getBlock(x + 1, y, z).isSolid())
+        {
+            return 2;
+        }
+        else if (world.getBlock(x, y, z - 1).isSolid())
+        {
+            return 3;
+        }
+        else if (world.getBlock(x, y, z + 1).isSolid())
+        {
+            return 4;
+        }
+        else if (world.getBlock(x, y + 1, z).isSolid())
+        {
+            return 0;
+        }
+        else
+        {
+        	return 5;
+        }
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
     {
-        if (this.func_149820_e(world, x, y, z))
-        {
-            int var6 = world.getBlockMetadata(x, y, z) & 7;
-            boolean var7 = false;
+    	int meta = world.getBlockMetadata(x, y, z) & 7;
 
-            if (!world.getBlock(x - 1, y, z).isSolid() && var6 == 1)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x + 1, y, z).isSolid() && var6 == 2)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y, z - 1).isSolid() && var6 == 3)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y, z + 1).isSolid() && var6 == 4)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y - 1, z).isSolid() && var6 == 5)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y - 1, z).isSolid() && var6 == 6)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y + 1, z).isSolid() && var6 == 0)
-            {
-                var7 = true;
-            }
-
-            if (!world.getBlock(x, y + 1, z).isSolid() && var6 == 7)
-            {
-                var7 = true;
-            }
-
-            if (var7)
-            {
-                world.setBlock(x, y, z, Block.air, 0);
-            }
-        }
-    }
-
-    private boolean func_149820_e(WorldServer world, int x, int y, int z)
-    {
-        if (!this.canPlaceBlockAt(world, x, y, z))
+        if (!world.getBlock(x - 1, y, z).isSolid() && meta == 1
+         || !world.getBlock(x + 1, y, z).isSolid() && meta == 2
+         || !world.getBlock(x, y, z - 1).isSolid() && meta == 3
+         || !world.getBlock(x, y, z + 1).isSolid() && meta == 4
+         || !world.getBlock(x, y - 1, z).isSolid() && meta == 5
+         || !world.getBlock(x, y - 1, z).isSolid() && meta == 6
+         || !world.getBlock(x, y + 1, z).isSolid() && meta == 0
+         || !world.getBlock(x, y + 1, z).isSolid() && meta == 7)
         {
             world.setBlock(x, y, z, Block.air, 0);
-            return false;
-        }
-        else
-        {
-            return true;
         }
     }
 
@@ -244,24 +213,22 @@ public class BlockLever extends Block
         }
     }
 
-    public int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)
+    public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
     {
-        return (p_149709_1_.getBlockMetadata(p_149709_2_, p_149709_3_, p_149709_4_) & 8) > 0 ? 15 : 0;
+        return (world.getBlockMetadata(x, y, z) & 8) == 0 ? 0 : 15;
     }
 
-    public int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
+    public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
     {
-        int var6 = p_149748_1_.getBlockMetadata(p_149748_2_, p_149748_3_, p_149748_4_);
-
-        if ((var6 & 8) == 0)
-        {
-            return 0;
-        }
-        else
-        {
-            int var7 = var6 & 7;
-            return var7 == 0 && p_149748_5_ == 0 ? 15 : (var7 == 7 && p_149748_5_ == 0 ? 15 : (var7 == 6 && p_149748_5_ == 1 ? 15 : (var7 == 5 && p_149748_5_ == 1 ? 15 : (var7 == 4 && p_149748_5_ == 2 ? 15 : (var7 == 3 && p_149748_5_ == 3 ? 15 : (var7 == 2 && p_149748_5_ == 4 ? 15 : (var7 == 1 && p_149748_5_ == 5 ? 15 : 0)))))));
-        }
+    	int meta = world.getBlockMetadata(x, y, z) & 7;
+        return (meta == 0 && side == 0)
+        	|| (meta == 7 && side == 0)
+        	|| (meta == 6 && side == 1)
+        	|| (meta == 5 && side == 1)
+        	|| (meta == 4 && side == 2)
+        	|| (meta == 3 && side == 3)
+        	|| (meta == 2 && side == 4)
+        	|| (meta == 1 && side == 5) ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
 
     /**
@@ -276,10 +243,9 @@ public class BlockLever extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
+    public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
-    	int var5 = p_149720_1_.getBlockMetadata(p_149720_2_, p_149720_3_, p_149720_4_);
-        return (var5 & 8) > 0 ? 0xEE39E4 : 0x701B6C;
+    	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xEE39E4 : 0x701B6C;
     }
 
 	public boolean isReplaceable()
@@ -289,10 +255,5 @@ public class BlockLever extends Block
 
 	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 
-	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
-
-	public boolean getTickRandomly()
-	{
-		return false;
-	}
+	public void onBlockAdded(WorldServer world, int x, int y, int z){}
 }

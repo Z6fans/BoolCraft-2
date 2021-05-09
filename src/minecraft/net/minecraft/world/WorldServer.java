@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,13 +49,6 @@ public class WorldServer
     /** Positions to update */
     private final Set<ChunkCoordIntPair> activeChunkSet = new HashSet<ChunkCoordIntPair>();
     
-    /**
-     * Contains the current Linear Congruential Generator seed for block updates. Used with an A value of 3 and a C
-     * value of 0x3c6ef35f, producing a highly planar series of values ill-suited for choosing random blocks in a
-     * 16x128x16 field.
-     */
-    private int updateLCG = (new Random()).nextInt();
-    
     /** The directory in which to save world data. */
     private final File worldDirectory;
 
@@ -75,9 +67,6 @@ public class WorldServer
     private final AnvilChunkLoader currentChunkLoader;
     private final LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
     private final List<Chunk> loadedChunks = new ArrayList<Chunk>();
-
-    /** RNG for World. */
-    private final Random rand = new Random();
     
     /** Total time for this world. */
     private long totalTime;
@@ -324,39 +313,8 @@ public class WorldServer
         while (var3.hasNext())
         {
             ChunkCoordIntPair var4 = (ChunkCoordIntPair)var3.next();
-            int var5 = var4.chunkXPos * 16;
-            int var6 = var4.chunkZPos * 16;
             Chunk chunk = this.provideChunk(var4.chunkXPos, var4.chunkZPos);
             chunk.setLoaded();
-
-            if (this.rand.nextInt(16) == 0)
-            {
-                this.updateLCG = this.updateLCG * 3 + 1013904223;
-            }
-            ExtendedBlockStorage[] storageArray = chunk.getBlockStorageArray();
-
-            for (int i = 0; i < storageArray.length; ++i)
-            {
-                ExtendedBlockStorage storage = storageArray[i];
-
-                if (storage != null && storage.getNeedsRandomTick())
-                {
-                    for (int j = 0; j < 3; ++j)
-                    {
-                        this.updateLCG = this.updateLCG * 3 + 1013904223;
-                        int var13 = this.updateLCG >> 2;
-                        int var14 = var13 & 15;
-                        int var15 = var13 >> 8 & 15;
-                        int var16 = var13 >> 16 & 15;
-                        Block var17 = storage.getBlock(var14, var16, var15);
-
-                        if (var17.getTickRandomly())
-                        {
-                            var17.updateTick(this, var14 + var5, var16 + storage.getYLocation(), var15 + var6);
-                        }
-                    }
-                }
-            }
         }
         
         long worldTime = this.getTotalWorldTime();
@@ -980,9 +938,9 @@ public class WorldServer
         return max;
     }
 
-    public final boolean canPlaceEntityOnSide(Block block, int x, int y, int z, int side)
+    public final boolean canPlaceEntity(Block block, int x, int y, int z)
     {
-        return this.getBlock(x, y, z).isReplaceable() && block.canPlaceBlockOnSide(this, x, y, z, side);
+        return this.getBlock(x, y, z).isReplaceable() && block.canPlaceBlockAt(this, x, y, z);
     }
 
     /**
@@ -1030,25 +988,6 @@ public class WorldServer
         {
             return false;
         }
-    }
-
-    /**
-     * Checks if the block is a solid, normal cube. If the chunk does not exist, or is not loaded, it returns the
-     * boolean parameter
-     */
-    public final boolean isBlockNormalCubeDefault(int x, int y, int z)
-    {
-        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
-        {
-            Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-
-            if (chunk != null && !chunk.isEmpty())
-            {
-                return this.getBlock(x, y, z).isSolid();
-            }
-        }
-        
-        return true;
     }
 
     public final long getTotalWorldTime()

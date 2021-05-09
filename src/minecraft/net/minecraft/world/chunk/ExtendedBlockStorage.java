@@ -15,12 +15,6 @@ public class ExtendedBlockStorage
     private int blockRefCount;
 
     /**
-     * Contains the number of blocks in this block storage's parent chunk that require random ticking. Used to cull the
-     * Chunk from random tick updates for performance reasons.
-     */
-    private int tickRefCount;
-
-    /**
      * Contains the least significant 8 bits of each block ID belonging to this block storage's parent Chunk.
      */
     private byte[] blockLSBArray;
@@ -68,21 +62,11 @@ public class ExtendedBlockStorage
         if (oldBlock != Block.air)
         {
             --this.blockRefCount;
-
-            if (oldBlock.getTickRandomly())
-            {
-                --this.tickRefCount;
-            }
         }
 
         if (newBlock != Block.air)
         {
             ++this.blockRefCount;
-
-            if (newBlock.getTickRandomly())
-            {
-                ++this.tickRefCount;
-            }
         }
 
         int newID = Block.getIdFromBlock(newBlock);
@@ -128,15 +112,6 @@ public class ExtendedBlockStorage
     }
 
     /**
-     * Returns whether or not this block storage's Chunk will require random ticking, used to avoid looping through
-     * random block ticks when there are no blocks that would randomly tick.
-     */
-    public boolean getNeedsRandomTick()
-    {
-        return this.tickRefCount > 0;
-    }
-
-    /**
      * Returns the Y location of this ExtendedBlockStorage.
      */
     public int getYLocation()
@@ -147,7 +122,6 @@ public class ExtendedBlockStorage
     public void removeInvalidBlocks()
     {
         this.blockRefCount = 0;
-        this.tickRefCount = 0;
 
         for (int var1 = 0; var1 < 16; ++var1)
         {
@@ -160,11 +134,6 @@ public class ExtendedBlockStorage
                     if (var4 != Block.air)
                     {
                         ++this.blockRefCount;
-
-                        if (var4.getTickRandomly())
-                        {
-                            ++this.tickRefCount;
-                        }
                     }
                 }
             }

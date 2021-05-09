@@ -10,34 +10,7 @@ public class BlockRedstoneTorch extends Block
 {
     public void onBlockAdded(WorldServer world, int x, int y, int z)
     {
-    	int lit = world.getBlockMetadata(x, y, z) & 8;
-        if ((world.getBlockMetadata(x, y, z) & 7) == 0)
-        {
-        	if (world.isBlockNormalCubeDefault(x - 1, y, z))
-            {
-                world.setBlockMetadataWithNotify(x, y, z, 1 | lit, false);
-            }
-            else if (world.isBlockNormalCubeDefault(x + 1, y, z))
-            {
-                world.setBlockMetadataWithNotify(x, y, z, 2 | lit, false);
-            }
-            else if (world.isBlockNormalCubeDefault(x, y, z - 1))
-            {
-                world.setBlockMetadataWithNotify(x, y, z, 3 | lit, false);
-            }
-            else if (world.isBlockNormalCubeDefault(x, y, z + 1))
-            {
-                world.setBlockMetadataWithNotify(x, y, z, 4 | lit, false);
-            }
-            else if (world.isBlockNormalCubeDefault(x, y - 1, z))
-            {
-                world.setBlockMetadataWithNotify(x, y, z, 5 | lit, false);
-            }
-
-            if (!this.canPlaceBlockAt(world, x, y, z) && world.getBlock(x, y, z) == this) world.setBlock(x, y, z, Block.air, 0);
-        }
-
-        if ((world.getBlockMetadata(x, y, z) & 8) > 0)
+    	if ((world.getBlockMetadata(x, y, z) & 8) > 0)
         {
             world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
             world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
@@ -50,7 +23,7 @@ public class BlockRedstoneTorch extends Block
 
     public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
     {
-        if ((world.getBlockMetadata(x, y, z) & 8) > 0)
+        if ((meta & 8) > 0)
         {
             world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
             world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
@@ -64,19 +37,22 @@ public class BlockRedstoneTorch extends Block
     public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
-    	int lit = world.getBlockMetadata(x, y, z) & 8;
         return (meta == 5 && side == 1)
         	|| (meta == 3 && side == 3)
         	|| (meta == 4 && side == 2)
         	|| (meta == 1 && side == 5)
         	|| (meta == 2 && side == 4) 
-        	|| lit == 0 ? 0 : 15;
+        	|| (world.getBlockMetadata(x, y, z) & 8) == 0 ? 0 : 15;
     }
 
     private boolean isGettingPower(WorldServer world, int x, int y, int z)
     {
         int meta = world.getBlockMetadata(x, y, z) & 7;
-        return meta == 5 && world.getIndirectPowerOutput(x, y - 1, z, 0) ? true : (meta == 3 && world.getIndirectPowerOutput(x, y, z - 1, 2) ? true : (meta == 4 && world.getIndirectPowerOutput(x, y, z + 1, 3) ? true : (meta == 1 && world.getIndirectPowerOutput(x - 1, y, z, 4) ? true : meta == 2 && world.getIndirectPowerOutput(x + 1, y, z, 5))));
+        return meta == 5 && world.getIndirectPowerOutput(x, y - 1, z, 0)
+        	|| meta == 3 && world.getIndirectPowerOutput(x, y, z - 1, 2)
+        	|| meta == 4 && world.getIndirectPowerOutput(x, y, z + 1, 3)
+        	|| meta == 1 && world.getIndirectPowerOutput(x - 1, y, z, 4)
+        	|| meta == 2 && world.getIndirectPowerOutput(x + 1, y, z, 5);
     }
 
     /**
@@ -84,47 +60,26 @@ public class BlockRedstoneTorch extends Block
      */
     public void updateTick(WorldServer world, int x, int y, int z)
     {
-        boolean powered = this.isGettingPower(world, x, y, z);
-        int meta = world.getBlockMetadata(x, y, z) & 7;
-
-        if ((world.getBlockMetadata(x, y, z) & 8) > 0)
-        {
-            if (powered)
-            {
-                world.setBlockMetadataWithNotify(x, y, z, meta, true);
-                world.notifyBlocksOfNeighborChange(x, y, z, this);
-            }
-        }
-        else if (!powered)
-        {
-            world.setBlockMetadataWithNotify(x, y, z, meta | 8, true);
-            world.notifyBlocksOfNeighborChange(x, y, z, this);
-        }
+    	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8), true);
+        world.notifyBlocksOfNeighborChange(x, y, z, this);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
     {
-    	if (this.canPlaceBlockAt(world, x, y, z))
-        {
-            int meta = world.getBlockMetadata(x, y, z) & 7;
+    	int meta = world.getBlockMetadata(x, y, z) & 7;
 
-            if (  (!world.isBlockNormalCubeDefault(x - 1, y, z) && meta == 1)
-               || (!world.isBlockNormalCubeDefault(x + 1, y, z) && meta == 2)
-               || (!world.isBlockNormalCubeDefault(x, y, z - 1) && meta == 3)
-               || (!world.isBlockNormalCubeDefault(x, y, z + 1) && meta == 4)
-               || (!world.isBlockNormalCubeDefault(x, y - 1, z) && meta == 5))
-            {
-                world.setBlock(x, y, z, Block.air, 0);
-            }
-            else
-            {
-            	if (((world.getBlockMetadata(x, y, z) & 8) > 0) ^ !this.isGettingPower(world, x, y, z)) world.scheduleBlockUpdate(x, y, z, this, 2);
-            }
+        if (  (!world.getBlock(x - 1, y, z).isSolid() && meta == 1)
+           || (!world.getBlock(x + 1, y, z).isSolid() && meta == 2)
+           || (!world.getBlock(x, y, z - 1).isSolid() && meta == 3)
+           || (!world.getBlock(x, y, z + 1).isSolid() && meta == 4)
+           || (!world.getBlock(x, y - 1, z).isSolid() && meta == 5))
+        {
+            world.setBlock(x, y, z, Block.air, 0);
         }
-    	else if (world.getBlock(x, y, z) == this)
-    	{
-    		world.setBlock(x, y, z, Block.air, 0);
-    	}
+        else
+        {
+        	if (((world.getBlockMetadata(x, y, z) & 8) == 0) ^ this.isGettingPower(world, x, y, z)) world.scheduleBlockUpdate(x, y, z, this, 2);
+        }
     }
 
     public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
@@ -155,41 +110,45 @@ public class BlockRedstoneTorch extends Block
         return 12;
     }
 
-    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
+    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return world.isBlockNormalCubeDefault(x - 1, y, z) || world.isBlockNormalCubeDefault(x + 1, y, z) || world.isBlockNormalCubeDefault(x, y, z - 1) || world.isBlockNormalCubeDefault(x, y, z + 1) || world.getBlock(x, y - 1, z).isSolid();
+        return world.getBlock(x - 1, y, z).isSolid()
+        	|| world.getBlock(x + 1, y, z).isSolid()
+        	|| world.getBlock(x, y, z - 1).isSolid()
+        	|| world.getBlock(x, y, z + 1).isSolid()
+        	|| world.getBlock(x, y - 1, z).isSolid();
     }
 
     public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
     {
-        int var10 = 0;
-
-        if (side == 1 && world.isBlockNormalCubeDefault(x, y - 1, z))
+        int[] xOff = {0, 0, 0, 0, -1, 1};
+    	int[] yOff = {-1, 1, 0, 0, 0, 0};
+    	int[] zOff = {0, 0, -1, 1, 0, 0};
+        
+        if(side != 0 && world.getBlock(x - xOff[side], y - yOff[side], z - zOff[side]).isSolid())
         {
-            var10 = 5;
+        	return ((6 - side) % 6) | 8;
         }
-
-        if (side == 2 && world.isBlockNormalCubeDefault(x, y, z + 1))
+        else if (world.getBlock(x - 1, y, z).isSolid())
         {
-            var10 = 4;
+            return 9;
         }
-
-        if (side == 3 && world.isBlockNormalCubeDefault(x, y, z - 1))
+        else if (world.getBlock(x + 1, y, z).isSolid())
         {
-            var10 = 3;
+            return 10;
         }
-
-        if (side == 4 && world.isBlockNormalCubeDefault(x + 1, y, z))
+        else if (world.getBlock(x, y, z - 1).isSolid())
         {
-            var10 = 2;
+            return 11;
         }
-
-        if (side == 5 && world.isBlockNormalCubeDefault(x - 1, y, z))
+        else if (world.getBlock(x, y, z + 1).isSolid())
         {
-            var10 = 1;
+            return 12;
         }
-
-        return var10 | 8;
+        else
+        {
+            return 13;
+        }
     }
 
     public MovingObjectPosition collisionRayTrace(WorldClient world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
@@ -249,11 +208,6 @@ public class BlockRedstoneTorch extends Block
 	}
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
-	}
-
-	public boolean getTickRandomly()
 	{
 		return false;
 	}

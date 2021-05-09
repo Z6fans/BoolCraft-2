@@ -4,34 +4,35 @@ import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
 
-public class BlockStone extends Block {
+public class BlockStone extends Block
+{
 	
 	public BlockStone()
     {
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     }
 
-	public boolean isSolid()
-	{
-		return true;
-	}
-
 	public boolean isReplaceable()
 	{
 		return false;
 	}
-	
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(int x, int y, int z)
-    {
-        return this.generateCubicBoundingBox(x, y, z);
-    }
+
+	public boolean isSolid()
+	{
+		return true;
+	}
 
 	public int getRenderType()
 	{
 		return 0;
 	}
 	
-	public int colorMultiplier(WorldClient p_149720_1_, int x, int y, int z)
+	public AxisAlignedBB getCollisionBoundingBoxFromPool(int x, int y, int z)
+    {
+        return this.generateCubicBoundingBox(x, y, z);
+    }
+	
+	public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
     	return 0;
     }
@@ -67,10 +68,5 @@ public class BlockStone extends Block {
 
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
-	public void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_){}
-
-	public boolean getTickRandomly()
-	{
-		return false;
-	}
+	public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta){}
 }

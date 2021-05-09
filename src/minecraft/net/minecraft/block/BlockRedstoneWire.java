@@ -52,7 +52,7 @@ public class BlockRedstoneWire extends Block
         return (int)(0x39 * var12) << 16 | (int)(0xEE * var12) << 8 | (int)(0xEE * var12);
     }
 
-    protected boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
+    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
         return world.getBlock(x, y - 1, z).isSolid();
     }
@@ -365,9 +365,4 @@ public class BlockRedstoneWire extends Block
 	}
 
 	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
-
-	public boolean getTickRandomly()
-	{
-		return false;
-	}
 }
