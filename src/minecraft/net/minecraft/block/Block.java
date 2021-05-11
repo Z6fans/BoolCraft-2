@@ -1,7 +1,5 @@
 package net.minecraft.block;
 
-import java.util.List;
-
 import com.google.common.collect.HashBiMap;
 
 import net.minecraft.client.WorldClient;
@@ -60,16 +58,6 @@ public abstract class Block
         this.maxX = (double)maxXCoord;
         this.maxY = (double)maxYCoord;
         this.maxZ = (double)maxZCoord;
-    }
-
-    public final void addCollisionBoxesToList(int x, int y, int z, AxisAlignedBB otherAABB, List<AxisAlignedBB> list)
-    {
-        AxisAlignedBB thisAABB = this.getCollisionBoundingBoxFromPool(x, y, z);
-
-        if (thisAABB != null && otherAABB.intersectsWith(thisAABB))
-        {
-            list.add(thisAABB);
-        }
     }
     
     public final AxisAlignedBB generateCubicBoundingBox(int x, int y, int z)
@@ -237,12 +225,6 @@ public abstract class Block
      * The type of render function that is called for this block
      */
     public abstract int getRenderType();
-
-    /**
-     * Returns a bounding box from the pool of bounding boxes (this means this box can change after the pool has been
-     * cleared to be reused)
-     */
-    public abstract AxisAlignedBB getCollisionBoundingBoxFromPool(int x, int y, int z);
 
     /**
      * Ticks the block if it's been scheduled

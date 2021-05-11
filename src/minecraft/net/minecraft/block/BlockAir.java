@@ -1,7 +1,6 @@
 package net.minecraft.block;
 
 import net.minecraft.client.WorldClient;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
 
 public class BlockAir extends Block
@@ -25,11 +24,6 @@ public class BlockAir extends Block
     public int getRenderType()
     {
         return -1;
-    }
-
-    public AxisAlignedBB getCollisionBoundingBoxFromPool(int x, int y, int z)
-    {
-        return null;
     }
 
 	public int colorMultiplier(WorldClient world, int x, int y, int z)
