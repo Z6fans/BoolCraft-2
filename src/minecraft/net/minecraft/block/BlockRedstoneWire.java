@@ -1,6 +1,7 @@
 package net.minecraft.block;
 
 import net.minecraft.client.WorldClient;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
 
 public class BlockRedstoneWire extends Block
@@ -10,6 +11,15 @@ public class BlockRedstoneWire extends Block
     public BlockRedstoneWire()
     {
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.0625F, 1.0F);
+    }
+
+    /**
+     * Returns a bounding box from the pool of bounding boxes (this means this box can change after the pool has been
+     * cleared to be reused)
+     */
+    public AxisAlignedBB getCollisionBoundingBoxFromPool(int p_149668_2_, int p_149668_3_, int p_149668_4_)
+    {
+        return null;
     }
     
     public boolean isSolid()
@@ -29,10 +39,17 @@ public class BlockRedstoneWire extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldClient world, int x, int y, int z)
+    public int colorMultiplier(WorldClient p_149720_1_, int p_149720_2_, int p_149720_3_, int p_149720_4_)
     {
-    	int scale[] = {0, 136, 181, 204, 218, 227, 233, 238, 242, 245, 247, 249, 251, 253, 254, 255};
-        return 0x101 * scale[world.getBlockMetadata(x, y, z)];
+        int var6 = p_149720_1_.getBlockMetadata(p_149720_2_, p_149720_3_, p_149720_4_);
+        float var11 = (float)var6 / 15.0F;
+        float var12 = var11 * 0.6F + 0.4F;
+
+        if (var6 == 0)
+        {
+            var12 = 0.3F;
+        }
+        return (int)(0x39 * var12) << 16 | (int)(0xEE * var12) << 8 | (int)(0xEE * var12);
     }
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
@@ -40,7 +57,7 @@ public class BlockRedstoneWire extends Block
         return world.getBlock(x, y - 1, z).isSolid();
     }
 
-    private void computeMetadata(WorldServer world, int x, int y, int z)
+    private void func_150177_e(WorldServer world, int x, int y, int z)
     {
         int prevPower = world.getBlockMetadata(x, y, z);
         int currentPower = this.maxRedstonePowerAt(world, x, y, z, 0);
@@ -114,7 +131,13 @@ public class BlockRedstoneWire extends Block
         if (prevPower != currentPower)
         {
             world.setBlockMetadataWithNotify(x, y, z, currentPower, false);
-            this.notifyNeighbors(world, x, y, z);
+            world.notifyBlocksOfNeighborChange(x, y, z, this);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
         }
     }
 
@@ -130,89 +153,123 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private void propagateSignal(WorldServer world, int x, int y, int z)
+    private void func_150172_m(WorldServer world, int x, int y, int z)
     {
         if (world.getBlock(x, y, z) == this)
         {
-        	this.notifyNeighbors(world, x - 1, y, z);
-            this.notifyNeighbors(world, x + 1, y, z);
-            this.notifyNeighbors(world, x, y, z - 1);
-            this.notifyNeighbors(world, x, y, z + 1);
-
-            if (world.getBlock(x - 1, y, z).isSolid())
-            {
-                this.notifyNeighbors(world, x - 1, y + 1, z);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x - 1, y - 1, z);
-            }
-
-            if (world.getBlock(x + 1, y, z).isSolid())
-            {
-                this.notifyNeighbors(world, x + 1, y + 1, z);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x + 1, y - 1, z);
-            }
-
-            if (world.getBlock(x, y, z - 1).isSolid())
-            {
-                this.notifyNeighbors(world, x, y + 1, z - 1);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x, y - 1, z - 1);
-            }
-
-            if (world.getBlock(x, y, z + 1).isSolid())
-            {
-                this.notifyNeighbors(world, x, y + 1, z + 1);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x, y - 1, z + 1);
-            }
+            world.notifyBlocksOfNeighborChange(x, y, z, this);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
         }
     }
-    
-    private void notifyNeighbors(WorldServer world, int x, int y, int z)
+
+    public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_)
     {
-    	world.notifyBlocksOfNeighborChange(x, y, z, this);
-        world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-        world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+    	this.func_150177_e(p_149726_1_, p_149726_2_, p_149726_3_, p_149726_4_);
+        p_149726_1_.notifyBlocksOfNeighborChange(p_149726_2_, p_149726_3_ + 1, p_149726_4_, this);
+        p_149726_1_.notifyBlocksOfNeighborChange(p_149726_2_, p_149726_3_ - 1, p_149726_4_, this);
+        this.func_150172_m(p_149726_1_, p_149726_2_ - 1, p_149726_3_, p_149726_4_);
+        this.func_150172_m(p_149726_1_, p_149726_2_ + 1, p_149726_3_, p_149726_4_);
+        this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_, p_149726_4_ - 1);
+        this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_, p_149726_4_ + 1);
+
+        if (p_149726_1_.getBlock(p_149726_2_ - 1, p_149726_3_, p_149726_4_).isSolid())
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_ - 1, p_149726_3_ + 1, p_149726_4_);
+        }
+        else
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_ - 1, p_149726_3_ - 1, p_149726_4_);
+        }
+
+        if (p_149726_1_.getBlock(p_149726_2_ + 1, p_149726_3_, p_149726_4_).isSolid())
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_ + 1, p_149726_3_ + 1, p_149726_4_);
+        }
+        else
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_ + 1, p_149726_3_ - 1, p_149726_4_);
+        }
+
+        if (p_149726_1_.getBlock(p_149726_2_, p_149726_3_, p_149726_4_ - 1).isSolid())
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_ + 1, p_149726_4_ - 1);
+        }
+        else
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_ - 1, p_149726_4_ - 1);
+        }
+
+        if (p_149726_1_.getBlock(p_149726_2_, p_149726_3_, p_149726_4_ + 1).isSolid())
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_ + 1, p_149726_4_ + 1);
+        }
+        else
+        {
+            this.func_150172_m(p_149726_1_, p_149726_2_, p_149726_3_ - 1, p_149726_4_ + 1);
+        }
     }
 
-    public void onBlockAdded(WorldServer world, int x, int y, int z)
+    public void breakBlock(WorldServer p_149749_1_, int p_149749_2_, int p_149749_3_, int p_149749_4_, Block p_149749_5_, int p_149749_6_)
     {
-    	this.computeMetadata(world, x, y, z);
-        world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        this.propagateSignal(world, x, y, z);
-    }
+    	p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_ + 1, p_149749_4_, this);
+        p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_ - 1, p_149749_4_, this);
+        p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_ + 1, p_149749_3_, p_149749_4_, this);
+        p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_ - 1, p_149749_3_, p_149749_4_, this);
+        p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_, p_149749_4_ + 1, this);
+        p_149749_1_.notifyBlocksOfNeighborChange(p_149749_2_, p_149749_3_, p_149749_4_ - 1, this);
+        this.func_150177_e(p_149749_1_, p_149749_2_, p_149749_3_, p_149749_4_);
+        this.func_150172_m(p_149749_1_, p_149749_2_ - 1, p_149749_3_, p_149749_4_);
+        this.func_150172_m(p_149749_1_, p_149749_2_ + 1, p_149749_3_, p_149749_4_);
+        this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_, p_149749_4_ - 1);
+        this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_, p_149749_4_ + 1);
 
-    public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
-    {
-    	world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-        this.computeMetadata(world, x, y, z);
-        this.propagateSignal(world, x, y, z);
+        if (p_149749_1_.getBlock(p_149749_2_ - 1, p_149749_3_, p_149749_4_).isSolid())
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_ - 1, p_149749_3_ + 1, p_149749_4_);
+        }
+        else
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_ - 1, p_149749_3_ - 1, p_149749_4_);
+        }
+
+        if (p_149749_1_.getBlock(p_149749_2_ + 1, p_149749_3_, p_149749_4_).isSolid())
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_ + 1, p_149749_3_ + 1, p_149749_4_);
+        }
+        else
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_ + 1, p_149749_3_ - 1, p_149749_4_);
+        }
+
+        if (p_149749_1_.getBlock(p_149749_2_, p_149749_3_, p_149749_4_ - 1).isSolid())
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_ + 1, p_149749_4_ - 1);
+        }
+        else
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_ - 1, p_149749_4_ - 1);
+        }
+
+        if (p_149749_1_.getBlock(p_149749_2_, p_149749_3_, p_149749_4_ + 1).isSolid())
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_ + 1, p_149749_4_ + 1);
+        }
+        else
+        {
+            this.func_150172_m(p_149749_1_, p_149749_2_, p_149749_3_ - 1, p_149749_4_ + 1);
+        }
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
     {
     	if (this.canPlaceBlockAt(world, x, y, z))
         {
-            this.computeMetadata(world, x, y, z);
+            this.func_150177_e(world, x, y, z);
         }
         else
         {
@@ -220,9 +277,9 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingStrongPower(WorldServer p_149748_1_, int p_149748_2_, int p_149748_3_, int p_149748_4_, int p_149748_5_)
     {
-        return this.isProvidingWeakPower(world, x, y, z, side);
+        return this.isCheckingForPower ? 0 : this.isProvidingWeakPower(p_149748_1_, p_149748_2_, p_149748_3_, p_149748_4_, p_149748_5_);
     }
 
     public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
@@ -233,32 +290,47 @@ public class BlockRedstoneWire extends Block
         }
         else
         {
-            int meta = world.getBlockMetadata(x, y, z);
+            int var6 = world.getBlockMetadata(x, y, z);
 
-            if (meta == 0)
+            if (var6 == 0)
             {
                 return 0;
             }
             else if (side == 1)
             {
-                return meta;
+                return var6;
             }
             else
             {
-                boolean xm = shouldConnect(world, x - 1, y, z, true) || !world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y - 1, z, false);
-                boolean xp = shouldConnect(world, x + 1, y, z, true) || !world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y - 1, z, false);
-                boolean zm = shouldConnect(world, x, y, z - 1, true) || !world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y - 1, z - 1, false);
-                boolean zp = shouldConnect(world, x, y, z + 1, true) || !world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y - 1, z + 1, false);
+                boolean var7 = shouldConnect(world, x - 1, y, z, true) || !world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y - 1, z, false);
+                boolean var8 = shouldConnect(world, x + 1, y, z, true) || !world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y - 1, z, false);
+                boolean var9 = shouldConnect(world, x, y, z - 1, true) || !world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y - 1, z - 1, false);
+                boolean var10 = shouldConnect(world, x, y, z + 1, true) || !world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y - 1, z + 1, false);
 
                 if (!world.getBlock(x, y + 1, z).isSolid())
                 {
-                    xm |= world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y + 1, z, false);
-                    xp |= world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y + 1, z, false);
-                    zm |= world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y + 1, z - 1, false);
-                    zp |= world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y + 1, z + 1, false);
+                    if (world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y + 1, z, false))
+                    {
+                        var7 = true;
+                    }
+
+                    if (world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y + 1, z, false))
+                    {
+                        var8 = true;
+                    }
+
+                    if (world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y + 1, z - 1, false))
+                    {
+                        var9 = true;
+                    }
+
+                    if (world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y + 1, z + 1, false))
+                    {
+                        var10 = true;
+                    }
                 }
 
-                return !zm && !xp && !xm && !zp && side >= 2 && side <= 5 ? meta : (side == 2 && zm && !xm && !xp ? meta : (side == 3 && zp && !xm && !xp ? meta : (side == 4 && xm && !zm && !zp ? meta : (side == 5 && xp && !zm && !zp ? meta : 0))));
+                return !var9 && !var8 && !var7 && !var10 && side >= 2 && side <= 5 ? var6 : (side == 2 && var9 && !var7 && !var8 ? var6 : (side == 3 && var10 && !var7 && !var8 ? var6 : (side == 4 && var7 && !var9 && !var10 ? var6 : (side == 5 && var8 && !var9 && !var10 ? var6 : 0))));
             }
         }
     }

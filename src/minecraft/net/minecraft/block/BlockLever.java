@@ -1,6 +1,7 @@
 package net.minecraft.block;
 
 import net.minecraft.client.WorldClient;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldServer;
@@ -10,6 +11,15 @@ public class BlockLever extends Block
     public boolean isSolid()
     {
         return false;
+    }
+
+    /**
+     * Returns a bounding box from the pool of bounding boxes (this means this box can change after the pool has been
+     * cleared to be reused)
+     */
+    public AxisAlignedBB getCollisionBoundingBoxFromPool(int p_149668_2_, int p_149668_3_, int p_149668_4_)
+    {
+        return null;
     }
 
     /**
@@ -75,7 +85,9 @@ public class BlockLever extends Block
          || !world.getBlock(x, y, z - 1).isSolid() && meta == 3
          || !world.getBlock(x, y, z + 1).isSolid() && meta == 4
          || !world.getBlock(x, y - 1, z).isSolid() && meta == 5
-         || !world.getBlock(x, y + 1, z).isSolid() && meta == 0)
+         || !world.getBlock(x, y - 1, z).isSolid() && meta == 6
+         || !world.getBlock(x, y + 1, z).isSolid() && meta == 0
+         || !world.getBlock(x, y + 1, z).isSolid() && meta == 7)
         {
             world.setBlock(x, y, z, Block.air, 0);
         }
@@ -88,6 +100,10 @@ public class BlockLever extends Block
         float d = 0.1875F;
 
         if (meta == 5)
+        {
+            this.setBlockBounds(0.5F - d, 0.0F, 0.5F - d, 0.5F + d, d, 0.5F + d);
+        }
+        else if (meta == 6)
         {
             this.setBlockBounds(0.5F - d, 0.0F, 0.5F - d, 0.5F + d, d, 0.5F + d);
         }
@@ -108,6 +124,10 @@ public class BlockLever extends Block
             this.setBlockBounds(0.0F, 0.5F - d, 0.5F - d, d, 0.5F + d, 0.5F + d);
         }
         else if (meta == 0)
+        {
+            this.setBlockBounds(0.5F - d, 1.0F - d, 0.5F - d, 0.5F + d, 1.0F, 0.5F + d);
+        }
+        else if (meta == 7)
         {
             this.setBlockBounds(0.5F - d, 1.0F - d, 0.5F - d, 0.5F + d, 1.0F, 0.5F + d);
         }
@@ -141,13 +161,16 @@ public class BlockLever extends Block
         {
             world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
         }
-        else if (orientation == 5)
+        else if (orientation != 5 && orientation != 6)
+        {
+            if (orientation == 0 || orientation == 7)
+            {
+                world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+            }
+        }
+        else
         {
             world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        }
-        else if (orientation == 0)
-        {
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
         }
         
         return true;
@@ -176,13 +199,16 @@ public class BlockLever extends Block
             {
                 world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
             }
-            else if (side == 5)
+            else if (side != 5 && side != 6)
+            {
+                if (side == 0 || side == 7)
+                {
+                    world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+                }
+            }
+            else
             {
                 world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-            }
-            else if (side == 0)
-            {
-                world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
             }
         }
     }
@@ -196,6 +222,8 @@ public class BlockLever extends Block
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
         return (meta == 0 && side == 0)
+        	|| (meta == 7 && side == 0)
+        	|| (meta == 6 && side == 1)
         	|| (meta == 5 && side == 1)
         	|| (meta == 4 && side == 2)
         	|| (meta == 3 && side == 3)

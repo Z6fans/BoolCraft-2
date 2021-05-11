@@ -699,11 +699,18 @@ public class EntityPlayer
             {
             	for (int y = miny - 1; y < maxy; ++y)
                 {
-                    if (this.worldObj.getBlock(x, y, z) == Block.stone)
+                    Block block;
+
+                    if (x >= -30000000 && x < 30000000 && z >= -30000000 && z < 30000000)
                     {
-                    	AxisAlignedBB thisAABB = AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1);
-                        if (aabb.intersectsWith(thisAABB)) collidingBoundingBoxes.add(thisAABB);
+                        block = this.worldObj.getBlock(x, y, z);
                     }
+                    else
+                    {
+                        block = Block.stone;
+                    }
+
+                    block.addCollisionBoxesToList(x, y, z, aabb, collidingBoundingBoxes);
                 }
             }
         }
