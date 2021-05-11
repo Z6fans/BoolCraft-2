@@ -1,7 +1,6 @@
 package net.minecraft.block;
 
 import net.minecraft.client.WorldClient;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
 
 public class BlockStone extends Block
@@ -26,11 +25,6 @@ public class BlockStone extends Block
 	{
 		return 0;
 	}
-	
-	public AxisAlignedBB getCollisionBoundingBoxFromPool(int x, int y, int z)
-    {
-        return this.generateCubicBoundingBox(x, y, z);
-    }
 	
 	public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
