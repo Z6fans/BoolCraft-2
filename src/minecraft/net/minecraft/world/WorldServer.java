@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -1188,8 +1189,7 @@ public class WorldServer
     private class ChunkUpdateTracker
     {
         private final ChunkCoordIntPair chunkLocation;
-        private short[] tilesToUpdate = new short[64];
-        private int numberOfTilesToUpdate;
+        private final LinkedHashSet<Integer> updates = new LinkedHashSet<Integer>();
 
         private ChunkUpdateTracker(int chunkX, int chunkZ)
         {
@@ -1199,25 +1199,8 @@ public class WorldServer
 
         private void markBlockForUpdate(int localX, int localY, int localZ)
         {
-            if (this.numberOfTilesToUpdate == 0)
-            {
-                WorldServer.this.chunkWatcherWithPlayers.add(this);
-            }
-
-            if (this.numberOfTilesToUpdate < 64)
-            {
-                short localKey = (short)(localX << 12 | localZ << 8 | localY);
-
-                for (int i = 0; i < this.numberOfTilesToUpdate; ++i)
-                {
-                    if (this.tilesToUpdate[i] == localKey)
-                    {
-                        return;
-                    }
-                }
-
-                this.tilesToUpdate[this.numberOfTilesToUpdate++] = localKey;
-            }
+            if (this.updates.size() == 0) WorldServer.this.chunkWatcherWithPlayers.add(this);
+            this.updates.add(localX << 12 | localZ << 8 | localY);
         }
 
         private void sendChunkUpdate()
@@ -1227,18 +1210,17 @@ public class WorldServer
         		Chunk chunk = WorldServer.this.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
         		int baseX = chunk.xPosition * 16;
                 int baseZ = chunk.zPosition * 16;
-
-                for (int i = 0; i < this.numberOfTilesToUpdate; ++i)
+                
+                for (int localKey : updates)
                 {
-                    short localKey = this.tilesToUpdate[i];
-                    int localX = localKey >> 12 & 15;
+                	int localX = localKey >> 12 & 15;
                     int localZ = localKey >> 8 & 15;
                     int localY = localKey & 255;
                     WorldServer.this.minecraft.worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
                 }
         	}
 
-            this.numberOfTilesToUpdate = 0;
+            updates.clear();
         }
     }
 }
