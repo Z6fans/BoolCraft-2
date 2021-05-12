@@ -1,13 +1,9 @@
 package net.minecraft.util;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 
 public class KeyBinding
 {
-    private static final List<KeyBinding> keybindArray = new ArrayList<KeyBinding>();
     private static final HashMap<Integer, KeyBinding> map = new HashMap<Integer, KeyBinding>();
     public static final KeyBinding keyBindForward = new KeyBinding(17);
     public static final KeyBinding keyBindLeft = new KeyBinding(30);
@@ -50,19 +46,15 @@ public class KeyBinding
 
     public static void unPressAllKeys()
     {
-        Iterator<KeyBinding> iter = keybindArray.iterator();
-
-        while (iter.hasNext())
+        for (KeyBinding binding : map.values())
         {
-            KeyBinding binding = iter.next();
-            binding.presses = 0;
+        	binding.presses = 0;
             binding.pressed = false;
         }
     }
 
     private KeyBinding(int key)
     {
-        keybindArray.add(this);
         map.put(key, this);
     }
 

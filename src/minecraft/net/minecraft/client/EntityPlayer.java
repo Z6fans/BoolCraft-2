@@ -23,7 +23,6 @@ public class EntityPlayer
     private double posZ;
 	private final WorldClient worldObj;
 	private final WorldServer worldServer;
-	private final Minecraft minecraft;
     
     private double oldPosX;
 
@@ -80,18 +79,16 @@ public class EntityPlayer
      */
     private double lastTickPosZ;
 
-    public EntityPlayer(WorldClient world, Minecraft mc, WorldServer worldServ)
+    public EntityPlayer(WorldClient world, WorldServer worldServ)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldObj = world;
         this.worldServer = worldServ;
-        this.minecraft = mc;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
         this.prevPosY = this.posY = this.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
-        this.minecraft.displayGuiScreenNull();
         
         this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
         

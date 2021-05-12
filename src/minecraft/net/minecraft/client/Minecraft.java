@@ -47,14 +47,10 @@ public class Minecraft
      * changing the viewpoint mid-render.
      */
     public EntityPlayer renderViewEntity;
-    private boolean isGamePaused;
 
     /** The GuiScreen that's being displayed at the moment. */
     public GuiScreen currentScreen;
     private EntityRenderer entityRenderer;
-
-    /** Mouse left click counter */
-    private int leftClickCounter;
 
     /** The ray trace hit that the mouse is over. */
     private MovingObjectPosition objectMouseOver;
@@ -66,13 +62,13 @@ public class Minecraft
      * When you place a block, it's set to 6, decremented once per tick, when it's 0, you can place another block.
      */
     private int rightClickDelayTimer;
+    private int leftClickDelayTimer;
 
     /**
      * Does the actual gameplay have focus. If so then mouse and keys will effect the player instead of menus.
      */
     private boolean inGameHasFocus;
     private long systemTime = getSystemTime();
-    private long lastSystemTime = -1L;
 
     /**
      * Set to true to keep the game loop running. Set to false by shutdown() to allow the game loop to exit cleanly.
@@ -85,8 +81,6 @@ public class Minecraft
     private final Block[] mainInventory = {Block.stone, Block.redstone_wire, Block.lever, Block.redstone_torch};
     
     //server section
-
-    private boolean isServerPaused;
     
     /** The server world instance. */
     private WorldServer worldServer;
@@ -105,11 +99,6 @@ public class Minecraft
     private long timeOfLastWarning;
     private long prevTime;
     private long tickTimer;
-    
-    /**
-     * Delays the first damage on the block after the first click on the block
-     */
-    private int blockHitDelay;
     public int currentItem;
     
     /**
@@ -142,59 +131,24 @@ public class Minecraft
      */
     private void displayGuiScreen()
     {
-    	if (this.currentScreen != null)
-        {
-            this.currentScreen.onGuiClosed();
-        }
-
-        this.currentScreen = new GuiScreen();
+    	this.currentScreen = new GuiScreen();
         this.setIngameNotInFocus();
         this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
-    }
-    
-    /**
-     * Sets the argument GuiScreen as the main (topmost visible) screen.
-     */
-    public void displayGuiScreenNull()
-    {
-    	GuiScreen p_147108_1_ = null;
-    	
-        if (this.currentScreen != null)
-        {
-            this.currentScreen.onGuiClosed();
-        }
-
-        if (this.worldClient == null)
-        {
-            p_147108_1_ = new GuiScreen();
-        }
-
-        this.currentScreen = p_147108_1_;
-
-        if (p_147108_1_ != null)
-        {
-            this.setIngameNotInFocus();
-            p_147108_1_.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
-        }
-        else
-        {
-            this.setIngameFocus();
-        }
     }
 
     /**
      * Checks for an OpenGL error. If there is one, prints the error ID and error string.
      */
-    private void checkGLError(String p_71361_1_)
+    private void checkGLError(String description)
     {
-        int var2 = GL11.glGetError();
+        int err = GL11.glGetError();
 
-        if (var2 != 0)
+        if (err != 0)
         {
-            String var3 = GLU.gluErrorString(var2);
+            String errstring = GLU.gluErrorString(err);
             logger.error("########## GL ERROR ##########");
-            logger.error("@ " + p_71361_1_);
-            logger.error(var2 + ": " + var3);
+            logger.error("@ " + description);
+            logger.error(err + ": " + errstring);
         }
     }
 
@@ -285,16 +239,7 @@ public class Minecraft
                         this.shutdown();
                     }
 
-                    if (this.isGamePaused && this.worldClient != null)
-                    {
-                        float tmp = this.timer.renderPartialTicks;
-                        this.timer.updateTimer();
-                        this.timer.renderPartialTicks = tmp;
-                    }
-                    else
-                    {
-                        this.timer.updateTimer();
-                    }
+                    this.timer.updateTimer();
 
                     for (int tick = 0; tick < this.timer.elapsedTicks; ++tick)
                     {
@@ -302,13 +247,13 @@ public class Minecraft
                         {
                             --this.rightClickDelayTimer;
                         }
+                    	
+                    	if (this.leftClickDelayTimer > 0)
+                        {
+                            --this.leftClickDelayTimer;
+                        }
 
                         this.computeMouseOver(1.0F);
-
-                        if (this.currentScreen != null)
-                        {
-                            this.leftClickCounter = 10000;
-                        }
 
                         if (this.currentScreen != null)
                         {
@@ -321,8 +266,7 @@ public class Minecraft
                                 throw new RuntimeException("Updating screen events", t);
                             }
                         }
-
-                        if (this.currentScreen == null)
+                        else
                         {
                             while (Mouse.next())
                             {
@@ -338,30 +282,7 @@ public class Minecraft
                                 {
                                     int mouseScroll = Mouse.getEventDWheel();
 
-                                    if (mouseScroll != 0)
-                                    {
-                                        if (mouseScroll > 0)
-                                        {
-                                            mouseScroll = 1;
-                                        }
-
-                                        if (mouseScroll < 0)
-                                        {
-                                            mouseScroll = -1;
-                                        }
-                                        
-                                        this.currentItem -= mouseScroll;
-                                        
-                                        while (this.currentItem < 0)
-                                        {
-                                        	this.currentItem += 4;
-                                        }
-
-                                        while (this.currentItem >= 4)
-                                        {
-                                            this.currentItem -= 4;
-                                        }
-                                    }
+                                    this.currentItem = (this.currentItem + 4 - (mouseScroll > 0 ? 1 : mouseScroll < 0 ? -1 : 0)) % 4;
 
                                     if (this.currentScreen == null)
                                     {
@@ -373,11 +294,6 @@ public class Minecraft
                                 }
                             }
 
-                            if (this.leftClickCounter > 0)
-                            {
-                                --this.leftClickCounter;
-                            }
-
                             while (Keyboard.next())
                             {
                                 KeyBinding.setKeyBindState(Keyboard.getEventKey(), Keyboard.getEventKeyState());
@@ -385,27 +301,7 @@ public class Minecraft
                                 if (Keyboard.getEventKeyState())
                                 {
                                     KeyBinding.onTick(Keyboard.getEventKey());
-                                }
-
-                                if (this.lastSystemTime > 0L)
-                                {
-                                    if (getSystemTime() - this.lastSystemTime >= 6000L)
-                                    {
-                                        throw new RuntimeException("Manually triggered debug crash", new Throwable());
-                                    }
-
-                                    if (!Keyboard.isKeyDown(46) || !Keyboard.isKeyDown(61))
-                                    {
-                                        this.lastSystemTime = -1L;
-                                    }
-                                }
-                                else if (Keyboard.isKeyDown(46) && Keyboard.isKeyDown(61))
-                                {
-                                    this.lastSystemTime = getSystemTime();
-                                }
-
-                                if (Keyboard.getEventKeyState())
-                                {
+                                    
                                     if (this.currentScreen != null)
                                     {
                                         this.currentScreen.handleKeyboardInput();
@@ -419,82 +315,41 @@ public class Minecraft
 
                             while (KeyBinding.keyBindAttack.isPressed())
                             {
-                            	if (this.leftClickCounter <= 0 && this.objectMouseOver != null)
-                                {
-                            		int x = this.objectMouseOver.blockX;
-                                    int y = this.objectMouseOver.blockY;
-                                    int z = this.objectMouseOver.blockZ;
+                            	this.playerLeftClick();
+                            }
 
-                                    if (!this.worldClient.getBlock(x, y, z).isReplaceable())
-                                    {
-                                        this.worldServer.setBlock(x, y, z, Block.air, 0);
-                                        this.worldClient.setBlock(x, y, z, Block.air, 0);
-                                        this.blockHitDelay = 5;
-                                    }
-                                }
+                            if (KeyBinding.keyBindAttack.getIsKeyPressed() && this.leftClickDelayTimer == 0)
+                            {
+                                this.playerLeftClick();
                             }
 
                             while (KeyBinding.keyBindUseItem.isPressed())
                             {
                                 this.playerRightClick();
                             }
-
+                            
                             if (KeyBinding.keyBindUseItem.getIsKeyPressed() && this.rightClickDelayTimer == 0)
                             {
                                 this.playerRightClick();
-                            }
-
-                            boolean doAttack = this.currentScreen == null && KeyBinding.keyBindAttack.getIsKeyPressed() && this.inGameHasFocus;
-                            
-                            if (!doAttack)
-                            {
-                                this.leftClickCounter = 0;
-                            }
-
-                            if (this.leftClickCounter <= 0)
-                            {
-                                if (doAttack && this.objectMouseOver != null)
-                                {
-                                    int x = this.objectMouseOver.blockX;
-                                    int y = this.objectMouseOver.blockY;
-                                    int z = this.objectMouseOver.blockZ;
-
-                                    if (!this.worldClient.getBlock(x, y, z).isReplaceable())
-                                    {
-                                        if (this.blockHitDelay > 0)
-                                        {
-                                            --this.blockHitDelay;
-                                        }
-                                        else
-                                        {
-                                        	this.worldServer.setBlock(x, y, z, Block.air, 0);
-                                            this.worldClient.setBlock(x, y, z, Block.air, 0);
-                                            this.blockHitDelay = 5;
-                                        }
-                                    }
-                                }
                             }
                         }
 
                         if (this.worldClient != null)
                         {
-                            if (!this.isGamePaused)
+                        	if (this.renderViewEntity == null)
                             {
-                                if (this.renderViewEntity == null)
+                                this.renderViewEntity = this.thePlayer;
+                            }
+                            
+                            if (this.thePlayer != null)
+                            {
+                            	try
                                 {
-                                    this.renderViewEntity = this.thePlayer;
+                            		this.thePlayer.onUpdate();
                                 }
-                                
-                                if (this.thePlayer != null)
+                                catch (Throwable t)
                                 {
-                                	try
-                                    {
-                                		this.thePlayer.onUpdate();
-                                    }
-                                    catch (Throwable t)
-                                    {
-                                        throw new RuntimeException("Ticking entity", t);
-                                    }
+                                    throw new RuntimeException("Ticking entity", t);
                                 }
                             }
                         }
@@ -515,7 +370,6 @@ public class Minecraft
                     this.updateDisplaySize();
                     Thread.yield();
                     this.checkGLError("Post render");
-                    this.isGamePaused = this.serverRunning && this.currentScreen != null;
                 }
                 catch (OutOfMemoryError e)
                 {
@@ -547,42 +401,30 @@ public class Minecraft
                     while (tickTimer > 50L)
                     {
                         tickTimer -= 50L;
-                        
-                        boolean lastPaused = this.isServerPaused;
-                        this.isServerPaused = this.isGamePaused;
 
-                        if (!lastPaused && this.isServerPaused)
+                        ++this.tickCounter;
+
+                        try
                         {
-                            logger.info("Saving and pausing game...");
-                            this.saveAllWorlds();
+                        	this.worldServer.tick();
+                        }
+                        catch (Throwable t)
+                        {
+                            throw new RuntimeException("Exception ticking world", t);
                         }
 
-                        if (!this.isServerPaused)
+                        try
                         {
-                            ++this.tickCounter;
+                        	this.worldServer.updateEntities();
+                        }
+                        catch (Throwable t)
+                        {
+                            throw new RuntimeException("Exception ticking world entities", t);
+                        }
 
-                            try
-                            {
-                            	this.worldServer.tick();
-                            }
-                            catch (Throwable t)
-                            {
-                                throw new RuntimeException("Exception ticking world", t);
-                            }
-
-                            try
-                            {
-                            	this.worldServer.updateEntities();
-                            }
-                            catch (Throwable t)
-                            {
-                                throw new RuntimeException("Exception ticking world entities", t);
-                            }
-
-                            if (this.tickCounter % 900 == 0)
-                            {
-                                this.saveAllWorlds();
-                            }
+                        if (this.tickCounter % 900 == 0)
+                        {
+                            this.saveAllWorlds();
                         }
                     }
             	}
@@ -698,8 +540,6 @@ public class Minecraft
         {
             this.inGameHasFocus = true;
             Mouse.setGrabbed(true);
-            this.displayGuiScreenNull();
-            this.leftClickCounter = 10000;
         }
     }
 
@@ -761,6 +601,24 @@ public class Minecraft
             }
         }
     }
+	
+	private void playerLeftClick()
+	{
+		this.leftClickDelayTimer = 6;
+		
+		if (this.objectMouseOver != null)
+        {
+    		int x = this.objectMouseOver.blockX;
+            int y = this.objectMouseOver.blockY;
+            int z = this.objectMouseOver.blockZ;
+
+            if (!this.worldClient.getBlock(x, y, z).isReplaceable())
+            {
+                this.worldServer.setBlock(x, y, z, Block.air, 0);
+                this.worldClient.setBlock(x, y, z, Block.air, 0);
+            }
+        }
+	}
 
     /**
      * Arguments: World name
@@ -777,9 +635,9 @@ public class Minecraft
             this.worldServer = new WorldServer(this, new File(this.savesDirectory, name));
             logger.info("Preparing start region ");
 
-            for (int x = -192; x <= 192 && this.serverRunning; x += 16)
+            for (int x = -192; x <= 192; x += 16)
             {
-                for (int z = -192; z <= 192 && this.serverRunning; z += 16)
+                for (int z = -192; z <= 192; z += 16)
                 {
                     this.worldServer.loadChunk(x >> 4, z >> 4);
                 }
@@ -796,7 +654,7 @@ public class Minecraft
                 this.renderGlobal.setWorldAndLoadRenderers(this.worldClient);
             }
 
-            this.thePlayer = new EntityPlayer(this.worldClient, this, this.worldServer);
+            this.thePlayer = new EntityPlayer(this.worldClient, this.worldServer);
             this.renderViewEntity = this.thePlayer;
 
             System.gc();
@@ -809,7 +667,9 @@ public class Minecraft
             throw new RuntimeException("Starting integrated server", t);
         }
 
-        this.displayGuiScreenNull();
+        this.currentScreen.onGuiClosed();
+        this.currentScreen = null;
+        this.setIngameFocus();
     }
     
     private void loadWorldNull()

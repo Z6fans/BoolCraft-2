@@ -61,8 +61,6 @@ public class GuiScreen
 
                         if (mouseX >= minX && mouseX <= maxX && id >= 0 && relMouseY >= 0 && id < listLength)
                         {
-                            this.mc.displayGuiScreenNull();
-
                             String worldFolderName = this.worldList.get(id);
 
                             if (worldFolderName == null)
@@ -240,13 +238,7 @@ public class GuiScreen
             {
             	if (this.text.length() > 0)
             	{
-            		this.mc.displayGuiScreenNull();
-
-                    if (this.hasCreatedWorld)
-                    {
-                        return;
-                    }
-
+            		if (this.hasCreatedWorld) return;
                     this.hasCreatedWorld = true;
                     this.mc.launchIntegratedServer(this.newWorldName);
             	}
