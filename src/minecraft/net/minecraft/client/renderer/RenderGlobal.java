@@ -390,7 +390,7 @@ public class RenderGlobal
             	if (wr.quadranceToPlayer(player) > 272.0F)
                 {
             		int var11;
-                    for (var11 = 0; var11 < 2 && (rendererArray[var11] == null || rs.compare(rendererArray[var11], wr) <= 0); ++var11){;}
+                    for (var11 = 0; var11 < 2 && (rendererArray[var11] == null || rs.compare(rendererArray[var11], wr) <= 0); ++var11);
 
                     --var11;
 

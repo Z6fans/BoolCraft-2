@@ -101,23 +101,13 @@ public class AnvilChunkLoader
             
             Chunk chunk = new Chunk(readChunkX, readChunkZ);
             NBTTagList sections = levelTag.getTagList("Sections", 10);
-            ExtendedBlockStorage[] storageArray = new ExtendedBlockStorage[16];
+            byte[][] storageArray = new byte[16][4096];
 
             for (int i = 0; i < sections.tagCount(); ++i)
             {
                 NBTTagCompound section = sections.getCompoundTagAt(i);
                 byte y = section.getByte("Y");
-                ExtendedBlockStorage storage = new ExtendedBlockStorage(y << 4);
-                storage.setBlockLSBArray(section.getByteArray("Blocks"));
-
-                if (section.isTagIdEqual("Add", 7))
-                {
-                    storage.setBlockMSBArray(new NibbleArray(section.getByteArray("Add"), 4));
-                }
-
-                storage.setBlockMetadataArray(new NibbleArray(section.getByteArray("Data"), 4));
-                storage.removeInvalidBlocks();
-                storageArray[y] = storage;
+                storageArray[y] = section.getByteArray("Blocks");
             }
 
             chunk.setStorageArrays(storageArray);
@@ -153,27 +143,18 @@ public class AnvilChunkLoader
             levelTag.setInteger("xPos", chunk.xPosition);
             levelTag.setInteger("zPos", chunk.zPosition);
             levelTag.setLong("LastUpdate", world.getTotalWorldTime());
-            ExtendedBlockStorage[] storageArray = chunk.getBlockStorageArray();
+            byte[][] storageArray = chunk.getBlockStorageArray();
             NBTTagList sectionsTagList = new NBTTagList();
-            ExtendedBlockStorage[] storageArrayClone = storageArray;
-            int storageArraySize = storageArray.length;
 
-            for (int i = 0; i < storageArraySize; ++i)
+            for (int i = 0; i < storageArray.length; ++i)
             {
-                ExtendedBlockStorage storage = storageArrayClone[i];
+                byte[] storage = storageArray[i];
 
                 if (storage != null)
                 {
                     NBTTagCompound sectionTag = new NBTTagCompound();
-                    sectionTag.setByte("Y", (byte)(storage.getYLocation() >> 4 & 255));
-                    sectionTag.setByteArray("Blocks", storage.getBlockLSBArray());
-
-                    if (storage.getBlockMSBArray() != null)
-                    {
-                        sectionTag.setByteArray("Add", storage.getBlockMSBArray().data);
-                    }
-
-                    sectionTag.setByteArray("Data", storage.getMetadataArray().data);
+                    sectionTag.setByte("Y", (byte)(i & 255));
+                    sectionTag.setByteArray("Blocks", storage);
                     sectionsTagList.appendTag(sectionTag);
                 }
             }

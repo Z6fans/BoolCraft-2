@@ -10,7 +10,7 @@ public class Chunk
      * Used to store block IDs, block MSBs, Sky-light maps, Block-light maps, and metadata. Each entry corresponds to a
      * logical segment of 16x16x16 blocks, stacked vertically.
      */
-    private ExtendedBlockStorage[] storageArrays;
+    private byte[][] storageArrays;
 
     /** The x coordinate of the chunk. */
     public final int xPosition;
@@ -26,50 +26,28 @@ public class Chunk
 
     public Chunk(int x, int z)
     {
-        this.storageArrays = new ExtendedBlockStorage[16];
+        this.storageArrays = new byte[16][4096];
         this.xPosition = x;
         this.zPosition = z;
     }
 
     /**
-     * Returns the topmost ExtendedBlockStorage instance for this Chunk that actually contains a block.
-     */
-    public int getTopFilledSegment()
-    {
-        for (int var1 = this.storageArrays.length - 1; var1 >= 0; --var1)
-        {
-            if (this.storageArrays[var1] != null)
-            {
-                return this.storageArrays[var1].getYLocation();
-            }
-        }
-
-        return 0;
-    }
-
-    /**
      * Returns the ExtendedBlockStorage array for this Chunk.
      */
-    public ExtendedBlockStorage[] getBlockStorageArray()
+    public byte[][] getBlockStorageArray()
     {
         return this.storageArrays;
     }
 
-    public Block getBlock(final int x, final int y, final int z)
+    public Block getBlock(int x, int y, int z)
     {
-        Block block = Block.air;
-
         if (y >> 4 < this.storageArrays.length)
         {
-            ExtendedBlockStorage storage = this.storageArrays[y >> 4];
-
-            if (storage != null)
-            {
-                block = storage.getBlock(x, y & 15, z);
-            }
+            byte[] storage = this.storageArrays[y >> 4];
+            if (storage != null) return Block.getBlockById(storage[(y & 15) << 8 | z << 4 | x] & 0xF);
         }
-
-        return block;
+        
+        return Block.air;
     }
 
     /**
@@ -77,60 +55,49 @@ public class Chunk
      */
     public int getBlockMetadata(int x, int y, int z)
     {
-        if (y >> 4 >= this.storageArrays.length)
+        if (y >> 4 < this.storageArrays.length)
         {
-            return 0;
+            byte[] storage = this.storageArrays[y >> 4];
+            if (storage != null) return (storage[(y & 15) << 8 | z << 4 | x] & 0xF0) >> 4;
         }
-        else
-        {
-            ExtendedBlockStorage storage = this.storageArrays[y >> 4];
-            return storage != null ? storage.getExtBlockMetadata(x, y & 15, z) : 0;
-        }
+        
+        return 0;
     }
     
-    public boolean setBlockAndMetaServer(WorldServer world, int localX, int y, int localZ, Block block, int meta)
+    public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block block, int newMeta)
     {
-        Block oldBlock = this.getBlock(localX, y, localZ);
-        int oldMeta = this.getBlockMetadata(localX, y, localZ);
+        Block oldBlock = this.getBlock(x, y, z);
+        int oldMeta = this.getBlockMetadata(x, y, z);
 
-        if (oldBlock == block && oldMeta == meta)
+        if (oldBlock == block && oldMeta == newMeta)
         {
             return false;
         }
         else
         {
-            ExtendedBlockStorage storageArray = this.storageArrays[y >> 4];
+            byte[] storage = this.storageArrays[y >> 4];
 
-            if (storageArray == null)
+            if (storage == null)
             {
                 if (block == Block.air)
                 {
                     return false;
                 }
 
-                storageArray = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4);
+                storage = this.storageArrays[y >> 4] = new byte[4096];
             }
 
-            int trueX = this.xPosition * 16 + localX;
-            int trueZ = this.zPosition * 16 + localZ;
-
-            storageArray.setBlock(localX, y & 15, localZ, block);
+            int trueX = this.xPosition * 16 + x;
+            int trueZ = this.zPosition * 16 + z;
 
             oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
 
-            if (storageArray.getBlock(localX, y & 15, localZ) != block)
-            {
-                return false;
-            }
-            else
-            {
-                storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
+            storage[(y & 15) << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(block) & 0xF));
 
-                block.onBlockAdded(world, trueX, y, trueZ);
+            block.onBlockAdded(world, trueX, y, trueZ);
 
-                this.isModified = true;
-                return true;
-            }
+            this.isModified = true;
+            return true;
         }
     }
 
@@ -139,28 +106,21 @@ public class Chunk
      */
     public boolean setBlockMetadata(int x, int y, int z, int newMeta)
     {
-        ExtendedBlockStorage storage = this.storageArrays[y >> 4];
+        byte[] storage = this.storageArrays[y >> 4];
 
-        if (storage == null)
+        if (storage != null)
         {
-            return false;
-        }
-        else
-        {
-            int oldMeta = storage.getExtBlockMetadata(x, y & 15, z);
+            int oldMeta = (storage[(y & 15) << 8 | z << 4 | x] & 0xF0) >> 4;
 
-            if (oldMeta == newMeta)
-            {
-                return false;
-            }
-            else
+            if (oldMeta != newMeta)
             {
                 this.isModified = true;
-                storage.setExtBlockMetadata(x, y & 15, z, newMeta);
-
+                storage[(y & 15) << 8 | z << 4 | x] = (byte)((storage[y << 8 | z << 4 | x] & 0xF) | ((newMeta & 0xF) << 4));
                 return true;
             }
         }
+        
+        return false;
     }
 
     /**
@@ -189,7 +149,7 @@ public class Chunk
         return new ChunkCoordIntPair(this.xPosition, this.zPosition);
     }
 
-    public void setStorageArrays(ExtendedBlockStorage[] storageArray)
+    public void setStorageArrays(byte[][] storageArray)
     {
         this.storageArrays = storageArray;
     }

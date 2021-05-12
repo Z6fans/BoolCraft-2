@@ -34,8 +34,6 @@ import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.AnvilChunkLoader;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ExtendedBlockStorage;
-import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.ThreadedFileIOBase;
 
 public class WorldServer
@@ -112,6 +110,8 @@ public class WorldServer
     private final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
 
 	private boolean isSpawned = false;
+	
+	private byte[] blankChunkStorage;
 
     public WorldServer(Minecraft mc, File wd)
     {
@@ -148,6 +148,19 @@ public class WorldServer
     	}
         
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
+        
+        this.blankChunkStorage = new byte[4096];
+
+        for (int y = 0; y < 5; ++y)
+        {
+            for (int localX = 0; localX < 16; ++localX)
+            {
+                for (int localZ = 0; localZ < 16; ++localZ)
+                {
+                	this.blankChunkStorage[y << 8 | localZ << 4 | localX] = 1;
+                }
+            }
+        }
     }
     
     /**
@@ -410,10 +423,9 @@ public class WorldServer
                 {
                 	if (!this.playerLoadedChunks.isEmpty())
                     {
-                		ArrayList<Chunk> chunksToSend = new ArrayList<Chunk>();
                         Iterator<ChunkCoordIntPair> chunkIterator = this.playerLoadedChunks.iterator();
 
-                        while (chunkIterator.hasNext() && chunksToSend.size() < 5)
+                        while (chunkIterator.hasNext())
                         {
                             ChunkCoordIntPair chunkCoords = (ChunkCoordIntPair)chunkIterator.next();
 
@@ -425,7 +437,7 @@ public class WorldServer
                                     
                                     if (chunk.getLoaded())
                                     {
-                                        chunksToSend.add(chunk);
+                                        this.minecraft.renderGlobal.markChunksForUpdate(chunkCoords.chunkXPos - 1, 0, chunkCoords.chunkZPos - 1, chunkCoords.chunkXPos + 1, 16, chunkCoords.chunkZPos + 1);
                                         chunkIterator.remove();
                                     }
                                 }
@@ -433,21 +445,6 @@ public class WorldServer
                             else
                             {
                                 chunkIterator.remove();
-                            }
-                        }
-
-                        if (!chunksToSend.isEmpty())
-                        {
-                            for (int i = 0; i < chunksToSend.size(); ++i)
-                            {
-                            	Chunk serverChunk = chunksToSend.get(i);
-                                int chunkX = serverChunk.xPosition;
-                                int chunkZ = serverChunk.zPosition;
-                                Chunk clientChunk = new Chunk(chunkX, chunkZ);
-                                clientChunk.setLoaded();
-                                clientChunk.setStorageArrays(this.copyStorage(serverChunk));
-                                clientChunk.setChunkModified();
-                                this.minecraft.renderGlobal.markChunksForUpdate(chunkX - 1, 0, chunkZ - 1, chunkX + 1, 16, chunkZ + 1);
                             }
                         }
                     }
@@ -458,54 +455,6 @@ public class WorldServer
                 throw new RuntimeException("Ticking entity", t);
             }
         }
-    }
-    
-    private ExtendedBlockStorage[] copyStorage(Chunk chunk)
-    {
-    	ExtendedBlockStorage[] oldStorageArray = chunk.getBlockStorageArray();
-    	ExtendedBlockStorage[] newStorageArray = new ExtendedBlockStorage[oldStorageArray.length];
-    	
-    	for(int i = 0; i < oldStorageArray.length; i++)
-    	{
-    		ExtendedBlockStorage oldStorage = oldStorageArray[i];
-    		
-    		if(oldStorage != null)
-    		{
-    			ExtendedBlockStorage newStorage = new ExtendedBlockStorage(oldStorage.getYLocation());
-        		
-        		if(oldStorage.getBlockLSBArray() != null)
-        		{
-        			byte[] oldLSBArray = oldStorage.getBlockLSBArray();
-            		byte[] newLSBArray = newStorage.getBlockLSBArray();
-            		System.arraycopy(oldLSBArray, 0, newLSBArray, 0, oldLSBArray.length);
-        		}
-        		
-        		if(oldStorage.getBlockMSBArray() != null)
-        		{
-        			byte[] oldMSBArrayData = oldStorage.getBlockMSBArray().data;
-            		NibbleArray newMSBArray = newStorage.getBlockMSBArray();
-            		
-            		if(newMSBArray == null)
-            		{
-            			newStorage.createBlockMSBArray();
-            		}
-            		
-            		System.arraycopy(oldMSBArrayData, 0, newMSBArray.data, 0, oldMSBArrayData.length);
-        		}
-        		
-        		if(oldStorage.getMetadataArray() != null)
-        		{
-        			byte[] oldMetadataArrayData = oldStorage.getMetadataArray().data;
-        			NibbleArray newMetadataArray = newStorage.getMetadataArray();
-            		System.arraycopy(oldMetadataArrayData, 0, newMetadataArray.data, 0, oldMetadataArrayData.length);
-        		}
-        		
-        		newStorage.removeInvalidBlocks();
-        		newStorageArray[i] = newStorage;
-    		}
-    	}
-    	
-    	return newStorageArray;
     }
 
     /**
@@ -697,7 +646,7 @@ public class WorldServer
     {
         Chunk chunk = this.provideChunk(0, 0);
 
-        for (int y = chunk.getTopFilledSegment() + 15; y > 0; --y)
+        for (int y = 255; y > 0; --y)
         {
             if (chunk.getBlock(0, y, 0).isSolid())
             {
@@ -806,26 +755,9 @@ public class WorldServer
             	try
                 {
                 	newChunk = new Chunk(x, z);
-
-                    for (int y = 0; y < 5; ++y)
-                    {
-                        ExtendedBlockStorage storage = newChunk.getBlockStorageArray()[0];
-
-                        if (storage == null)
-                        {
-                            storage = new ExtendedBlockStorage(y);
-                            newChunk.getBlockStorageArray()[0] = storage;
-                        }
-
-                        for (int localX = 0; localX < 16; ++localX)
-                        {
-                            for (int localZ = 0; localZ < 16; ++localZ)
-                            {
-                                storage.setBlock(localX, y, localZ, Block.stone);
-                                storage.setExtBlockMetadata(localX, y, localZ, 0);
-                            }
-                        }
-                    }
+                	byte[][] newStorage = new byte[16][4096];
+                	newStorage[0] = this.blankChunkStorage.clone();
+                    newChunk.setStorageArrays(newStorage);
                 }
                 catch (Throwable t)
                 {
@@ -898,7 +830,7 @@ public class WorldServer
      * Returns the indirect signal strength being outputted by the given block in the *opposite* of the given direction.
      * Args: X, Y, Z, direction
      */
-    public final boolean getIndirectPowerOutput(int x, int y, int z, int side)
+    public boolean getIndirectPowerOutput(int x, int y, int z, int side)
     {
         return this.getIndirectPowerLevelTo(x, y, z, side) > 0;
     }
@@ -911,7 +843,7 @@ public class WorldServer
         return this.getBlock(x, y, z).isSolid() ? this.getBlockPowerInput(x, y, z) : this.getBlock(x, y, z).isProvidingWeakPower(this, x, y, z, side);
     }
 
-    public final int getStrongestIndirectPower(int x, int y, int z)
+    public int getStrongestIndirectPower(int x, int y, int z)
     {
         int max = 0;
         
@@ -937,7 +869,7 @@ public class WorldServer
         return max;
     }
 
-    public final boolean canPlaceEntity(Block block, int x, int y, int z)
+    public boolean canPlaceEntity(Block block, int x, int y, int z)
     {
         return this.getBlock(x, y, z).isReplaceable() && block.canPlaceBlockAt(this, x, y, z);
     }
@@ -946,7 +878,7 @@ public class WorldServer
      * Sets the blocks metadata and if set will then notify blocks that this block changed, depending on the flag. Args:
      * x, y, z, metadata, flag. See setBlock for flag description
      */
-    public final boolean setBlockMetadataWithNotify(int x, int y, int z, int metadata, boolean flag)
+    public boolean setBlockMetadataWithNotify(int x, int y, int z, int metadata, boolean flag)
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
         {
@@ -989,7 +921,7 @@ public class WorldServer
         }
     }
 
-    public final long getTotalWorldTime()
+    public long getTotalWorldTime()
     {
         return this.totalTime;
     }
@@ -999,7 +931,7 @@ public class WorldServer
      * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
      * block from being re-rendered, if this is a client world. Flags can be added together.
      */
-    public final boolean setBlock(int x, int y, int z, Block block, int metadata)
+    public boolean setBlock(int x, int y, int z, Block block, int metadata)
     {
     	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
@@ -1021,7 +953,7 @@ public class WorldServer
         return false;
     }
 
-    public final Block getBlock(int x, int y, int z)
+    public Block getBlock(int x, int y, int z)
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
@@ -1037,7 +969,7 @@ public class WorldServer
     /**
      * Returns the block metadata at coords x,y,z
      */
-    public final int getBlockMetadata(int x, int y, int z)
+    public int getBlockMetadata(int x, int y, int z)
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
@@ -1204,6 +1136,7 @@ public class WorldServer
                     WorldServer.this.minecraft.renderGlobal.markChunksForUpdate(this.chunkLocation.chunkXPos - 1, ((localKey & 255) - 1) >> 4, this.chunkLocation.chunkZPos - 1, this.chunkLocation.chunkXPos + 1, ((localKey & 255) + 1) >> 4, this.chunkLocation.chunkZPos + 1);
                 }
         	}
+        	
             this.updates.clear();
         }
     }

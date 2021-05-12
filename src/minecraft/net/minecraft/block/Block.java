@@ -12,8 +12,8 @@ public abstract class Block
 	public static final Block air = new BlockAir();
     public static final Block stone = new BlockStone();
     public static final Block redstone_wire = new BlockRedstoneWire();
-    public static final Block lever = new BlockLever();
-    public static final Block redstone_torch = new BlockRedstoneTorch();
+    private static final Block lever = new BlockLever();
+    private static final Block redstone_torch = new BlockRedstoneTorch();
     
     private static final HashBiMap<Integer, Block> registry = HashBiMap.create();
     
@@ -21,9 +21,9 @@ public abstract class Block
     {
     	registry.put(0, air);
     	registry.put(1, stone);
-    	registry.put(55, redstone_wire);
-    	registry.put(69, lever);
-    	registry.put(76, redstone_torch);
+    	registry.put(2, redstone_wire);
+    	registry.put(3, lever);
+    	registry.put(4, redstone_torch);
     }
     
     /**

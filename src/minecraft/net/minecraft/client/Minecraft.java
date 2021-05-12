@@ -74,11 +74,6 @@ public class Minecraft
      */
     private volatile boolean running = true;
     
-    /**
-     * An array of 36 item stacks indicating the main player inventory (including the visible bar).
-     */
-    private final Block[] mainInventory = {Block.stone, Block.redstone_wire, Block.lever, Block.redstone_torch};
-    
     //server section
     
     /** The server world instance. */
@@ -576,7 +571,7 @@ public class Minecraft
 
         if (this.objectMouseOver != null)
         {
-        	Block block = this.mainInventory[this.currentItem];
+        	Block block = Block.getBlockById(this.currentItem + 1);
         	
         	int x = this.objectMouseOver.blockX;
             int y = this.objectMouseOver.blockY;
