@@ -132,12 +132,8 @@ public class WorldRenderer
                                 GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
                                 GL11.glPushMatrix();
                                 GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
-                                float var2 = 1.000001F;
-                                GL11.glTranslatef(-8.0F, -8.0F, -8.0F);
-                                GL11.glScalef(var2, var2, var2);
-                                GL11.glTranslatef(8.0F, 8.0F, 8.0F);
                                 tessellator.startDrawing(7);
-                                tessellator.setTranslation((double)(-this.posX), (double)(-this.posY), (double)(-this.posZ));
+                                tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
                             }
 
                             doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
@@ -157,10 +153,6 @@ public class WorldRenderer
                 GL11.glPopMatrix();
                 GL11.glEndList();
                 tessellator.setTranslation(0.0D, 0.0D, 0.0D);
-            }
-            else
-            {
-                doRenderPass = false;
             }
             
             this.isInitialized = true;

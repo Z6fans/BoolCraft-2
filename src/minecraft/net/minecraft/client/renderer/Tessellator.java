@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -29,16 +28,8 @@ public class Tessellator
     /** The color (RGBA) value to be used for the following draw call. */
     private int color;
 
-    /**
-     * Whether the current draw object for this tessellator has color values.
-     */
-    private boolean hasColor;
-
     /** The index into the raw buffer to be used for the next data. */
     private int rawBufferIndex;
-
-    /** Disables all color information for the following draw call. */
-    private boolean isColorDisabled;
 
     /** The draw mode currently being used by the tessellator. */
     private int drawMode;
@@ -79,7 +70,7 @@ public class Tessellator
     /**
      * Draws the data set up in this tessellator and resets the state to prepare for new drawing.
      */
-    public int draw()
+    public void draw()
     {
         if (!this.isDrawing)
         {
@@ -93,31 +84,19 @@ public class Tessellator
             {
                 this.intBuffer.clear();
                 this.intBuffer.put(this.rawBuffer, 0, this.rawBufferIndex);
-                this.byteBuffer.position(0);
                 this.byteBuffer.limit(this.rawBufferIndex * 4);
-
-                if (this.hasColor)
-                {
-                    this.byteBuffer.position(20);
-                    GL11.glColorPointer(4, true, 32, this.byteBuffer);
-                    GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-                }
-
+                this.byteBuffer.position(12);
+                GL11.glColorPointer(4, true, 16, this.byteBuffer);
+                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
                 this.floatBuffer.position(0);
-                GL11.glVertexPointer(3, 32, this.floatBuffer);
+                GL11.glVertexPointer(3, 16, this.floatBuffer);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-
-                if (this.hasColor)
-                {
-                    GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-                }
+                GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
             }
 
-            int var1 = this.rawBufferIndex * 4;
             this.reset();
-            return var1;
         }
     }
 
@@ -145,8 +124,6 @@ public class Tessellator
             this.isDrawing = true;
             this.reset();
             this.drawMode = mode;
-            this.hasColor = false;
-            this.isColorDisabled = false;
         }
     }
 
@@ -156,15 +133,11 @@ public class Tessellator
      */
     public void addVertex(double x, double y, double z)
     {
-        if (this.hasColor)
-        {
-            this.rawBuffer[this.rawBufferIndex + 5] = this.color;
-        }
-
         this.rawBuffer[this.rawBufferIndex + 0] = Float.floatToRawIntBits((float)(x + this.xOffset));
         this.rawBuffer[this.rawBufferIndex + 1] = Float.floatToRawIntBits((float)(y + this.yOffset));
         this.rawBuffer[this.rawBufferIndex + 2] = Float.floatToRawIntBits((float)(z + this.zOffset));
-        this.rawBufferIndex += 8;
+        this.rawBuffer[this.rawBufferIndex + 3] = this.color;
+        this.rawBufferIndex += 4;
         ++this.vertexCount;
 
         if (this.vertexCount % 4 == 0 && this.rawBufferIndex >= this.bufferSize - 32)
@@ -179,32 +152,21 @@ public class Tessellator
      */
     public void setColor_I(int color)
     {
-        if (!this.isColorDisabled)
-        {
-        	int a = color >> 24 & 255;
-        	int r = color >> 16 & 255;
-            int g = color >> 8 & 255;
-            int b = color & 255;
-            this.hasColor = true;
+    	int a = color >> 24 & 255;
+    	int r = color >> 16 & 255;
+        int g = color >> 8 & 255;
+        int b = color & 255;
 
-            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN)
-            {
-                this.color = a << 24 | b << 16 | g << 8 | r;
-            }
-            else
-            {
-                this.color = r << 24 | g << 16 | b << 8 | a;
-            }
-        }
+        this.color = a << 24 | b << 16 | g << 8 | r;
     }
 
     /**
      * Sets the translation for all vertices in the current draw call.
      */
-    public void setTranslation(double p_78373_1_, double p_78373_3_, double p_78373_5_)
+    public void setTranslation(double xOff, double yOff, double zOff)
     {
-        this.xOffset = p_78373_1_;
-        this.yOffset = p_78373_3_;
-        this.zOffset = p_78373_5_;
+        this.xOffset = xOff;
+        this.yOffset = yOff;
+        this.zOffset = zOff;
     }
 }
