@@ -65,7 +65,7 @@ public class AnvilChunkLoader
 
         if (tag == null)
         {
-            DataInputStream stream = ThreadedFileIOBase.threadedIOInstance.createOrLoadRegionFile(this.chunkSaveLocation, chunkX, chunkZ).getChunkDataInputStream(chunkX & 31, chunkZ & 31);
+            DataInputStream stream = ThreadedFileIOBase.threadedIOInstance.getInputStream(this.chunkSaveLocation, chunkX, chunkZ);
 
             if (stream == null)
             {
@@ -257,7 +257,7 @@ public class AnvilChunkLoader
         {
             try
             {
-            	DataOutputStream stream = ThreadedFileIOBase.threadedIOInstance.createOrLoadRegionFile(this.chunkSaveLocation, pendingChunk.chunkCoordinate.chunkXPos, pendingChunk.chunkCoordinate.chunkZPos).getChunkDataOutputStream(pendingChunk.chunkCoordinate.chunkXPos & 31, pendingChunk.chunkCoordinate.chunkZPos & 31);
+            	DataOutputStream stream = ThreadedFileIOBase.threadedIOInstance.getOutputStream(this.chunkSaveLocation, pendingChunk.chunkCoordinate.chunkXPos, pendingChunk.chunkCoordinate.chunkZPos);
                 stream.writeByte(pendingChunk.nbtTags.getId());
                 stream.writeUTF("");
             	pendingChunk.nbtTags.write(stream);

@@ -2,7 +2,6 @@ package net.minecraft.block;
 
 import com.google.common.collect.HashBiMap;
 
-import net.minecraft.client.WorldClient;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -65,16 +64,16 @@ public abstract class Block
         return AxisAlignedBB.getBoundingBox((double)x + this.minX, (double)y + this.minY, (double)z + this.minZ, (double)x + this.maxX, (double)y + this.maxY, (double)z + this.maxZ);
     }
 
-    public MovingObjectPosition collisionRayTrace(WorldClient world, int x, int y, int z, Vec3 p_149731_5_, Vec3 p_149731_6_)
+    public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
-        p_149731_5_ = p_149731_5_.addVector((double)(-x), (double)(-y), (double)(-z));
-        p_149731_6_ = p_149731_6_.addVector((double)(-x), (double)(-y), (double)(-z));
-        Vec3 var7 = p_149731_5_.getIntermediateWithXValue(p_149731_6_, this.minX);
-        Vec3 var8 = p_149731_5_.getIntermediateWithXValue(p_149731_6_, this.maxX);
-        Vec3 var9 = p_149731_5_.getIntermediateWithYValue(p_149731_6_, this.minY);
-        Vec3 var10 = p_149731_5_.getIntermediateWithYValue(p_149731_6_, this.maxY);
-        Vec3 var11 = p_149731_5_.getIntermediateWithZValue(p_149731_6_, this.minZ);
-        Vec3 var12 = p_149731_5_.getIntermediateWithZValue(p_149731_6_, this.maxZ);
+        playerPos = playerPos.addVector((double)(-x), (double)(-y), (double)(-z));
+        playerLook = playerLook.addVector((double)(-x), (double)(-y), (double)(-z));
+        Vec3 var7 = playerPos.getIntermediateWithXValue(playerLook, this.minX);
+        Vec3 var8 = playerPos.getIntermediateWithXValue(playerLook, this.maxX);
+        Vec3 var9 = playerPos.getIntermediateWithYValue(playerLook, this.minY);
+        Vec3 var10 = playerPos.getIntermediateWithYValue(playerLook, this.maxY);
+        Vec3 var11 = playerPos.getIntermediateWithZValue(playerLook, this.minZ);
+        Vec3 var12 = playerPos.getIntermediateWithZValue(playerLook, this.maxZ);
 
         if (!this.isVecInsideYZBounds(var7))
         {
@@ -108,32 +107,32 @@ public abstract class Block
 
         Vec3 var13 = null;
 
-        if (var7 != null && (var13 == null || p_149731_5_.quadranceTo(var7) < p_149731_5_.quadranceTo(var13)))
+        if (var7 != null && (var13 == null || playerPos.quadranceTo(var7) < playerPos.quadranceTo(var13)))
         {
             var13 = var7;
         }
 
-        if (var8 != null && (var13 == null || p_149731_5_.quadranceTo(var8) < p_149731_5_.quadranceTo(var13)))
+        if (var8 != null && (var13 == null || playerPos.quadranceTo(var8) < playerPos.quadranceTo(var13)))
         {
             var13 = var8;
         }
 
-        if (var9 != null && (var13 == null || p_149731_5_.quadranceTo(var9) < p_149731_5_.quadranceTo(var13)))
+        if (var9 != null && (var13 == null || playerPos.quadranceTo(var9) < playerPos.quadranceTo(var13)))
         {
             var13 = var9;
         }
 
-        if (var10 != null && (var13 == null || p_149731_5_.quadranceTo(var10) < p_149731_5_.quadranceTo(var13)))
+        if (var10 != null && (var13 == null || playerPos.quadranceTo(var10) < playerPos.quadranceTo(var13)))
         {
             var13 = var10;
         }
 
-        if (var11 != null && (var13 == null || p_149731_5_.quadranceTo(var11) < p_149731_5_.quadranceTo(var13)))
+        if (var11 != null && (var13 == null || playerPos.quadranceTo(var11) < playerPos.quadranceTo(var13)))
         {
             var13 = var11;
         }
 
-        if (var12 != null && (var13 == null || p_149731_5_.quadranceTo(var12) < p_149731_5_.quadranceTo(var13)))
+        if (var12 != null && (var13 == null || playerPos.quadranceTo(var12) < playerPos.quadranceTo(var13)))
         {
             var13 = var12;
         }
@@ -251,7 +250,7 @@ public abstract class Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public abstract int colorMultiplier(WorldClient cc, int x, int y, int z);
+    public abstract int colorMultiplier(WorldServer world, int x, int y, int z);
 
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 

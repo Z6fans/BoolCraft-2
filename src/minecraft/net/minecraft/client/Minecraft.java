@@ -36,8 +36,7 @@ public class Minecraft
     public int displayWidth;
     public int displayHeight;
     private final Timer timer = new Timer();
-    public WorldClient worldClient;
-    private RenderGlobal renderGlobal;
+    public RenderGlobal renderGlobal;
     public EntityPlayer thePlayer;
 
     /**
@@ -83,7 +82,7 @@ public class Minecraft
     //server section
     
     /** The server world instance. */
-    private WorldServer worldServer;
+    public WorldServer worldServer;
 
     /**
      * Indicates whether the server is running or not. Set to false to initiate a shutdown.
@@ -334,23 +333,20 @@ public class Minecraft
                             }
                         }
 
-                        if (this.worldClient != null)
+                        if (this.renderViewEntity == null)
                         {
-                        	if (this.renderViewEntity == null)
+                            this.renderViewEntity = this.thePlayer;
+                        }
+                        
+                        if (this.thePlayer != null)
+                        {
+                        	try
                             {
-                                this.renderViewEntity = this.thePlayer;
+                        		this.thePlayer.onUpdate();
                             }
-                            
-                            if (this.thePlayer != null)
+                            catch (Throwable t)
                             {
-                            	try
-                                {
-                            		this.thePlayer.onUpdate();
-                                }
-                                catch (Throwable t)
-                                {
-                                    throw new RuntimeException("Ticking entity", t);
-                                }
+                                throw new RuntimeException("Ticking entity", t);
                             }
                         }
                         
@@ -612,10 +608,9 @@ public class Minecraft
             int y = this.objectMouseOver.blockY;
             int z = this.objectMouseOver.blockZ;
 
-            if (!this.worldClient.getBlock(x, y, z).isReplaceable())
+            if (!this.worldServer.getBlock(x, y, z).isReplaceable())
             {
                 this.worldServer.setBlock(x, y, z, Block.air, 0);
-                this.worldClient.setBlock(x, y, z, Block.air, 0);
             }
         }
 	}
@@ -646,15 +641,14 @@ public class Minecraft
             prevTime = System.currentTimeMillis();
             tickTimer = 0L;
             
-            this.worldClient = new WorldClient();
             this.renderViewEntity = null;
 
             if (this.renderGlobal != null)
             {
-                this.renderGlobal.setWorldAndLoadRenderers(this.worldClient);
+                this.renderGlobal.setWorldAndLoadRenderers(this.worldServer);
             }
 
-            this.thePlayer = new EntityPlayer(this.worldClient, this.worldServer);
+            this.thePlayer = new EntityPlayer(this.worldServer);
             this.renderViewEntity = this.thePlayer;
 
             System.gc();
@@ -677,7 +671,6 @@ public class Minecraft
     	this.serverRunning = false;
         this.stopServer();
         this.renderViewEntity = null;
-        this.worldClient = null;
         ThreadedFileIOBase.threadedIOInstance.clearRegionFileReferences();
         this.thePlayer = null;
         System.gc();
@@ -732,7 +725,7 @@ public class Minecraft
     {
         if (this.renderViewEntity != null)
         {
-            if (this.worldClient != null)
+            if (this.worldServer != null)
             {
                 this.objectMouseOver = this.renderViewEntity.rayTrace8(partialTickTime);
             }

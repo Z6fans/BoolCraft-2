@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.WorldClient;
+import net.minecraft.world.WorldServer;
 import net.minecraft.util.AxisAlignedBB;
 
 public class RenderBlocks
 {
     /** The IBlockAccess used by this instance of RenderBlocks */
-    private final WorldClient world;
+    private final WorldServer world;
 
     /** The minimum X value for rendering (default 0.0). */
     private double renderMinX;
@@ -27,7 +27,7 @@ public class RenderBlocks
     /** The maximum Z value for rendering (default 1.0). */
     private double renderMaxZ;
 
-    public RenderBlocks(WorldClient wc)
+    public RenderBlocks(WorldServer wc)
     {
         this.world = wc;
     }

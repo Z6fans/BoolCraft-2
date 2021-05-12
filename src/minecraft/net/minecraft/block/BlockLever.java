@@ -1,6 +1,5 @@
 package net.minecraft.block;
 
-import net.minecraft.client.WorldClient;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldServer;
@@ -81,7 +80,7 @@ public class BlockLever extends Block
         }
     }
 
-    public MovingObjectPosition collisionRayTrace(WorldClient world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
         int meta = world.getBlockMetadata(x, y, z) & 7;
 
@@ -215,7 +214,7 @@ public class BlockLever extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldClient world, int x, int y, int z)
+    public int colorMultiplier(WorldServer world, int x, int y, int z)
     {
     	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
     }

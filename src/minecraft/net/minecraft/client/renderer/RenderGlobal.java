@@ -9,12 +9,12 @@ import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.WorldClient;
+import net.minecraft.world.WorldServer;
 import net.minecraft.util.MathHelper;
 
 public class RenderGlobal
 {
-    private WorldClient theWorld;
+    private WorldServer theWorld;
     private final List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
     private WorldRenderer[] sortedWorldRenderers;
     private WorldRenderer[] worldRenderers;
@@ -93,13 +93,8 @@ public class RenderGlobal
     /**
      * set null to clear
      */
-    public void setWorldAndLoadRenderers(WorldClient worldClient)
+    public void setWorldAndLoadRenderers(WorldServer world)
     {
-        if (this.theWorld != null)
-        {
-            this.theWorld.setRenderer(null);
-        }
-
         this.prevSortX = -9999.0D;
         this.prevSortY = -9999.0D;
         this.prevSortZ = -9999.0D;
@@ -109,13 +104,8 @@ public class RenderGlobal
         this.prevChunkSortX = -9999;
         this.prevChunkSortY = -9999;
         this.prevChunkSortZ = -9999;
-        this.theWorld = worldClient;
-
-        if (worldClient != null)
-        {
-            worldClient.setRenderer(this);
-            this.loadRenderers();
-        }
+        this.theWorld = world;
+        this.loadRenderers();
     }
 
     /**

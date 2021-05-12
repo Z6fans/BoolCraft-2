@@ -75,7 +75,7 @@ public class EntityRenderer
         final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
         final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.minecraft.displayHeight - 1;
 
-        if (this.minecraft.worldClient != null)
+        if (this.minecraft.renderViewEntity != null)
         {
         	GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -137,7 +137,7 @@ public class EntityRenderer
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
                 GL11.glDepthMask(false);
                 double d = 0.002F;
-                Block block = this.minecraft.worldClient.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
+                Block block = this.minecraft.worldServer.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
                 double playerX = player.getPartialPosX(partialTickTime);
                 double playerY = player.getPartialPosY(partialTickTime);
                 double playerZ = player.getPartialPosZ(partialTickTime);

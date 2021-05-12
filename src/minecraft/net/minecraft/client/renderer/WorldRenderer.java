@@ -2,7 +2,7 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
-import net.minecraft.client.WorldClient;
+import net.minecraft.world.WorldServer;
 import net.minecraft.util.AxisAlignedBB;
 
 import java.nio.FloatBuffer;
@@ -12,7 +12,7 @@ import org.lwjgl.opengl.GL11;
 public class WorldRenderer
 {
     /** Reference to the World object. */
-    private WorldClient worldObj;
+    private WorldServer worldObj;
     private final int glRenderList;
     private final static Tessellator tessellator = Tessellator.instance;
     private int posX;
@@ -67,7 +67,7 @@ public class WorldRenderer
     private final FloatBuffer projectionMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
     private final FloatBuffer modelviewMatrixBuffer = GLAllocation.createDirectFloatBuffer(16);
 
-    public WorldRenderer(WorldClient world, int x, int y, int z, int renderList)
+    public WorldRenderer(WorldServer world, int x, int y, int z, int renderList)
     {
         this.worldObj = world;
         this.glRenderList = renderList;

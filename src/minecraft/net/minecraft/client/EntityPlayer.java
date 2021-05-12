@@ -21,7 +21,6 @@ public class EntityPlayer
 
     /** Entity position Z */
     private double posZ;
-	private final WorldClient worldObj;
 	private final WorldServer worldServer;
     
     private double oldPosX;
@@ -79,10 +78,9 @@ public class EntityPlayer
      */
     private double lastTickPosZ;
 
-    public EntityPlayer(WorldClient world, WorldServer worldServ)
+    public EntityPlayer(WorldServer worldServ)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
-        this.worldObj = world;
         this.worldServer = worldServ;
         this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
@@ -382,7 +380,7 @@ public class EntityPlayer
 
     private boolean isBlockSolid(int x, int y, int z)
     {
-        return this.worldObj.getBlock(x, y, z).isSolid();
+        return this.worldServer.getBlock(x, y, z).isSolid();
     }
 
     private void pushPlayerOutOfBlock(double xpos, double ypos, double zpos)
@@ -469,11 +467,11 @@ public class EntityPlayer
                 int playerBlockX = MathHelper.floor_double(playerPos.x);
                 int playerBlockY = MathHelper.floor_double(playerPos.y);
                 int playerBlockZ = MathHelper.floor_double(playerPos.z);
-                Block playerBlock = this.worldObj.getBlock(playerBlockX, playerBlockY, playerBlockZ);
+                Block playerBlock = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
 
                 if (!playerBlock.isReplaceable())
                 {
-                    MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldObj, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                    MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
                     if (playerBlockPos != null)
                     {
@@ -636,11 +634,11 @@ public class EntityPlayer
                         ++var36.z;
                     }
 
-                    Block var37 = this.worldObj.getBlock(playerBlockX, playerBlockY, playerBlockZ);
+                    Block var37 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
 
                     if (!var37.isReplaceable())
                     {
-                        MovingObjectPosition var39 = var37.collisionRayTrace(this.worldObj, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                        MovingObjectPosition var39 = var37.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
                         if (var39 != null)
                         {
@@ -696,7 +694,7 @@ public class EntityPlayer
             {
             	for (int y = miny - 1; y < maxy; ++y)
                 {
-                    if (this.worldObj.getBlock(x, y, z) == Block.stone)
+                    if (this.worldServer.getBlock(x, y, z) == Block.stone)
                     {
                     	AxisAlignedBB thisAABB = AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1);
                         if (aabb.intersectsWith(thisAABB)) collidingBoundingBoxes.add(thisAABB);

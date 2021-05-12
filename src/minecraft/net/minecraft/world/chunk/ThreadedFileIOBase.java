@@ -11,7 +11,6 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
@@ -100,7 +99,7 @@ public class ThreadedFileIOBase implements Runnable
         this.isThreadWaiting = false;
     }
     
-    public synchronized RegionFile createOrLoadRegionFile(File chunkSaveLocation, int chunkX, int chunkZ)
+    private synchronized RegionFile createOrLoadRegionFile(File chunkSaveLocation, int chunkX, int chunkZ)
     {
         File regionDir = new File(chunkSaveLocation, "region");
         File regionFileName = new File(regionDir, "r." + (chunkX >> 5) + "." + (chunkZ >> 5) + ".mca");
@@ -127,18 +126,24 @@ public class ThreadedFileIOBase implements Runnable
             return newRegionFile;
         }
     }
+    
+    public synchronized DataInputStream getInputStream(File chunkSaveLocation, int chunkX, int chunkZ)
+    {
+    	return this.createOrLoadRegionFile(chunkSaveLocation, chunkX, chunkZ).getChunkDataInputStream(chunkX & 31, chunkZ & 31);
+    }
+    
+    public synchronized DataOutputStream getOutputStream(File chunkSaveLocation, int chunkX, int chunkZ)
+    {
+    	return this.createOrLoadRegionFile(chunkSaveLocation, chunkX, chunkZ).getChunkDataOutputStream(chunkX & 31, chunkZ & 31);
+    }
 
     /**
      * Saves the current Chunk Map Cache
      */
     public synchronized void clearRegionFileReferences()
     {
-        Iterator<RegionFile> regionFileIterator = regionsByFilename.values().iterator();
-
-        while (regionFileIterator.hasNext())
+        for (RegionFile regionFile : regionsByFilename.values())
         {
-            RegionFile regionFile = regionFileIterator.next();
-
             try
             {
                 if (regionFile != null)
@@ -155,7 +160,7 @@ public class ThreadedFileIOBase implements Runnable
         regionsByFilename.clear();
     }
     
-    static class RegionFile
+    private static class RegionFile
     {
         private static final byte[] emptySector = new byte[4096];
         private final RandomAccessFile dataFile;

@@ -1,6 +1,5 @@
 package net.minecraft.block;
 
-import net.minecraft.client.WorldClient;
 import net.minecraft.world.WorldServer;
 
 public class BlockStone extends Block
@@ -26,7 +25,7 @@ public class BlockStone extends Block
 		return 0;
 	}
 	
-	public int colorMultiplier(WorldClient world, int x, int y, int z)
+	public int colorMultiplier(WorldServer world, int x, int y, int z)
     {
     	return 0;
     }

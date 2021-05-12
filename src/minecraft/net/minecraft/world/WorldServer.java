@@ -447,8 +447,7 @@ public class WorldServer
                                 clientChunk.setLoaded();
                                 clientChunk.setStorageArrays(this.copyStorage(serverChunk));
                                 clientChunk.setChunkModified();
-                                this.minecraft.worldClient.addChunk(clientChunk);
-                                this.minecraft.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
+                                this.minecraft.renderGlobal.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
                             }
                         }
                     }
@@ -1209,10 +1208,9 @@ public class WorldServer
                 	int localX = localKey >> 12 & 15;
                     int localZ = localKey >> 8 & 15;
                     int localY = localKey & 255;
-                    WorldServer.this.minecraft.worldClient.setBlock(localX + baseX, localY, localZ + baseZ, chunk.getBlock(localX, localY, localZ), chunk.getBlockMetadata(localX, localY, localZ));
+                    WorldServer.this.minecraft.renderGlobal.markBlockForUpdate(localX + baseX, localY, localZ + baseZ);
                 }
         	}
-
             this.updates.clear();
         }
     }
