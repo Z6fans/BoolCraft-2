@@ -185,7 +185,7 @@ public class BlockRedstoneTorch extends Block
      */
     public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
-        return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xE91A64 : 0x5B0A27;
+        return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
     }
 
 	public boolean isReplaceable()

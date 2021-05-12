@@ -11,8 +11,6 @@ import org.lwjgl.opengl.GL11;
 
 public class WorldRenderer
 {
-    private TesselatorVertexState vertexState;
-
     /** Reference to the World object. */
     private WorldClient worldObj;
     private final int glRenderList;
@@ -41,7 +39,7 @@ public class WorldRenderer
     private boolean isInFrustrum;
 
     /** Should this renderer skip this render pass */
-    private final boolean[] skipRenderPass = new boolean[2];
+    private boolean skipRenderPass = true;
 
     /** Pos X plus */
     private int posXPlus;
@@ -72,7 +70,6 @@ public class WorldRenderer
     public WorldRenderer(WorldClient world, int x, int y, int z, int renderList)
     {
         this.worldObj = world;
-        this.vertexState = null;
         this.glRenderList = renderList;
         this.posX = -999;
         this.setPosition(x, y, z);
@@ -99,38 +96,7 @@ public class WorldRenderer
             this.posXMinus = x - this.posXClip;
             this.posYMinus = y - this.posYClip;
             this.posZMinus = z - this.posZClip;
-            float off = 6.0F;
-            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox((double)((float)x - off), (double)((float)y - off), (double)((float)z - off), (double)((float)(x + 16) + off), (double)((float)(y + 16) + off), (double)((float)(z + 16) + off));
-            GL11.glNewList(this.glRenderList + 2, GL11.GL_COMPILE);
-            AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox((double)((float)this.posXClip - off), (double)((float)this.posYClip - off), (double)((float)this.posZClip - off), (double)((float)(this.posXClip + 16) + off), (double)((float)(this.posYClip + 16) + off), (double)((float)(this.posZClip + 16) + off));
-            Tessellator tess = Tessellator.instance;
-            tess.startDrawingQuads();
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-            tess.draw();
-            GL11.glEndList();
+            this.rendererBoundingBox = AxisAlignedBB.getBoundingBox(x - 6, y - 6, z - 6, x + 22, y + 22, z + 22);
             this.markDirty();
         }
     }
@@ -144,13 +110,9 @@ public class WorldRenderer
         {
             this.needsUpdate = false;
 
-            for (int i = 0; i < 2; ++i)
-            {
-                this.skipRenderPass[i] = true;
-            }
+            this.skipRenderPass = true;
 
             RenderBlocks renderBlocks = new RenderBlocks(this.worldObj);
-            this.vertexState = null;
             boolean doRenderPass = false;
             boolean doPostRenderBlocks = false;
 
@@ -167,7 +129,15 @@ public class WorldRenderer
                             if (!doPostRenderBlocks)
                             {
                                 doPostRenderBlocks = true;
-                                this.preRenderBlocks(0);
+                                GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
+                                GL11.glPushMatrix();
+                                GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
+                                float var2 = 1.000001F;
+                                GL11.glTranslatef(-8.0F, -8.0F, -8.0F);
+                                GL11.glScalef(var2, var2, var2);
+                                GL11.glTranslatef(8.0F, 8.0F, 8.0F);
+                                tessellator.startDrawing(7);
+                                tessellator.setTranslation((double)(-this.posX), (double)(-this.posY), (double)(-this.posZ));
                             }
 
                             doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
@@ -178,12 +148,15 @@ public class WorldRenderer
 
             if (doRenderPass)
             {
-                this.skipRenderPass[0] = false;
+                this.skipRenderPass = false;
             }
 
             if (doPostRenderBlocks)
             {
-                this.postRenderBlocks(0, player);
+            	tessellator.draw();
+                GL11.glPopMatrix();
+                GL11.glEndList();
+                tessellator.setTranslation(0.0D, 0.0D, 0.0D);
             }
             else
             {
@@ -194,52 +167,16 @@ public class WorldRenderer
         }
     }
 
-    private void preRenderBlocks(int p_147890_1_)
-    {
-        GL11.glNewList(this.glRenderList + p_147890_1_, GL11.GL_COMPILE);
-        GL11.glPushMatrix();
-        GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
-        float var2 = 1.000001F;
-        GL11.glTranslatef(-8.0F, -8.0F, -8.0F);
-        GL11.glScalef(var2, var2, var2);
-        GL11.glTranslatef(8.0F, 8.0F, 8.0F);
-        tessellator.startDrawingQuads();
-        tessellator.setTranslation((double)(-this.posX), (double)(-this.posY), (double)(-this.posZ));
-    }
-
-    private void postRenderBlocks(int p_147891_1_, EntityPlayer p_147891_2_)
-    {
-        if (p_147891_1_ == 1 && !this.skipRenderPass[p_147891_1_])
-        {
-            this.vertexState = tessellator.getVertexState((float)p_147891_2_.getPosX(), (float)p_147891_2_.getPosY(), (float)p_147891_2_.getPosZ());
-        }
-
-        tessellator.draw();
-        GL11.glPopMatrix();
-        GL11.glEndList();
-        tessellator.setTranslation(0.0D, 0.0D, 0.0D);
-    }
-
-    public void updateRendererSort(EntityPlayer p_147889_1_)
-    {
-        if (this.vertexState != null && !this.skipRenderPass[1])
-        {
-            this.preRenderBlocks(1);
-            tessellator.setVertexState(this.vertexState);
-            this.postRenderBlocks(1, p_147889_1_);
-        }
-    }
-
     /**
      * Returns the distance of this chunk renderer to the entity without performing the final normalizing square root,
      * for performance reasons.
      */
     public float quadranceToPlayer(EntityPlayer player)
     {
-        float var2 = (float)(player.getPosX() - (double)this.posXPlus);
-        float var3 = (float)(player.getPosY() - (double)this.posYPlus);
-        float var4 = (float)(player.getPosZ() - (double)this.posZPlus);
-        return var2 * var2 + var3 * var3 + var4 * var4;
+        float dx = (float)(player.getPosX() - (double)this.posXPlus);
+        float dy = (float)(player.getPosY() - (double)this.posYPlus);
+        float dz = (float)(player.getPosZ() - (double)this.posZPlus);
+        return dx * dx + dy * dy + dz * dz;
     }
 
     /**
@@ -247,14 +184,9 @@ public class WorldRenderer
      */
     private void setDontDraw()
     {
-        for (int i = 0; i < 2; ++i)
-        {
-            this.skipRenderPass[i] = true;
-        }
-
+        this.skipRenderPass = true;
         this.isInFrustrum = false;
         this.isInitialized = false;
-        this.vertexState = null;
     }
 
     public void stopRendering()
@@ -262,13 +194,10 @@ public class WorldRenderer
         this.setDontDraw();
         this.worldObj = null;
     }
-
-    /**
-     * Takes in the pass the call list is being requested for. Args: renderPass
-     */
-    public int getGLCallListForPass(int p_78909_1_)
+    
+    public int getGLCallList()
     {
-        return !this.isInFrustrum ? -1 : (!this.skipRenderPass[p_78909_1_] ? this.glRenderList + p_78909_1_ : -1);
+    	return this.isInFrustrum && !this.skipRenderPass ? this.glRenderList : -1;
     }
 
     public void updateInFrustum(double x, double y, double z)
@@ -348,7 +277,7 @@ public class WorldRenderer
      */
     public boolean skipAllRenderPasses()
     {
-        return !this.isInitialized ? false : this.skipRenderPass[0] && this.skipRenderPass[1];
+        return this.isInitialized && this.skipRenderPass;
     }
 
     /**
@@ -381,8 +310,8 @@ public class WorldRenderer
     	this.isInFrustrum = true;
     }
     
-    public boolean shouldSkipPass(int pass)
+    public boolean shouldSkip()
     {
-    	return this.skipRenderPass[pass];
+    	return this.skipRenderPass;
     }
 }

@@ -132,11 +132,7 @@ public class EntityRenderer
 
             if (this.minecraft.getMouseOver() != null)
             {
-                GL11.glDisable(GL11.GL_ALPHA_TEST);
                 MovingObjectPosition rayTraceHit = this.minecraft.getMouseOver();
-                GL11.glEnable(GL11.GL_BLEND);
-                OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-                GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.4F);
                 GL11.glLineWidth(2.0F);
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
                 GL11.glDepthMask(false);
@@ -148,6 +144,7 @@ public class EntityRenderer
                 AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
                 Tessellator tess = Tessellator.instance;
                 tess.startDrawing(3);
+                tess.setColor_I(0xFF000000);
                 tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                 tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
                 tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
@@ -155,6 +152,7 @@ public class EntityRenderer
                 tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                 tess.draw();
                 tess.startDrawing(3);
+                tess.setColor_I(0xFF000000);
                 tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                 tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
                 tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
@@ -162,6 +160,7 @@ public class EntityRenderer
                 tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                 tess.draw();
                 tess.startDrawing(1);
+                tess.setColor_I(0xFF000000);
                 tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                 tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                 tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
@@ -172,8 +171,6 @@ public class EntityRenderer
                 tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
                 tess.draw();
                 GL11.glDepthMask(true);
-                GL11.glDisable(GL11.GL_BLEND);
-                GL11.glEnable(GL11.GL_ALPHA_TEST);
             }
 
             GL11.glEnable(GL11.GL_BLEND);
@@ -191,7 +188,6 @@ public class EntityRenderer
             OpenGlHelper.glBlendFunc(770, 771, 1, 0);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glNormal3f(0.0F, -1.0F, 0.0F);
-            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GL11.glEnable(GL11.GL_COLOR_MATERIAL);
             GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
             GL11.glEnable(GL11.GL_BLEND);
@@ -216,7 +212,7 @@ public class EntityRenderer
                 int y = sHeight - 16 - 3;
                 int color = 0xFF000000;
                 switch(index){
-                case 0: color = 0xFF444444; break;
+                case 0: color = 0xFF505050; break;
                 case 1: color = 0xFF39EEEE; break;
                 case 2: color = 0xFFEE39E4; break;
                 case 3: color = 0xFFE91A64; break;
@@ -255,20 +251,16 @@ public class EntityRenderer
      */
     private static void drawRect(int x1, int y1, int x2, int y2, int color)
     {
-        float alpha	= (float)(color >> 24 & 255) / 255.0F;
-        float red	= (float)(color >> 16 & 255) / 255.0F;
-        float green	= (float)(color >> 8  & 255) / 255.0F;
-        float blue	= (float)(color 	  & 255) / 255.0F;
         Tessellator tessellator = Tessellator.instance;
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-        GL11.glColor4f(red, green, blue, alpha);
-        tessellator.startDrawingQuads();
-        tessellator.addVertex((double)x1, (double)y2, 0.0D);
-        tessellator.addVertex((double)x2, (double)y2, 0.0D);
-        tessellator.addVertex((double)x2, (double)y1, 0.0D);
-        tessellator.addVertex((double)x1, (double)y1, 0.0D);
+        tessellator.startDrawing(7);
+        tessellator.setColor_I(color);
+        tessellator.addVertex(x1, y2, 0);
+        tessellator.addVertex(x2, y2, 0);
+        tessellator.addVertex(x2, y1, 0);
+        tessellator.addVertex(x1, y1, 0);
         tessellator.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_BLEND);

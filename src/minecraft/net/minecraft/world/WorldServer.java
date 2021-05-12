@@ -446,7 +446,6 @@ public class WorldServer
                                 Chunk clientChunk = new Chunk(chunkX, chunkZ);
                                 clientChunk.setLoaded();
                                 clientChunk.setStorageArrays(this.copyStorage(serverChunk));
-                                clientChunk.isTerrainPopulated = true;
                                 clientChunk.setChunkModified();
                                 this.minecraft.worldClient.addChunk(clientChunk);
                                 this.minecraft.worldClient.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
@@ -1052,12 +1051,12 @@ public class WorldServer
         }
     }
 
-    private ChunkUpdateTracker getOrCreateChunkWatcher(int chunkX, int chunkZ, boolean doCreate)
+    private ChunkUpdateTracker getOrCreateChunkWatcher(int chunkX, int chunkZ)
     {
         long key = (long)chunkX + 2147483647L | (long)chunkZ + 2147483647L << 32;
         ChunkUpdateTracker chunkWatcher = this.playerInstances.getValueByKey(key);
 
-        if (chunkWatcher == null && doCreate)
+        if (chunkWatcher == null)
         {
             chunkWatcher = new ChunkUpdateTracker(chunkX, chunkZ);
             this.playerInstances.add(key, chunkWatcher);
@@ -1069,14 +1068,8 @@ public class WorldServer
 
     public void markBlockForUpdate(int x, int y, int z)
     {
-        int chunkX = x >> 4;
-        int chunkZ = z >> 4;
-        ChunkUpdateTracker playerInstance = this.getOrCreateChunkWatcher(chunkX, chunkZ, false);
-
-        if (playerInstance != null)
-        {
-            playerInstance.markBlockForUpdate(x & 15, y, z & 15);
-        }
+        ChunkUpdateTracker playerInstance = this.playerInstances.getValueByKey((long)(x >> 4) + 2147483647L | (long)(z >> 4) + 2147483647L << 32);;
+        if (playerInstance != null) playerInstance.markBlockForUpdate(x & 15, y, z & 15);
     }
 
     /**
@@ -1091,7 +1084,7 @@ public class WorldServer
         int chunkZ = (int)this.playerPosZ >> 4;
         int var7 = 0;
         int var8 = 0;
-        ChunkCoordIntPair var9 = this.getOrCreateChunkWatcher(chunkX, chunkZ, true).chunkLocation;
+        ChunkCoordIntPair var9 = this.getOrCreateChunkWatcher(chunkX, chunkZ).chunkLocation;
         this.playerLoadedChunks.clear();
 
         if (var2.contains(var9))
@@ -1109,7 +1102,7 @@ public class WorldServer
                 {
                     var7 += var12[0];
                     var8 += var12[1];
-                    var9 = this.getOrCreateChunkWatcher(chunkX + var7, chunkZ + var8, true).chunkLocation;
+                    var9 = this.getOrCreateChunkWatcher(chunkX + var7, chunkZ + var8).chunkLocation;
 
                     if (var2.contains(var9))
                     {
@@ -1125,7 +1118,7 @@ public class WorldServer
         {
             var7 += this.xzDirectionsConst[var3][0];
             var8 += this.xzDirectionsConst[var3][1];
-            var9 = this.getOrCreateChunkWatcher(chunkX + var7, chunkZ + var8, true).chunkLocation;
+            var9 = this.getOrCreateChunkWatcher(chunkX + var7, chunkZ + var8).chunkLocation;
 
             if (var2.contains(var9))
             {
@@ -1211,7 +1204,7 @@ public class WorldServer
         		int baseX = chunk.xPosition * 16;
                 int baseZ = chunk.zPosition * 16;
                 
-                for (int localKey : updates)
+                for (int localKey : this.updates)
                 {
                 	int localX = localKey >> 12 & 15;
                     int localZ = localKey >> 8 & 15;
@@ -1220,7 +1213,7 @@ public class WorldServer
                 }
         	}
 
-            updates.clear();
+            this.updates.clear();
         }
     }
 }

@@ -22,48 +22,48 @@ public class KeyBinding
     private boolean pressed;
     private int presses;
 
-    public static void onTick(int p_74507_0_)
+    public static void onTick(int key)
     {
-        if (p_74507_0_ != 0)
+        if (key != 0)
         {
-            KeyBinding var1 = map.get(p_74507_0_);
+            KeyBinding binding = map.get(key);
 
-            if (var1 != null)
+            if (binding != null)
             {
-                ++var1.presses;
+                ++binding.presses;
             }
         }
     }
 
-    public static void setKeyBindState(int p_74510_0_, boolean p_74510_1_)
+    public static void setKeyBindState(int key, boolean p)
     {
-        if (p_74510_0_ != 0)
+        if (key != 0)
         {
-            KeyBinding var2 = map.get(p_74510_0_);
+            KeyBinding binding = map.get(key);
 
-            if (var2 != null)
+            if (binding != null)
             {
-                var2.pressed = p_74510_1_;
+                binding.pressed = p;
             }
         }
     }
 
     public static void unPressAllKeys()
     {
-        Iterator<KeyBinding> var0 = keybindArray.iterator();
+        Iterator<KeyBinding> iter = keybindArray.iterator();
 
-        while (var0.hasNext())
+        while (iter.hasNext())
         {
-            KeyBinding var1 = var0.next();
-            var1.presses = 0;
-            var1.pressed = false;
+            KeyBinding binding = iter.next();
+            binding.presses = 0;
+            binding.pressed = false;
         }
     }
 
-    private KeyBinding(int p_i45001_2_)
+    private KeyBinding(int key)
     {
         keybindArray.add(this);
-        map.put(p_i45001_2_, this);
+        map.put(key, this);
     }
 
     public boolean getIsKeyPressed()
@@ -73,14 +73,11 @@ public class KeyBinding
 
     public boolean isPressed()
     {
-        if (this.presses == 0)
+        if (this.presses > 0)
         {
-            return false;
-        }
-        else
-        {
-            --this.presses;
+        	this.presses--;
             return true;
         }
+        return false;
     }
 }

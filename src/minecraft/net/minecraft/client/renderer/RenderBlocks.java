@@ -34,22 +34,20 @@ public class RenderBlocks
 
     public boolean renderBlockByRenderType(Block block, int x, int y, int z)
     {
-        int rt = block.getRenderType();
-
-        if (rt == -1)
+        AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
+    	this.renderMinX = aabb.minX;
+        this.renderMaxX = aabb.maxX;
+        this.renderMinY = aabb.minY;
+        this.renderMaxY = aabb.maxY;
+        this.renderMinZ = aabb.minZ;
+        this.renderMaxZ = aabb.maxZ;
+        
+        switch (block.getRenderType())
         {
-            return false;
-        }
-        else
-        {
-            AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
-        	this.renderMinX = aabb.minX;
-            this.renderMaxX = aabb.maxX;
-            this.renderMinY = aabb.minY;
-            this.renderMaxY = aabb.maxY;
-            this.renderMinZ = aabb.minZ;
-            this.renderMaxZ = aabb.maxZ;
-            return rt == 0 ? this.renderStandardBlock(x, y, z) : (rt == 5 ? this.renderBlockRedstoneWire(block, x, y, z) : (rt == 12 ? this.renderBlockLever(block, x, y, z) : false));
+        case 0: return this.renderStandardBlock(x, y, z);
+        case 5: return this.renderBlockRedstoneWire(block, x, y, z);
+        case 12: return this.renderBlockLever(block, x, y, z);
+        default: return false;
         }
     }
 
@@ -71,44 +69,44 @@ public class RenderBlocks
 
         if (var6 == 5)
         {
-            this.setRenderBounds((double)(0.5F - d), 0.0D, (double)(0.5F - d), (double)(0.5F + d), (double)d, (double)(0.5F + d));
+            this.setRenderBounds((0.5F - d), 0.0D, (0.5F - d), (0.5F + d), d, (0.5F + d));
         }
         else if (var6 == 6)
         {
-            this.setRenderBounds((double)(0.5F - d), 0.0D, (double)(0.5F - d), (double)(0.5F + d), (double)d, (double)(0.5F + d));
+            this.setRenderBounds((0.5F - d), 0.0D, (0.5F - d), (0.5F + d), d, (0.5F + d));
         }
         else if (var6 == 4)
         {
-            this.setRenderBounds((double)(0.5F - d), (double)(0.5F - d), (double)(1.0F - d), (double)(0.5F + d), (double)(0.5F + d), 1.0D);
+            this.setRenderBounds((0.5F - d), (0.5F - d), (1.0F - d), (0.5F + d), (0.5F + d), 1.0D);
         }
         else if (var6 == 3)
         {
-            this.setRenderBounds((double)(0.5F - d), (double)(0.5F - d), 0.0D, (double)(0.5F + d), (double)(0.5F + d), (double)d);
+            this.setRenderBounds((0.5F - d), (0.5F - d), 0.0D, (0.5F + d), (0.5F + d), d);
         }
         else if (var6 == 2)
         {
-            this.setRenderBounds((double)(1.0F - d), (double)(0.5F - d), (double)(0.5F - d), 1.0D, (double)(0.5F + d), (double)(0.5F + d));
+            this.setRenderBounds((1.0F - d), (0.5F - d), (0.5F - d), 1.0D, (0.5F + d), (0.5F + d));
         }
         else if (var6 == 1)
         {
-            this.setRenderBounds(0.0D, (double)(0.5F - d), (double)(0.5F - d), (double)d, (double)(0.5F + d), (double)(0.5F + d));
+            this.setRenderBounds(0.0D, (0.5F - d), (0.5F - d), d, (0.5F + d), (0.5F + d));
         }
         else if (var6 == 0)
         {
-            this.setRenderBounds((double)(0.5F - d), (double)(1.0F - d), (double)(0.5F - d), (double)(0.5F + d), 1.0D, (double)(0.5F + d));
+            this.setRenderBounds((0.5F - d), (1.0F - d), (0.5F - d), (0.5F + d), 1.0D, (0.5F + d));
         }
         else if (var6 == 7)
         {
-            this.setRenderBounds((double)(0.5F - d), (double)(1.0F - d), (double)(0.5F - d), (double)(0.5F + d), 1.0D, (double)(0.5F + d));
+            this.setRenderBounds((0.5F - d), (1.0F - d), (0.5F - d), (0.5F + d), 1.0D, (0.5F + d));
         }
         
-        Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
-        this.renderFaceYNeg((double)x, (double)y, (double)z);
-        this.renderFaceYPos((double)x, (double)y, (double)z);
-        this.renderFaceZNeg((double)x, (double)y, (double)z);
-        this.renderFaceZPos((double)x, (double)y, (double)z);
-        this.renderFaceXNeg((double)x, (double)y, (double)z);
-        this.renderFaceXPos((double)x, (double)y, (double)z);
+        Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z));
+        this.renderFaceYNeg(x, y, z);
+        this.renderFaceYPos(x, y, z);
+        this.renderFaceZNeg(x, y, z);
+        this.renderFaceZPos(x, y, z);
+        this.renderFaceXNeg(x, y, z);
+        this.renderFaceXPos(x, y, z);
 
         return true;
     }
@@ -117,45 +115,45 @@ public class RenderBlocks
     {
         Tessellator tess = Tessellator.instance;
         
-        Tessellator.instance.setColorOpaque_I(block.colorMultiplier(this.world, x, y, z));
+        tess.setColor_I(block.colorMultiplier(this.world, x, y, z));
         
-        tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 1));
-        tess.addVertex((double)(x + 1), (double)y + 0.01D, (double)(z + 0));
-        tess.addVertex((double)(x + 0), (double)y + 0.01D, (double)(z + 0));
-        tess.addVertex((double)(x + 0), (double)y + 0.01D, (double)(z + 1));
+        tess.addVertex(x + 1, y + 0.01, z + 1);
+        tess.addVertex(x + 1, y + 0.01, z + 0);
+        tess.addVertex(x + 0, y + 0.01, z + 0);
+        tess.addVertex(x + 0, y + 0.01, z + 1);
 
         if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
             if (this.world.getBlock(x - 1, y, z).isSolid() && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
             {
-                tess.addVertex((double)x + 0.01D, (double)(y + 1), (double)(z + 1));
-                tess.addVertex((double)x + 0.01D, (double)(y + 0), (double)(z + 1));
-                tess.addVertex((double)x + 0.01D, (double)(y + 0), (double)(z + 0));
-                tess.addVertex((double)x + 0.01D, (double)(y + 1), (double)(z + 0));
+                tess.addVertex(x + 0.01, y + 1, z + 1);
+                tess.addVertex(x + 0.01, y + 0, z + 1);
+                tess.addVertex(x + 0.01, y + 0, z + 0);
+                tess.addVertex(x + 0.01, y + 1, z + 0);
             }
 
             if (this.world.getBlock(x + 1, y, z).isSolid() && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
             {
-                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 0), (double)(z + 1));
-                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 1), (double)(z + 1));
-                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 1), (double)(z + 0));
-                tess.addVertex((double)(x + 1) - 0.01D, (double)(y + 0), (double)(z + 0));
+                tess.addVertex(x + 0.99, y + 0, z + 1);
+                tess.addVertex(x + 0.99, y + 1, z + 1);
+                tess.addVertex(x + 0.99, y + 1, z + 0);
+                tess.addVertex(x + 0.99, y + 0, z + 0);
             }
 
             if (this.world.getBlock(x, y, z - 1).isSolid() && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
             {
-                tess.addVertex((double)(x + 1), (double)(y + 0), (double)z + 0.01D);
-                tess.addVertex((double)(x + 1), (double)(y + 1), (double)z + 0.01D);
-                tess.addVertex((double)(x + 0), (double)(y + 1), (double)z + 0.01D);
-                tess.addVertex((double)(x + 0), (double)(y + 0), (double)z + 0.01D);
+                tess.addVertex(x + 1, y + 0, z + 0.01);
+                tess.addVertex(x + 1, y + 1, z + 0.01);
+                tess.addVertex(x + 0, y + 1, z + 0.01);
+                tess.addVertex(x + 0, y + 0, z + 0.01);
             }
 
             if (this.world.getBlock(x, y, z + 1).isSolid() && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
             {
-                tess.addVertex((double)(x + 1), (double)(y + 1), (double)(z + 1) - 0.01D);
-                tess.addVertex((double)(x + 1), (double)(y + 0), (double)(z + 1) - 0.01D);
-                tess.addVertex((double)(x + 0), (double)(y + 0), (double)(z + 1) - 0.01D);
-                tess.addVertex((double)(x + 0), (double)(y + 1), (double)(z + 1) - 0.01D);
+                tess.addVertex(x + 1, y + 1, z + 0.99);
+                tess.addVertex(x + 1, y + 0, z + 0.99);
+                tess.addVertex(x + 0, y + 0, z + 0.99);
+                tess.addVertex(x + 0, y + 1, z + 0.99);
             }
         }
 
@@ -164,145 +162,145 @@ public class RenderBlocks
 
     private boolean renderStandardBlock(int x, int y, int z)
     {
-        boolean var9 = false;
+        boolean didRender = false;
         
-        int shift = ((x + y + z)%2 + 2)%2 == 0 ? 0x060000 : 0x000006;
+        int shift = (x + y + z) % 2 == 0 ? 0x060000 : 0x000006;
 
-    	Tessellator.instance.setColorOpaque_I(0x404040 + shift);
+    	Tessellator.instance.setColor_I(0xFF404040 | shift);
         if (!this.world.getBlock(x, y - 1, z).isSolid())
         {
-            this.renderFaceYNeg((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceYNeg(x, y, z);
+            didRender = true;
         }
 
-    	Tessellator.instance.setColorOpaque_I(0x606060 + shift);
+    	Tessellator.instance.setColor_I(0xFF606060 | shift);
         if (!this.world.getBlock(x, y + 1, z).isSolid())
         {
-            this.renderFaceYPos((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceYPos(x, y, z);
+            didRender = true;
         }
 
-    	Tessellator.instance.setColorOpaque_I(0x505050 + shift);
+    	Tessellator.instance.setColor_I(0xFF505050 | shift);
         if (!this.world.getBlock(x, y, z - 1).isSolid())
         {
-            this.renderFaceZNeg((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceZNeg(x, y, z);
+            didRender = true;
         }
 
         if (!this.world.getBlock(x, y, z + 1).isSolid())
         {
-            this.renderFaceZPos((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceZPos(x, y, z);
+            didRender = true;
         }
 
         if (!this.world.getBlock(x - 1, y, z).isSolid())
         {
-            this.renderFaceXNeg((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceXNeg(x, y, z);
+            didRender = true;
         }
 
         if (!this.world.getBlock(x + 1, y, z).isSolid())
         {
-            this.renderFaceXPos((double)x, (double)y, (double)z);
-            var9 = true;
+            this.renderFaceXPos(x, y, z);
+            didRender = true;
         }
 
-        return var9;
+        return didRender;
     }
 
-    private void renderFaceYNeg(double p_147768_2_, double p_147768_4_, double p_147768_6_)
+    private void renderFaceYNeg(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147768_2_ + this.renderMinX;
-        double var28 = p_147768_2_ + this.renderMaxX;
-        double var30 = p_147768_4_ + this.renderMinY;
-        double var32 = p_147768_6_ + this.renderMinZ;
-        double var34 = p_147768_6_ + this.renderMaxZ;
+        double xmin = x + this.renderMinX;
+        double xmax = x + this.renderMaxX;
+        double ymin = y + this.renderMinY;
+        double zmin = z + this.renderMinZ;
+        double zmax = z + this.renderMaxZ;
 
-        var9.addVertex(var26, var30, var34);
-        var9.addVertex(var26, var30, var32);
-        var9.addVertex(var28, var30, var32);
-        var9.addVertex(var28, var30, var34);
+        tess.addVertex(xmin, ymin, zmax);
+        tess.addVertex(xmin, ymin, zmin);
+        tess.addVertex(xmax, ymin, zmin);
+        tess.addVertex(xmax, ymin, zmax);
     }
 
-    private void renderFaceYPos(double p_147806_2_, double p_147806_4_, double p_147806_6_)
+    private void renderFaceYPos(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147806_2_ + this.renderMinX;
-        double var28 = p_147806_2_ + this.renderMaxX;
-        double var30 = p_147806_4_ + this.renderMaxY;
-        double var32 = p_147806_6_ + this.renderMinZ;
-        double var34 = p_147806_6_ + this.renderMaxZ;
+        double xmin = x + this.renderMinX;
+        double xmax = x + this.renderMaxX;
+        double ymax = y + this.renderMaxY;
+        double zmin = z + this.renderMinZ;
+        double zmax = z + this.renderMaxZ;
 
-        var9.addVertex(var28, var30, var34);
-        var9.addVertex(var28, var30, var32);
-        var9.addVertex(var26, var30, var32);
-        var9.addVertex(var26, var30, var34);
+        tess.addVertex(xmax, ymax, zmax);
+        tess.addVertex(xmax, ymax, zmin);
+        tess.addVertex(xmin, ymax, zmin);
+        tess.addVertex(xmin, ymax, zmax);
     }
 
-    private void renderFaceZNeg(double p_147761_2_, double p_147761_4_, double p_147761_6_)
+    private void renderFaceZNeg(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147761_2_ + this.renderMinX;
-        double var28 = p_147761_2_ + this.renderMaxX;
-        double var30 = p_147761_4_ + this.renderMinY;
-        double var32 = p_147761_4_ + this.renderMaxY;
-        double var34 = p_147761_6_ + this.renderMinZ;
+        double xmin = x + this.renderMinX;
+        double xmax = x + this.renderMaxX;
+        double ymin = y + this.renderMinY;
+        double ymax = y + this.renderMaxY;
+        double zmin = z + this.renderMinZ;
 
-        var9.addVertex(var26, var32, var34);
-        var9.addVertex(var28, var32, var34);
-        var9.addVertex(var28, var30, var34);
-        var9.addVertex(var26, var30, var34);
+        tess.addVertex(xmin, ymax, zmin);
+        tess.addVertex(xmax, ymax, zmin);
+        tess.addVertex(xmax, ymin, zmin);
+        tess.addVertex(xmin, ymin, zmin);
     }
 
-    private void renderFaceZPos(double p_147734_2_, double p_147734_4_, double p_147734_6_)
+    private void renderFaceZPos(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147734_2_ + this.renderMinX;
-        double var28 = p_147734_2_ + this.renderMaxX;
-        double var30 = p_147734_4_ + this.renderMinY;
-        double var32 = p_147734_4_ + this.renderMaxY;
-        double var34 = p_147734_6_ + this.renderMaxZ;
+        double xmin = x + this.renderMinX;
+        double xmax = x + this.renderMaxX;
+        double ymin = y + this.renderMinY;
+        double ymax = y + this.renderMaxY;
+        double zmax = z + this.renderMaxZ;
 
-        var9.addVertex(var26, var32, var34);
-        var9.addVertex(var26, var30, var34);
-        var9.addVertex(var28, var30, var34);
-        var9.addVertex(var28, var32, var34);
+        tess.addVertex(xmin, ymax, zmax);
+        tess.addVertex(xmin, ymin, zmax);
+        tess.addVertex(xmax, ymin, zmax);
+        tess.addVertex(xmax, ymax, zmax);
     }
 
-    private void renderFaceXNeg(double p_147798_2_, double p_147798_4_, double p_147798_6_)
+    private void renderFaceXNeg(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147798_2_ + this.renderMinX;
-        double var28 = p_147798_4_ + this.renderMinY;
-        double var30 = p_147798_4_ + this.renderMaxY;
-        double var32 = p_147798_6_ + this.renderMinZ;
-        double var34 = p_147798_6_ + this.renderMaxZ;
+        double xmin = x + this.renderMinX;
+        double ymin = y + this.renderMinY;
+        double ymax = y + this.renderMaxY;
+        double zmin = z + this.renderMinZ;
+        double zmax = z + this.renderMaxZ;
 
-        var9.addVertex(var26, var30, var34);
-        var9.addVertex(var26, var30, var32);
-        var9.addVertex(var26, var28, var32);
-        var9.addVertex(var26, var28, var34);
+        tess.addVertex(xmin, ymax, zmax);
+        tess.addVertex(xmin, ymax, zmin);
+        tess.addVertex(xmin, ymin, zmin);
+        tess.addVertex(xmin, ymin, zmax);
     }
 
-    private void renderFaceXPos(double p_147764_2_, double p_147764_4_, double p_147764_6_)
+    private void renderFaceXPos(double x, double y, double z)
     {
-        Tessellator var9 = Tessellator.instance;
+        Tessellator tess = Tessellator.instance;
 
-        double var26 = p_147764_2_ + this.renderMaxX;
-        double var28 = p_147764_4_ + this.renderMinY;
-        double var30 = p_147764_4_ + this.renderMaxY;
-        double var32 = p_147764_6_ + this.renderMinZ;
-        double var34 = p_147764_6_ + this.renderMaxZ;
+        double xmax = x + this.renderMaxX;
+        double ymin = y + this.renderMinY;
+        double ymax = y + this.renderMaxY;
+        double zmin = z + this.renderMinZ;
+        double zmax = z + this.renderMaxZ;
 
-        var9.addVertex(var26, var28, var34);
-        var9.addVertex(var26, var28, var32);
-        var9.addVertex(var26, var30, var32);
-        var9.addVertex(var26, var30, var34);
+        tess.addVertex(xmax, ymin, zmax);
+        tess.addVertex(xmax, ymin, zmin);
+        tess.addVertex(xmax, ymax, zmin);
+        tess.addVertex(xmax, ymax, zmax);
     }
 }

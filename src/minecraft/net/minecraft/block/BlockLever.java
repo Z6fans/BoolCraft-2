@@ -217,7 +217,7 @@ public class BlockLever extends Block
      */
     public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
-    	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xEE39E4 : 0x701B6C;
+    	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
     }
 
 	public boolean isReplaceable()

@@ -32,7 +32,7 @@ public class BlockRedstoneWire extends Block
     public int colorMultiplier(WorldClient world, int x, int y, int z)
     {
     	int scale[] = {0, 136, 181, 204, 218, 227, 233, 238, 242, 245, 247, 249, 251, 253, 254, 255};
-        return 0x101 * scale[world.getBlockMetadata(x, y, z)];
+        return 0xFF000000 | (0x101 * scale[world.getBlockMetadata(x, y, z)]);
     }
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)

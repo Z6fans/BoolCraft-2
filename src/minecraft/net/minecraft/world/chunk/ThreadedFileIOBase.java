@@ -155,7 +155,7 @@ public class ThreadedFileIOBase implements Runnable
         regionsByFilename.clear();
     }
     
-    public static class RegionFile
+    static class RegionFile
     {
         private static final byte[] emptySector = new byte[4096];
         private final RandomAccessFile dataFile;

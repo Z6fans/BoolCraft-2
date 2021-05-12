@@ -410,17 +410,9 @@ public class Minecraft
                                     {
                                         this.currentScreen.handleKeyboardInput();
                                     }
-                                    else
+                                    else if (Keyboard.getEventKey() == 1)
                                     {
-                                        if (Keyboard.getEventKey() == 1)
-                                        {
-                                            this.displayInGameMenu();
-                                        }
-
-                                        if (Keyboard.getEventKey() == 30 && Keyboard.isKeyDown(61))
-                                        {
-                                            this.renderGlobal.loadRenderers();
-                                        }
+                                    	this.displayInGameMenu();
                                     }
                                 }
                             }

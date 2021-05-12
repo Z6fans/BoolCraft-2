@@ -17,9 +17,6 @@ public class Chunk
 
     /** The z coordinate of the chunk. */
     public final int zPosition;
-
-    /** Boolean value indicating if the terrain is populated. */
-    public boolean isTerrainPopulated;
     private boolean isLoaded;
 
     /**
@@ -32,14 +29,6 @@ public class Chunk
         this.storageArrays = new ExtendedBlockStorage[16];
         this.xPosition = x;
         this.zPosition = z;
-    }
-
-    /**
-     * Checks whether the chunk is at the X/Z location specified
-     */
-    public boolean isAtLocation(int p_76600_1_, int p_76600_2_)
-    {
-        return p_76600_1_ == this.xPosition && p_76600_2_ == this.zPosition;
     }
 
     /**
@@ -221,11 +210,6 @@ public class Chunk
         this.isModified = true;
     }
 
-    public boolean isEmpty()
-    {
-        return false;
-    }
-
     public void setLoaded()
     {
         this.isLoaded = true;
@@ -242,35 +226,6 @@ public class Chunk
     public ChunkCoordIntPair getChunkCoordIntPair()
     {
         return new ChunkCoordIntPair(this.xPosition, this.zPosition);
-    }
-
-    /**
-     * Returns whether the ExtendedBlockStorages containing levels (in blocks) from arg 1 to arg 2 are fully empty
-     * (true) or not (false).
-     */
-    public boolean getAreLevelsEmpty(int yMin, int yMax)
-    {
-        if (yMin < 0)
-        {
-            yMin = 0;
-        }
-
-        if (yMax >= 256)
-        {
-            yMax = 255;
-        }
-
-        for (int y = yMin; y <= yMax; y += 16)
-        {
-            ExtendedBlockStorage storage = this.storageArrays[y >> 4];
-
-            if (storage != null && !storage.isEmpty())
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public void setStorageArrays(ExtendedBlockStorage[] storageArray)

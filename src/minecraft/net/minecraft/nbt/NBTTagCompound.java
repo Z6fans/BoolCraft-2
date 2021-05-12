@@ -102,14 +102,6 @@ public class NBTTagCompound extends NBTBase
         this.tagMap.put(p_74773_1_, new NBTTagByteArray(p_74773_2_));
     }
 
-    /**
-     * Stores the given boolean value as a NBTTagByte, storing 1 for true and 0 for false, using the given string key.
-     */
-    public void setBoolean(String p_74757_1_, boolean p_74757_2_)
-    {
-        this.setByte(p_74757_1_, (byte)(p_74757_2_ ? 1 : 0));
-    }
-
     private byte getTagId(String p_150299_1_)
     {
         NBTBase var2 = (NBTBase)this.tagMap.get(p_150299_1_);
@@ -219,15 +211,6 @@ public class NBTTagCompound extends NBTBase
         {
             throw this.createCrashReport(p_150295_1_, 9, var4);
         }
-    }
-
-    /**
-     * Retrieves a boolean value using the specified key, or false if no such key was stored. This uses the getByte
-     * method.
-     */
-    public boolean getBoolean(String p_74767_1_)
-    {
-        return this.getByte(p_74767_1_) != 0;
     }
 
     public String toString()

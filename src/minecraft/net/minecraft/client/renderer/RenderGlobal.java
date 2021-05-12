@@ -121,7 +121,7 @@ public class RenderGlobal
     /**
      * Loads all the renderers and sets up the basic settings usage
      */
-    public void loadRenderers()
+    private void loadRenderers()
     {
         if (this.theWorld != null)
         {
@@ -318,11 +318,6 @@ public class RenderGlobal
             this.prevRenderSortX = player.getPosX();
             this.prevRenderSortY = player.getPosY();
             this.prevRenderSortZ = player.getPosZ();
-
-            for (int i = 0; i < 27; ++i)
-            {
-                this.sortedWorldRenderers[i].updateRendererSort(player);
-            }
         }
 
         GL11.glDisable(GL11.GL_LIGHTING);
@@ -341,9 +336,9 @@ public class RenderGlobal
         		j = this.sortedWorldRenderers.length - 1 - i;
         	}
         	
-            if (!this.sortedWorldRenderers[j].shouldSkipPass(renderPass) && this.sortedWorldRenderers[j].getInFrustrum())
+            if (renderPass != 1 && !this.sortedWorldRenderers[j].shouldSkip() && this.sortedWorldRenderers[j].getInFrustrum())
             {
-                if (this.sortedWorldRenderers[j].getGLCallListForPass(renderPass) >= 0)
+                if (this.sortedWorldRenderers[j].getGLCallList() >= 0)
                 {
                     this.glRenderLists.add(this.sortedWorldRenderers[j]);
                 }
@@ -379,7 +374,7 @@ public class RenderGlobal
                 this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppx, ppy, ppz);
             }
 
-            this.allRenderLists[whichList].addGLRenderList(renderer.getGLCallListForPass(renderPass));
+            this.allRenderLists[whichList].addGLRenderList(renderPass == 1 ? -1 : renderer.getGLCallList());
         }
 
         for (int i = 0; i < this.allRenderLists.length; ++i)

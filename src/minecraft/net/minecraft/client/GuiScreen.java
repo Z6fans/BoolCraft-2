@@ -285,9 +285,9 @@ public class GuiScreen
             {
                 FontRenderer.class.getResourceAsStream("/assets/minecraft/font/glyph_sizes.bin").read(this.glyphWidth);
             }
-            catch (IOException var2)
+            catch (IOException e)
             {
-                throw new RuntimeException(var2);
+                throw new RuntimeException(e);
             }
         }
 
@@ -366,27 +366,21 @@ public class GuiScreen
         
         private class Texture
         {
-            private int glTextureId = -1;
+            private int glTextureId;
             
             public Texture(int page) throws IOException
             {
-                if (this.glTextureId != -1)
-                {
-                    GL11.glDeleteTextures(this.glTextureId);
-                    this.glTextureId = -1;
-                }
-            	
                 InputStream texStream = null;
 
                 try
                 {
                     texStream = Texture.class.getResourceAsStream(String.format("/assets/minecraft/textures/font/unicode_page_%02x.png", new Object[] {page}));
-                    int textureID = this.getGlTextureId();
+                    this.glTextureId = GL11.glGenTextures();
                     BufferedImage image = ImageIO.read(texStream);
-                    GL11.glDeleteTextures(textureID);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
+                    GL11.glDeleteTextures(this.glTextureId);
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
                     GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
                     
                     int w = image.getWidth();
                     int h = image.getHeight();
@@ -421,11 +415,6 @@ public class GuiScreen
 
             public int getGlTextureId()
             {
-                if (this.glTextureId == -1)
-                {
-                    this.glTextureId = GL11.glGenTextures();
-                }
-
                 return this.glTextureId;
             }
         }
