@@ -115,20 +115,17 @@ public class RenderGlobal
     {
         if (this.theWorld != null)
         {
-            int var1;
-
             if (this.worldRenderers != null)
             {
-                for (var1 = 0; var1 < this.worldRenderers.length; ++var1)
+                for (int i = 0; i < this.worldRenderers.length; ++i)
                 {
-                    this.worldRenderers[var1].stopRendering();
+                    this.worldRenderers[i].stopRendering();
                 }
             }
 
-            var1 = 33;
-            this.renderChunksWide = var1;
+            this.renderChunksWide = 33;
             this.renderChunksTall = 16;
-            this.renderChunksDeep = var1;
+            this.renderChunksDeep = 33;
             this.worldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
             this.sortedWorldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
             int var2 = 0;
@@ -494,36 +491,29 @@ public class RenderGlobal
     /**
      * Marks the blocks in the given range for update
      */
-    private void markBlocksForUpdate(int x1, int y1, int z1, int x2, int y2, int z2)
+    public void markChunksForUpdate(int x1, int y1, int z1, int x2, int y2, int z2)
     {
-        int var7 = x1 < 0 ? -((-x1 - 1) / 16) - 1 : x1 / 16;
-        int var8 = y1 < 0 ? -((-y1 - 1) / 16) - 1 : y1 / 16;
-        int var9 = z1 < 0 ? -((-z1 - 1) / 16) - 1 : z1 / 16;
-        int var10 = x2 < 0 ? -((-x2 - 1) / 16) - 1 : x2 / 16;
-        int var11 = y2 < 0 ? -((-y2 - 1) / 16) - 1 : y2 / 16;
-        int var12 = z2 < 0 ? -((-z2 - 1) / 16) - 1 : z2 / 16;
-
-        for (int var13 = var7; var13 <= var10; ++var13)
+        for (int x = x1; x <= x2; ++x)
         {
-            int var14 = var13 % this.renderChunksWide;
+            int var14 = x % this.renderChunksWide;
 
             if (var14 < 0)
             {
                 var14 += this.renderChunksWide;
             }
 
-            for (int var15 = var8; var15 <= var11; ++var15)
+            for (int y = y1; y <= y2; ++y)
             {
-                int var16 = var15 % this.renderChunksTall;
+                int var16 = y % this.renderChunksTall;
 
                 if (var16 < 0)
                 {
                     var16 += this.renderChunksTall;
                 }
 
-                for (int var17 = var9; var17 <= var12; ++var17)
+                for (int z = z1; z <= z2; ++z)
                 {
-                    int var18 = var17 % this.renderChunksDeep;
+                    int var18 = z % this.renderChunksDeep;
 
                     if (var18 < 0)
                     {
@@ -531,34 +521,16 @@ public class RenderGlobal
                     }
 
                     int var19 = (var18 * this.renderChunksTall + var16) * this.renderChunksWide + var14;
-                    WorldRenderer var20 = this.worldRenderers[var19];
+                    WorldRenderer renderer = this.worldRenderers[var19];
 
-                    if (var20 != null && !var20.needsUpdate)
+                    if (renderer != null && !renderer.needsUpdate)
                     {
-                        this.worldRenderersToUpdate.add(var20);
-                        var20.markDirty();
+                        this.worldRenderersToUpdate.add(renderer);
+                        renderer.markDirty();
                     }
                 }
             }
         }
-    }
-
-    /**
-     * On the client, re-renders the block. On the server, sends the block to the client (which will re-render it),
-     * including the tile entity description packet if applicable. Args: x, y, z
-     */
-    public void markBlockForUpdate(int x, int y, int z)
-    {
-        this.markBlocksForUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
-    }
-
-    /**
-     * On the client, re-renders all blocks in this range, inclusive. On the server, does nothing. Args: min x, min y,
-     * min z, max x, max y, max z
-     */
-    public void markBlockRangeForRenderUpdate(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
-    {
-        this.markBlocksForUpdate(minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
     }
 
     /**

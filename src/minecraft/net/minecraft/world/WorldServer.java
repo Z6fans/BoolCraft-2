@@ -447,7 +447,7 @@ public class WorldServer
                                 clientChunk.setLoaded();
                                 clientChunk.setStorageArrays(this.copyStorage(serverChunk));
                                 clientChunk.setChunkModified();
-                                this.minecraft.renderGlobal.markBlockRangeForRenderUpdate(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 256, (chunkZ << 4) + 15);
+                                this.minecraft.renderGlobal.markChunksForUpdate(chunkX - 1, 0, chunkZ - 1, chunkX + 1, 16, chunkZ + 1);
                             }
                         }
                     }
@@ -1199,16 +1199,9 @@ public class WorldServer
         {
         	if (!WorldServer.this.playerLoadedChunks.contains(this.chunkLocation))
         	{
-        		Chunk chunk = WorldServer.this.provideChunk(this.chunkLocation.chunkXPos, this.chunkLocation.chunkZPos);
-        		int baseX = chunk.xPosition * 16;
-                int baseZ = chunk.zPosition * 16;
-                
-                for (int localKey : this.updates)
+        		for (int localKey : this.updates)
                 {
-                	int localX = localKey >> 12 & 15;
-                    int localZ = localKey >> 8 & 15;
-                    int localY = localKey & 255;
-                    WorldServer.this.minecraft.renderGlobal.markBlockForUpdate(localX + baseX, localY, localZ + baseZ);
+                    WorldServer.this.minecraft.renderGlobal.markChunksForUpdate(this.chunkLocation.chunkXPos - 1, ((localKey & 255) - 1) >> 4, this.chunkLocation.chunkZPos - 1, this.chunkLocation.chunkXPos + 1, ((localKey & 255) + 1) >> 4, this.chunkLocation.chunkZPos + 1);
                 }
         	}
             this.updates.clear();

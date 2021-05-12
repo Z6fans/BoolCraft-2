@@ -87,45 +87,6 @@ public class Chunk
             return storage != null ? storage.getExtBlockMetadata(x, y & 15, z) : 0;
         }
     }
-
-    public boolean setBlockAndMetaClient(int localX, int y, int localZ, Block block, int meta)
-    {
-        Block oldBlock = this.getBlock(localX, y, localZ);
-        int oldMeta = this.getBlockMetadata(localX, y, localZ);
-
-        if (oldBlock == block && oldMeta == meta)
-        {
-            return false;
-        }
-        else
-        {
-            ExtendedBlockStorage storageArray = this.storageArrays[y >> 4];
-
-            if (storageArray == null)
-            {
-                if (block == Block.air)
-                {
-                    return false;
-                }
-
-                storageArray = this.storageArrays[y >> 4] = new ExtendedBlockStorage(y >> 4 << 4);
-            }
-
-            storageArray.setBlock(localX, y & 15, localZ, block);
-
-            if (storageArray.getBlock(localX, y & 15, localZ) != block)
-            {
-                return false;
-            }
-            else
-            {
-                storageArray.setExtBlockMetadata(localX, y & 15, localZ, meta);
-
-                this.isModified = true;
-                return true;
-            }
-        }
-    }
     
     public boolean setBlockAndMetaServer(WorldServer world, int localX, int y, int localZ, Block block, int meta)
     {
