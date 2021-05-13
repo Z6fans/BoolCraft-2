@@ -50,11 +50,6 @@ public abstract class NBTBase
         }
     }
 
-    /**
-     * Creates a clone of the tag.
-     */
-    public abstract NBTBase copy();
-
     public boolean equals(Object p_equals_1_)
     {
         if (!(p_equals_1_ instanceof NBTBase))

@@ -42,14 +42,6 @@ public class NBTTagLong extends NBTBase.NBTPrimitive
         return "" + this.data + "L";
     }
 
-    /**
-     * Creates a clone of the tag.
-     */
-    public NBTBase copy()
-    {
-        return new NBTTagLong(this.data);
-    }
-
     public boolean equals(Object p_equals_1_)
     {
         if (super.equals(p_equals_1_))

@@ -42,14 +42,6 @@ public class NBTTagInt extends NBTBase.NBTPrimitive
         return "" + this.data;
     }
 
-    /**
-     * Creates a clone of the tag.
-     */
-    public NBTBase copy()
-    {
-        return new NBTTagInt(this.data);
-    }
-
     public boolean equals(Object p_equals_1_)
     {
         if (super.equals(p_equals_1_))

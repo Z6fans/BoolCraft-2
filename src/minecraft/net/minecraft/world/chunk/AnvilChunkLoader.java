@@ -5,29 +5,22 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.ChunkCoordIntPair;
 import net.minecraft.world.SessionLockException;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.WorldServer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class AnvilChunkLoader
 {
-    private static final Logger logger = LogManager.getLogger();
-    private final List<AnvilChunkLoader.PendingChunk> chunksToRemove = new ArrayList<AnvilChunkLoader.PendingChunk>();
-    private final Set<ChunkCoordIntPair> pendingAnvilChunksCoordinates = new HashSet<ChunkCoordIntPair>();
-    private final Object syncLockObject = new Object();
+    /** A map containing Files as keys and RegionFiles as values */
+    private static final Map<File, RegionFile> regionsByFilename = new HashMap<File, RegionFile>();
 
     /** Save directory for chunks using the Anvil format */
     private final File chunkSaveLocation;
@@ -42,97 +35,44 @@ public class AnvilChunkLoader
      */
     public Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
     {
-        NBTTagCompound tag = null;
-        ChunkCoordIntPair coords = new ChunkCoordIntPair(chunkX, chunkZ);
-        
-        @SuppressWarnings("unused")
-		Object o = this.syncLockObject;
+        DataInputStream stream = createOrLoadRegionFile(this.chunkSaveLocation, chunkX, chunkZ).getChunkDataInputStream(chunkX & 31, chunkZ & 31);;
 
-        synchronized (this.syncLockObject)
+        if (stream != null)
         {
-            if (this.pendingAnvilChunksCoordinates.contains(coords))
+        	NBTTagCompound tag = CompressedStreamTools.read(stream);
+            
+            if (tag.isTagIdEqual("Level", 10) && tag.getCompoundTag("Level").isTagIdEqual("Sections", 9))
             {
-                for (int i = 0; i < this.chunksToRemove.size(); ++i)
+                NBTTagCompound levelTag = tag.getCompoundTag("Level");
+                Chunk chunk = new Chunk(levelTag.getInteger("xPos"), levelTag.getInteger("zPos"));
+                byte[][] storageArray = new byte[16][4096];
+
+                for (NBTTagCompound section : levelTag.getTagList("Sections"))
                 {
-                    if (((AnvilChunkLoader.PendingChunk)this.chunksToRemove.get(i)).chunkCoordinate.equals(coords))
-                    {
-                        tag = ((AnvilChunkLoader.PendingChunk)this.chunksToRemove.get(i)).nbtTags;
-                        break;
-                    }
+                    byte y = section.getByte("Y");
+                    storageArray[y] = section.getByteArray("Blocks");
                 }
-            }
-        }
 
-        if (tag == null)
-        {
-            DataInputStream stream = ThreadedFileIOBase.threadedIOInstance.getInputStream(this.chunkSaveLocation, chunkX, chunkZ);
+                chunk.setStorageArrays(storageArray);
 
-            if (stream == null)
-            {
-                return null;
-            }
-
-            tag = CompressedStreamTools.read(stream);
-        }
-        
-        if (!tag.isTagIdEqual("Level", 10))
-        {
-            logger.error("Chunk file at " + chunkX + "," + chunkZ + " is missing level data, skipping");
-            return null;
-        }
-        else if (!tag.getCompoundTag("Level").isTagIdEqual("Sections", 9))
-        {
-            logger.error("Chunk file at " + chunkX + "," + chunkZ + " is missing block data, skipping");
-            return null;
-        }
-        else
-        {
-            NBTTagCompound levelTag = tag.getCompoundTag("Level");
-            
-            int readChunkX = levelTag.getInteger("xPos");
-            int readChunkZ = levelTag.getInteger("zPos");
-
-            if (!(chunkX == readChunkX && chunkZ == readChunkZ))
-            {
-                logger.error("Chunk file at " + chunkX + "," + chunkZ + " is in the wrong location; relocating. (Expected " + chunkX + ", " + chunkZ + ", got " + readChunkX + ", " + readChunkZ + ")");
-                tag.setInteger("xPos", chunkX);
-                tag.setInteger("zPos", chunkZ);
-            }
-            
-            Chunk chunk = new Chunk(readChunkX, readChunkZ);
-            NBTTagList sections = levelTag.getTagList("Sections", 10);
-            byte[][] storageArray = new byte[16][4096];
-
-            for (int i = 0; i < sections.tagCount(); ++i)
-            {
-                NBTTagCompound section = sections.getCompoundTagAt(i);
-                byte y = section.getByte("Y");
-                storageArray[y] = section.getByteArray("Blocks");
-            }
-
-            chunk.setStorageArrays(storageArray);
-
-            if (levelTag.isTagIdEqual("TileTicks", 9))
-            {
-                NBTTagList ticks = levelTag.getTagList("TileTicks", 10);
-
-                if (ticks != null)
+                if (levelTag.isTagIdEqual("TileTicks", 9))
                 {
-                    for (int i = 0; i < ticks.tagCount(); ++i)
+                	for (NBTTagCompound tick : levelTag.getTagList("TileTicks"))
                     {
-                        NBTTagCompound tick = ticks.getCompoundTagAt(i);
                         world.addBlockUpdateFromSave(tick.getInteger("x"), tick.getInteger("y"), tick.getInteger("z"), Block.getBlockById(tick.getInteger("i")), tick.getInteger("t"), tick.getInteger("p"));
                     }
                 }
-            }
 
-            return chunk;
+                return chunk;
+            }
         }
+        
+        return null;
     }
 
     public void saveChunk(WorldServer world, Chunk chunk) throws SessionLockException, IOException
     {
-        world.checkSessionLock();
+    	world.checkSessionLock();
 
         try
         {
@@ -144,7 +84,7 @@ public class AnvilChunkLoader
             levelTag.setInteger("zPos", chunk.zPosition);
             levelTag.setLong("LastUpdate", world.getTotalWorldTime());
             byte[][] storageArray = chunk.getBlockStorageArray();
-            NBTTagList sectionsTagList = new NBTTagList();
+            List<NBTTagCompound> sectionTags = new ArrayList<NBTTagCompound>();
 
             for (int i = 0; i < storageArray.length; ++i)
             {
@@ -155,22 +95,20 @@ public class AnvilChunkLoader
                     NBTTagCompound sectionTag = new NBTTagCompound();
                     sectionTag.setByte("Y", (byte)(i & 255));
                     sectionTag.setByteArray("Blocks", storage);
-                    sectionsTagList.appendTag(sectionTag);
+                    sectionTags.add(sectionTag);
                 }
             }
 
-            levelTag.setTag("Sections", sectionsTagList);
+            levelTag.setTag("Sections", new NBTTagList(sectionTags));
             List<NextTickListEntry> pendingUpdates = world.getPendingBlockUpdates(chunk);
 
             if (!pendingUpdates.isEmpty())
             {
                 long time = world.getTotalWorldTime();
-                NBTTagList tickTagList = new NBTTagList();
-                Iterator<NextTickListEntry> updates = pendingUpdates.iterator();
+                List<NBTTagCompound> tickTags = new ArrayList<NBTTagCompound>();
 
-                while (updates.hasNext())
+                for (NextTickListEntry entry : pendingUpdates)
                 {
-                    NextTickListEntry entry = (NextTickListEntry)updates.next();
                     NBTTagCompound tickTag = new NBTTagCompound();
                     tickTag.setInteger("i", Block.getIdFromBlock(entry.getBlock()));
                     tickTag.setInteger("x", entry.xCoord);
@@ -178,70 +116,20 @@ public class AnvilChunkLoader
                     tickTag.setInteger("z", entry.zCoord);
                     tickTag.setInteger("t", (int)(entry.scheduledTime - time));
                     tickTag.setInteger("p", entry.priority);
-                    tickTagList.appendTag(tickTag);
+                    tickTags.add(tickTag);
                 }
 
-                levelTag.setTag("TileTicks", tickTagList);
+                levelTag.setTag("TileTicks", new NBTTagList(tickTags));
             }
             
-            ChunkCoordIntPair coords = chunk.getChunkCoordIntPair();
-            
-            @SuppressWarnings("unused")
-    		Object o = this.syncLockObject;
-
-            synchronized (this.syncLockObject)
-            {
-                if (this.pendingAnvilChunksCoordinates.contains(coords))
-                {
-                    for (int i = 0; i < this.chunksToRemove.size(); ++i)
-                    {
-                        if (((AnvilChunkLoader.PendingChunk)this.chunksToRemove.get(i)).chunkCoordinate.equals(coords))
-                        {
-                            this.chunksToRemove.set(i, new AnvilChunkLoader.PendingChunk(coords, masterTag));
-                            return;
-                        }
-                    }
-                }
-
-                this.chunksToRemove.add(new AnvilChunkLoader.PendingChunk(coords, masterTag));
-                this.pendingAnvilChunksCoordinates.add(coords);
-                ThreadedFileIOBase.threadedIOInstance.queueIO(this);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Returns a boolean stating if the write was unsuccessful.
-     */
-    public boolean writeNextIO()
-    {
-        AnvilChunkLoader.PendingChunk pendingChunk = null;
-        @SuppressWarnings("unused")
-		Object o = this.syncLockObject;
-
-        synchronized (this.syncLockObject)
-        {
-            if (this.chunksToRemove.isEmpty())
-            {
-                return false;
-            }
-
-            pendingChunk = (AnvilChunkLoader.PendingChunk)this.chunksToRemove.remove(0);
-            this.pendingAnvilChunksCoordinates.remove(pendingChunk.chunkCoordinate);
-        }
-
-        if (pendingChunk != null)
-        {
             try
             {
-            	DataOutputStream stream = ThreadedFileIOBase.threadedIOInstance.getOutputStream(this.chunkSaveLocation, pendingChunk.chunkCoordinate.chunkXPos, pendingChunk.chunkCoordinate.chunkZPos);
-                stream.writeByte(pendingChunk.nbtTags.getId());
+            	int chunkX = chunk.xPosition;
+            	int chunkZ = chunk.zPosition;
+            	DataOutputStream stream = createOrLoadRegionFile(this.chunkSaveLocation, chunkX, chunkZ).getChunkDataOutputStream(chunkX & 31, chunkZ & 31);
+                stream.writeByte(masterTag.getId());
                 stream.writeUTF("");
-            	pendingChunk.nbtTags.write(stream);
+                masterTag.write(stream);
                 stream.close();
             }
             catch (Exception e)
@@ -249,19 +137,60 @@ public class AnvilChunkLoader
                 e.printStackTrace();
             }
         }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    private static RegionFile createOrLoadRegionFile(File chunkSaveLocation, int chunkX, int chunkZ)
+    {
+        File regionDir = new File(chunkSaveLocation, "region");
+        File regionFileName = new File(regionDir, "r." + (chunkX >> 5) + "." + (chunkZ >> 5) + ".mca");
+        RegionFile regionFile = regionsByFilename.get(regionFileName);
 
-        return true;
+        if (regionFile != null)
+        {
+            return regionFile;
+        }
+        else
+        {
+            if (!regionDir.exists())
+            {
+                regionDir.mkdirs();
+            }
+
+            if (regionsByFilename.size() >= 256)
+            {
+                clearRegionFileReferences();
+            }
+
+            RegionFile newRegionFile = new RegionFile(regionFileName);
+            regionsByFilename.put(regionFileName, newRegionFile);
+            return newRegionFile;
+        }
     }
 
-    private static class PendingChunk
+    /**
+     * Saves the current Chunk Map Cache
+     */
+    public static void clearRegionFileReferences()
     {
-        private final ChunkCoordIntPair chunkCoordinate;
-        private final NBTTagCompound nbtTags;
-
-        private PendingChunk(ChunkCoordIntPair coord, NBTTagCompound tag)
+        for (RegionFile regionFile : regionsByFilename.values())
         {
-            this.chunkCoordinate = coord;
-            this.nbtTags = tag;
+            try
+            {
+                if (regionFile != null)
+                {
+                    regionFile.close();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
+
+        regionsByFilename.clear();
     }
 }

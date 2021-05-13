@@ -5,6 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class NBTTagCompound extends NBTBase
@@ -17,18 +18,21 @@ public class NBTTagCompound extends NBTBase
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes
      */
-    public void write(DataOutput p_74734_1_) throws IOException
+    public void write(DataOutput stream) throws IOException
     {
-        Iterator<String> var2 = this.tagMap.keySet().iterator();
-
-        while (var2.hasNext())
+        for (String key : this.tagMap.keySet())
         {
-            String var3 = var2.next();
-            NBTBase var4 = this.tagMap.get(var3);
-            func_150298_a(var3, var4, p_74734_1_);
+            NBTBase tag = this.tagMap.get(key);
+            stream.writeByte(tag.getId());
+
+            if (tag.getId() != 0)
+            {
+                stream.writeUTF(key);
+                tag.write(stream);
+            }
         }
 
-        p_74734_1_.writeByte(0);
+        stream.writeByte(0);
     }
 
     void read(DataInput in) throws IOException
@@ -193,19 +197,11 @@ public class NBTTagCompound extends NBTBase
     /**
      * Gets the NBTTagList object with the given name. Args: name, NBTBase type
      */
-    public NBTTagList getTagList(String p_150295_1_, int p_150295_2_)
+    public List<NBTTagCompound> getTagList(String p_150295_1_)
     {
         try
         {
-            if (this.getTagId(p_150295_1_) != 9)
-            {
-                return new NBTTagList();
-            }
-            else
-            {
-                NBTTagList var3 = (NBTTagList)this.tagMap.get(p_150295_1_);
-                return var3.tagCount() > 0 && var3.func_150303_d() != p_150295_2_ ? new NBTTagList() : var3;
-            }
+            return ((NBTTagList)this.tagMap.get(p_150295_1_)).getTagList();
         }
         catch (ClassCastException var4)
         {
@@ -234,23 +230,6 @@ public class NBTTagCompound extends NBTBase
         return new RuntimeException("Reading NBT data", p_82581_3_);
     }
 
-    /**
-     * Creates a clone of the tag.
-     */
-    public NBTBase copy()
-    {
-        NBTTagCompound var1 = new NBTTagCompound();
-        Iterator<String> var2 = this.tagMap.keySet().iterator();
-
-        while (var2.hasNext())
-        {
-            String var3 = var2.next();
-            var1.setTag(var3, this.tagMap.get(var3).copy());
-        }
-
-        return var1;
-    }
-
     public boolean equals(Object p_equals_1_)
     {
         if (super.equals(p_equals_1_))
@@ -267,16 +246,5 @@ public class NBTTagCompound extends NBTBase
     public int hashCode()
     {
         return super.hashCode() ^ this.tagMap.hashCode();
-    }
-
-    private static void func_150298_a(String p_150298_0_, NBTBase p_150298_1_, DataOutput p_150298_2_) throws IOException
-    {
-        p_150298_2_.writeByte(p_150298_1_.getId());
-
-        if (p_150298_1_.getId() != 0)
-        {
-            p_150298_2_.writeUTF(p_150298_0_);
-            p_150298_1_.write(p_150298_2_);
-        }
     }
 }

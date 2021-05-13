@@ -16,7 +16,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
 import net.minecraft.world.SessionLockException;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.ThreadedFileIOBase;
+import net.minecraft.world.chunk.AnvilChunkLoader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -666,7 +666,7 @@ public class Minecraft
     	this.serverRunning = false;
         this.stopServer();
         this.renderViewEntity = null;
-        ThreadedFileIOBase.threadedIOInstance.clearRegionFileReferences();
+        AnvilChunkLoader.clearRegionFileReferences();
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;

@@ -25,12 +25,4 @@ public class NBTTagEnd extends NBTBase
     {
         return "END";
     }
-
-    /**
-     * Creates a clone of the tag.
-     */
-    public NBTBase copy()
-    {
-        return new NBTTagEnd();
-    }
 }

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -34,7 +36,6 @@ import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.AnvilChunkLoader;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ThreadedFileIOBase;
 
 public class WorldServer
 {
@@ -111,7 +112,7 @@ public class WorldServer
 
 	private boolean isSpawned = false;
 	
-	private byte[] blankChunkStorage;
+	private final byte[] blankChunkStorage;
 
     public WorldServer(Minecraft mc, File wd)
     {
@@ -495,34 +496,10 @@ public class WorldServer
         int xmax = xmin + 16 + 2;
         int zmin = (chunkCoords.chunkZPos << 4) - 2;
         int zmax = zmin + 16 + 2;
-        
-        ArrayList<NextTickListEntry> updateList = new ArrayList<NextTickListEntry>();
 
-        for (int i = 0; i < 2; ++i)
-        {
-            Iterator<NextTickListEntry> iter;
-
-            if (i == 0)
-            {
-                iter = this.pendingTickListEntriesTreeSet.iterator();
-            }
-            else
-            {
-                iter = this.pendingTickListEntriesThisTick.iterator();
-            }
-
-            while (iter.hasNext())
-            {
-                NextTickListEntry entry = (NextTickListEntry)iter.next();
-
-                if (entry.xCoord >= xmin && entry.xCoord < xmax && entry.zCoord >= zmin && entry.zCoord < zmax)
-                {
-                    updateList.add(entry);
-                }
-            }
-        }
-
-        return updateList;
+        return Stream.concat(this.pendingTickListEntriesTreeSet.stream(), this.pendingTickListEntriesThisTick.stream())
+        		.filter(entry -> entry.xCoord >= xmin && entry.xCoord < xmax && entry.zCoord >= zmin && entry.zCoord < zmax)
+        		.collect(Collectors.toList());
     }
 
     /**
@@ -615,16 +592,7 @@ public class WorldServer
      */
     public void flush()
     {
-    	try
-        {
-            ThreadedFileIOBase.threadedIOInstance.waitForFinish();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-
-        ThreadedFileIOBase.threadedIOInstance.clearRegionFileReferences();
+    	AnvilChunkLoader.clearRegionFileReferences();
     }
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)

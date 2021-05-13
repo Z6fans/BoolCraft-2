@@ -45,16 +45,6 @@ public class NBTTagByteArray extends NBTBase
         return "[" + this.byteArray.length + " bytes]";
     }
 
-    /**
-     * Creates a clone of the tag.
-     */
-    public NBTBase copy()
-    {
-        byte[] var1 = new byte[this.byteArray.length];
-        System.arraycopy(this.byteArray, 0, var1, 0, this.byteArray.length);
-        return new NBTTagByteArray(var1);
-    }
-
     public boolean equals(Object p_equals_1_)
     {
         return super.equals(p_equals_1_) ? Arrays.equals(this.byteArray, ((NBTTagByteArray)p_equals_1_).byteArray) : false;

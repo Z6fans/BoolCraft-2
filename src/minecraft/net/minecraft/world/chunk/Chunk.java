@@ -123,14 +123,6 @@ public class Chunk
         return false;
     }
 
-    /**
-     * Sets the isModified flag for this Chunk
-     */
-    public void setChunkModified()
-    {
-        this.isModified = true;
-    }
-
     public void setLoaded()
     {
         this.isLoaded = true;
