@@ -26,7 +26,7 @@ public class NBTTagByteArray extends NBTBase
         p_74734_1_.write(this.byteArray);
     }
 
-    void read(DataInput p_152446_1_) throws IOException
+    public void read(DataInput p_152446_1_) throws IOException
     {
         this.byteArray = new byte[p_152446_1_.readInt()];
         p_152446_1_.readFully(this.byteArray);

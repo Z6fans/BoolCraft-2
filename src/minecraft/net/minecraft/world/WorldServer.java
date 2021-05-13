@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
@@ -176,11 +175,11 @@ public class WorldServer
             try
             {
             	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
-                NBTTagCompound tag;
+                NBTTagCompound tag = new NBTTagCompound();
 
                 try
                 {
-                    tag = CompressedStreamTools.read(stream);
+                    tag.read(stream);
                 }
                 finally
                 {
@@ -202,11 +201,11 @@ public class WorldServer
             try
             {
             	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
-                NBTTagCompound tag;
+                NBTTagCompound tag = new NBTTagCompound();
 
                 try
                 {
-                    tag = CompressedStreamTools.read(stream);
+                    tag.read(stream);
                 }
                 finally
                 {
@@ -522,9 +521,7 @@ public class WorldServer
 
             try
             {
-                stream.writeByte(masterTag.getId());
-                stream.writeUTF("");
-            	masterTag.write(stream);
+                masterTag.write(stream);
             }
             finally
             {
@@ -592,7 +589,7 @@ public class WorldServer
      */
     public void flush()
     {
-    	AnvilChunkLoader.clearRegionFileReferences();
+    	this.currentChunkLoader.clearChunkFileReferences();
     }
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)

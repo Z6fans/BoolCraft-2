@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.SessionLockException;
@@ -20,14 +19,14 @@ import net.minecraft.world.WorldServer;
 public class AnvilChunkLoader
 {
     /** A map containing Files as keys and RegionFiles as values */
-    private static final Map<File, RegionFile> regionsByFilename = new HashMap<File, RegionFile>();
+    private final Map<File, RegionFile> chunksByFilename = new HashMap<File, RegionFile>();
 
     /** Save directory for chunks using the Anvil format */
-    private final File chunkSaveLocation;
+    private final File chunkDirectory;
 
     public AnvilChunkLoader(File file)
     {
-        this.chunkSaveLocation = file;
+        this.chunkDirectory = new File(file, "chunk");
     }
 
     /**
@@ -35,11 +34,12 @@ public class AnvilChunkLoader
      */
     public Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
     {
-        DataInputStream stream = createOrLoadRegionFile(this.chunkSaveLocation, chunkX, chunkZ).getChunkDataInputStream(chunkX & 31, chunkZ & 31);;
+        DataInputStream stream = this.createOrLoadChunkFile(chunkX, chunkZ).getChunkDataInputStream();
 
         if (stream != null)
         {
-        	NBTTagCompound tag = CompressedStreamTools.read(stream);
+        	NBTTagCompound tag = new NBTTagCompound();
+        	tag.read(stream);
             
             if (tag.isTagIdEqual("Level", 10) && tag.getCompoundTag("Level").isTagIdEqual("Sections", 9))
             {
@@ -126,9 +126,7 @@ public class AnvilChunkLoader
             {
             	int chunkX = chunk.xPosition;
             	int chunkZ = chunk.zPosition;
-            	DataOutputStream stream = createOrLoadRegionFile(this.chunkSaveLocation, chunkX, chunkZ).getChunkDataOutputStream(chunkX & 31, chunkZ & 31);
-                stream.writeByte(masterTag.getId());
-                stream.writeUTF("");
+            	DataOutputStream stream = this.createOrLoadChunkFile(chunkX, chunkZ).getChunkDataOutputStream();
                 masterTag.write(stream);
                 stream.close();
             }
@@ -143,40 +141,36 @@ public class AnvilChunkLoader
         }
     }
     
-    private static RegionFile createOrLoadRegionFile(File chunkSaveLocation, int chunkX, int chunkZ)
+    private RegionFile createOrLoadChunkFile(int x, int y)
     {
-        File regionDir = new File(chunkSaveLocation, "region");
-        File regionFileName = new File(regionDir, "r." + (chunkX >> 5) + "." + (chunkZ >> 5) + ".mca");
-        RegionFile regionFile = regionsByFilename.get(regionFileName);
+        File chunkFileName = new File(this.chunkDirectory, "c." + x + "." + y + ".mca");
+        RegionFile chunkFile = chunksByFilename.get(chunkFileName);
 
-        if (regionFile != null)
+        if (chunkFile == null)
         {
-            return regionFile;
-        }
-        else
-        {
-            if (!regionDir.exists())
+            if (!this.chunkDirectory.exists())
             {
-                regionDir.mkdirs();
+            	this.chunkDirectory.mkdirs();
             }
 
-            if (regionsByFilename.size() >= 256)
+            if (chunksByFilename.size() >= 0x1000)
             {
-                clearRegionFileReferences();
+                clearChunkFileReferences();
             }
 
-            RegionFile newRegionFile = new RegionFile(regionFileName);
-            regionsByFilename.put(regionFileName, newRegionFile);
-            return newRegionFile;
+            chunkFile = new RegionFile(chunkFileName);
+            chunksByFilename.put(chunkFileName, chunkFile);
         }
+        
+        return chunkFile;
     }
 
     /**
      * Saves the current Chunk Map Cache
      */
-    public static void clearRegionFileReferences()
+    public void clearChunkFileReferences()
     {
-        for (RegionFile regionFile : regionsByFilename.values())
+        for (RegionFile regionFile : chunksByFilename.values())
         {
             try
             {
@@ -191,6 +185,6 @@ public class AnvilChunkLoader
             }
         }
 
-        regionsByFilename.clear();
+        chunksByFilename.clear();
     }
 }

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class NBTTagEnd extends NBTBase
 {
-    void read(DataInput p_152446_1_) throws IOException {}
+    public void read(DataInput p_152446_1_) throws IOException {}
 
     /**
      * Write the actual data contents of the tag, implemented in NBT extension classes

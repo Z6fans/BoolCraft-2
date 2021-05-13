@@ -24,7 +24,7 @@ public class NBTTagByte extends NBTBase.NBTPrimitive
         p_74734_1_.writeByte(this.data);
     }
 
-    void read(DataInput p_152446_1_) throws IOException
+    public void read(DataInput p_152446_1_) throws IOException
     {
         this.data = p_152446_1_.readByte();
     }
@@ -60,33 +60,18 @@ public class NBTTagByte extends NBTBase.NBTPrimitive
         return super.hashCode() ^ this.data;
     }
 
-    public long func_150291_c()
+    public long getAsLong()
     {
         return (long)this.data;
     }
 
-    public int func_150287_d()
+    public int getAsInteger()
     {
         return this.data;
     }
 
-    public short func_150289_e()
-    {
-        return (short)this.data;
-    }
-
-    public byte func_150290_f()
+    public byte getAsByte()
     {
         return this.data;
-    }
-
-    public double func_150286_g()
-    {
-        return (double)this.data;
-    }
-
-    public float func_150288_h()
-    {
-        return (float)this.data;
     }
 }

@@ -32,7 +32,7 @@ public class NBTTagList extends NBTBase
         }
     }
 
-    void read(DataInput stream) throws IOException
+    public void read(DataInput stream) throws IOException
     {
         int length = stream.readInt();
         this.tagList = new ArrayList<NBTTagCompound>();

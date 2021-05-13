@@ -11,7 +11,7 @@ public abstract class NBTBase
      */
     abstract void write(DataOutput p_74734_1_) throws IOException;
 
-    abstract void read(DataInput p_152446_1_) throws IOException;
+    public abstract void read(DataInput p_152446_1_) throws IOException;
 
     public abstract String toString();
 
@@ -70,16 +70,10 @@ public abstract class NBTBase
 
     public abstract static class NBTPrimitive extends NBTBase
     {
-        public abstract long func_150291_c();
+        public abstract long getAsLong();
 
-        public abstract int func_150287_d();
+        public abstract int getAsInteger();
 
-        public abstract short func_150289_e();
-
-        public abstract byte func_150290_f();
-
-        public abstract double func_150286_g();
-
-        public abstract float func_150288_h();
+        public abstract byte getAsByte();
     }
 }

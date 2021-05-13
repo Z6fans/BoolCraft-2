@@ -35,7 +35,7 @@ public class NBTTagCompound extends NBTBase
         stream.writeByte(0);
     }
 
-    void read(DataInput in) throws IOException
+    public void read(DataInput in) throws IOException
     {
     	this.tagMap.clear();
         byte id;
@@ -125,7 +125,7 @@ public class NBTTagCompound extends NBTBase
     {
         try
         {
-            return !this.tagMap.containsKey(p_74771_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74771_1_)).func_150290_f();
+            return !this.tagMap.containsKey(p_74771_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74771_1_)).getAsByte();
         }
         catch (ClassCastException var3)
         {
@@ -140,7 +140,7 @@ public class NBTTagCompound extends NBTBase
     {
         try
         {
-            return !this.tagMap.containsKey(p_74762_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74762_1_)).func_150287_d();
+            return !this.tagMap.containsKey(p_74762_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74762_1_)).getAsInteger();
         }
         catch (ClassCastException var3)
         {
@@ -155,7 +155,7 @@ public class NBTTagCompound extends NBTBase
     {
         try
         {
-            return !this.tagMap.containsKey(p_74763_1_) ? 0L : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74763_1_)).func_150291_c();
+            return !this.tagMap.containsKey(p_74763_1_) ? 0L : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74763_1_)).getAsLong();
         }
         catch (ClassCastException var3)
         {
