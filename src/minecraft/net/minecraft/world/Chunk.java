@@ -39,7 +39,7 @@ public class Chunk
 
     public Block getBlock(int x, int y, int z)
     {
-        return Block.getBlockById(this.storageArray[y << 8 | z << 4 | x] & 0xF);
+        return Block.getBlockById((byte)(this.storageArray[y << 8 | z << 4 | x] & 0xF));
     }
 
     /**

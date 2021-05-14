@@ -25,8 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 
@@ -225,14 +223,8 @@ public class WorldServer
                 }
             }
         }
-        Iterator<ChunkCoordIntPair> var3 = this.activeChunkSet.iterator();
 
-        while (var3.hasNext())
-        {
-            ChunkCoordIntPair var4 = (ChunkCoordIntPair)var3.next();
-            Chunk chunk = this.provideChunk(var4.chunkXPos, var4.chunkZPos);
-            chunk.setLoaded();
-        }
+        for (ChunkCoordIntPair coords : this.activeChunkSet) this.provideChunk(coords.chunkXPos, coords.chunkZPos).setLoaded();
 
         if (this.totalTime - this.previousTotalWorldTime > 8000L)
         {
@@ -277,13 +269,13 @@ public class WorldServer
         }
     }
 
-    private void addBlockUpdateFromSave(int x, int y, int z, Block block, int delay)
+    private void addBlockUpdateFromSave(int x, int y, int z, Block block, long delay)
     {
         NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
 
         if (!block.isReplaceable())
         {
-            entry.setScheduledTime((long)delay + this.totalTime);
+            entry.setScheduledTime(delay + this.totalTime);
         }
 
         if (!this.pendingTickListEntriesHashSet.contains(entry))
@@ -531,14 +523,24 @@ public class WorldServer
         		try
         		{
             		DataInputStream stream = new DataInputStream(new FileInputStream(chunkFile));
-                	NBTTagCompound masterTag = new NBTTagCompound();
-                	masterTag.read(stream);
-                    chunk.setStorageArrays(masterTag.getByteArray("Blocks"));
+                	byte[] byteArray = new byte[stream.readInt()];
+                    stream.readFully(byteArray);
+                    chunk.setStorageArrays(byteArray);
+                    
+                    int length = stream.readInt();
 
-                    for (NBTTagCompound tick : masterTag.getTagList("TileTicks"))
+                    for (int i = 0; i < length; ++i)
                     {
-                        this.addBlockUpdateFromSave(tick.getInteger("x"), tick.getInteger("y"), tick.getInteger("z"), Block.getBlockById(tick.getInteger("i")), tick.getInteger("t"));
+                        int entryX = stream.readInt();
+                        int entryY = stream.readInt();
+                        int entryZ = stream.readInt();
+                        byte entryI = stream.readByte();
+                        long entryT = stream.readLong();
+                        
+                        this.addBlockUpdateFromSave(entryX, entryY, entryZ, Block.getBlockById(entryI), entryT);
                     }
+                    
+                    stream.close();
         		}
                 catch (Exception e)
                 {
@@ -574,25 +576,24 @@ public class WorldServer
     {
     	try
         {
-            NBTTagCompound masterTag = new NBTTagCompound();
-            masterTag.setByteArray("Blocks", chunk.getBlockStorageArray());
-            List<NBTTagCompound> tickTags = new ArrayList<NBTTagCompound>();
-
-            for (NextTickListEntry entry : this.getPendingBlockUpdates(chunk))
-            {
-                NBTTagCompound tickTag = new NBTTagCompound();
-                tickTag.setInteger("i", Block.getIdFromBlock(entry.getBlock()));
-                tickTag.setInteger("x", entry.xCoord);
-                tickTag.setInteger("y", entry.yCoord);
-                tickTag.setInteger("z", entry.zCoord);
-                tickTag.setInteger("t", (int)(entry.scheduledTime - this.getTotalWorldTime()));
-                tickTags.add(tickTag);
-            }
-
-            masterTag.setTag("TileTicks", new NBTTagList(tickTags));
-            
             DataOutputStream stream = new DataOutputStream(new FileOutputStream(new File(this.worldDirectory, "c." + chunk.xPosition + "." + chunk.zPosition + ".mca")));
-            masterTag.write(stream);
+            byte[] byteArray = chunk.getBlockStorageArray();
+            stream.writeInt(byteArray.length);
+            stream.write(byteArray);
+            
+            List<NextTickListEntry> tickTags = this.getPendingBlockUpdates(chunk);
+
+            stream.writeInt(tickTags.size());
+            
+            for (NextTickListEntry entry : tickTags)
+            {
+                stream.writeInt(entry.xCoord);
+                stream.writeInt(entry.yCoord);
+                stream.writeInt(entry.zCoord);
+                stream.writeByte(Block.getIdFromBlock(entry.getBlock()));
+                stream.writeLong(entry.scheduledTime - this.getTotalWorldTime());
+            }
+            
             stream.close();
         }
         catch (Exception e)

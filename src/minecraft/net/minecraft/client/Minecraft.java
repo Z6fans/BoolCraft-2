@@ -569,7 +569,7 @@ public class Minecraft
 
         if (this.objectMouseOver != null)
         {
-        	Block block = Block.getBlockById(this.currentItem + 1);
+        	Block block = Block.getBlockById((byte)(this.currentItem + 1));
         	
         	int x = this.objectMouseOver.blockX;
             int y = this.objectMouseOver.blockY;
