@@ -689,7 +689,6 @@ public class Minecraft
         {
             logger.info("Saving worlds");
             this.saveAllWorlds();
-            this.worldServer.flush();
         }
     }
     

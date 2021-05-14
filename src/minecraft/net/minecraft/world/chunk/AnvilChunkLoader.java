@@ -3,11 +3,11 @@ package net.minecraft.world.chunk;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,15 +18,14 @@ import net.minecraft.world.WorldServer;
 
 public class AnvilChunkLoader
 {
-    /** A map containing Files as keys and RegionFiles as values */
-    private final Map<File, RegionFile> chunksByFilename = new HashMap<File, RegionFile>();
-
     /** Save directory for chunks using the Anvil format */
     private final File chunkDirectory;
 
     public AnvilChunkLoader(File file)
     {
         this.chunkDirectory = new File(file, "chunk");
+        
+        if (!this.chunkDirectory.exists()) this.chunkDirectory.mkdirs();
     }
 
     /**
@@ -34,17 +33,18 @@ public class AnvilChunkLoader
      */
     public Chunk loadChunk(WorldServer world, int chunkX, int chunkZ) throws IOException
     {
-        DataInputStream stream = this.createOrLoadChunkFile(chunkX, chunkZ).getChunkDataInputStream();
-
-        if (stream != null)
+    	File chunkFile = new File(this.chunkDirectory, "c." + chunkX + "." + chunkZ + ".mca");
+    	
+    	if (chunkFile.exists())
         {
+        	DataInputStream stream = new DataInputStream(new FileInputStream(chunkFile));
+        	
         	NBTTagCompound tag = new NBTTagCompound();
         	tag.read(stream);
             
             if (tag.isTagIdEqual("Level", 10) && tag.getCompoundTag("Level").isTagIdEqual("Sections", 9))
             {
                 NBTTagCompound levelTag = tag.getCompoundTag("Level");
-                Chunk chunk = new Chunk(levelTag.getInteger("xPos"), levelTag.getInteger("zPos"));
                 byte[][] storageArray = new byte[16][4096];
 
                 for (NBTTagCompound section : levelTag.getTagList("Sections"))
@@ -53,6 +53,7 @@ public class AnvilChunkLoader
                     storageArray[y] = section.getByteArray("Blocks");
                 }
 
+                Chunk chunk = new Chunk(chunkX, chunkZ);
                 chunk.setStorageArrays(storageArray);
 
                 if (levelTag.isTagIdEqual("TileTicks", 9))
@@ -80,9 +81,6 @@ public class AnvilChunkLoader
             NBTTagCompound levelTag = new NBTTagCompound();
             masterTag.setTag("Level", levelTag);
             
-            levelTag.setInteger("xPos", chunk.xPosition);
-            levelTag.setInteger("zPos", chunk.zPosition);
-            levelTag.setLong("LastUpdate", world.getTotalWorldTime());
             byte[][] storageArray = chunk.getBlockStorageArray();
             List<NBTTagCompound> sectionTags = new ArrayList<NBTTagCompound>();
 
@@ -126,7 +124,7 @@ public class AnvilChunkLoader
             {
             	int chunkX = chunk.xPosition;
             	int chunkZ = chunk.zPosition;
-            	DataOutputStream stream = this.createOrLoadChunkFile(chunkX, chunkZ).getChunkDataOutputStream();
+            	DataOutputStream stream = new DataOutputStream(new FileOutputStream(new File(this.chunkDirectory, "c." + chunkX + "." + chunkZ + ".mca")));
                 masterTag.write(stream);
                 stream.close();
             }
@@ -139,52 +137,5 @@ public class AnvilChunkLoader
         {
             e.printStackTrace();
         }
-    }
-    
-    private RegionFile createOrLoadChunkFile(int x, int y)
-    {
-        File chunkFileName = new File(this.chunkDirectory, "c." + x + "." + y + ".mca");
-        RegionFile chunkFile = chunksByFilename.get(chunkFileName);
-
-        if (chunkFile == null)
-        {
-            if (!this.chunkDirectory.exists())
-            {
-            	this.chunkDirectory.mkdirs();
-            }
-
-            if (chunksByFilename.size() >= 0x1000)
-            {
-                clearChunkFileReferences();
-            }
-
-            chunkFile = new RegionFile(chunkFileName);
-            chunksByFilename.put(chunkFileName, chunkFile);
-        }
-        
-        return chunkFile;
-    }
-
-    /**
-     * Saves the current Chunk Map Cache
-     */
-    public void clearChunkFileReferences()
-    {
-        for (RegionFile regionFile : chunksByFilename.values())
-        {
-            try
-            {
-                if (regionFile != null)
-                {
-                    regionFile.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        chunksByFilename.clear();
     }
 }

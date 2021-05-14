@@ -232,17 +232,22 @@ public class WorldServer
         {
             if (!this.chunksToUnload.isEmpty())
             {
-                Long var2 = (Long)this.chunksToUnload.iterator().next();
-                Chunk var3 = this.loadedChunkHashMap.getValueByKey(var2.longValue());
+                Long chunkHash = (Long)this.chunksToUnload.iterator().next();
+                Chunk chunk = this.loadedChunkHashMap.getValueByKey(chunkHash.longValue());
 
-                if (var3 != null)
+                if (chunk != null)
                 {
-                    this.safeSaveChunk(var3);
-                    this.loadedChunks.remove(var3);
+                	if (chunk.isModified)
+                	{
+                		this.safeSaveChunk(chunk);
+                		chunk.isModified = false;
+                	}
+                    
+                    this.loadedChunks.remove(chunk);
                 }
 
-                this.chunksToUnload.remove(var2);
-                this.loadedChunkHashMap.remove(var2.longValue());
+                this.chunksToUnload.remove(chunkHash);
+                this.loadedChunkHashMap.remove(chunkHash.longValue());
             }
         }
     	
@@ -582,14 +587,6 @@ public class WorldServer
                 }
             }
         }
-    }
-
-    /**
-     * Syncs all changes to disk and wait for completion.
-     */
-    public void flush()
-    {
-    	this.currentChunkLoader.clearChunkFileReferences();
     }
 	
 	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)
