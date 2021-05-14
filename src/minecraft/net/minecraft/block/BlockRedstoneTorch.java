@@ -60,6 +60,7 @@ public class BlockRedstoneTorch extends Block
     {
     	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8), true);
         world.notifyBlocksOfNeighborChange(x, y, z, this);
+        if (world.getBlock(x, y + 1, z).isSolid()) world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
