@@ -13,8 +13,6 @@ public abstract class NBTBase
 
     public abstract void read(DataInput p_152446_1_) throws IOException;
 
-    public abstract String toString();
-
     /**
      * Gets the type byte for the tag.
      */
@@ -24,17 +22,8 @@ public abstract class NBTBase
     {
         switch (type)
         {
-            case 0:
-                return new NBTTagEnd();
-
-            case 1:
-                return new NBTTagByte();
-
             case 3:
                 return new NBTTagInt();
-
-            case 4:
-                return new NBTTagLong();
 
             case 7:
                 return new NBTTagByteArray();
@@ -66,14 +55,5 @@ public abstract class NBTBase
     public int hashCode()
     {
         return this.getId();
-    }
-
-    public abstract static class NBTPrimitive extends NBTBase
-    {
-        public abstract long getAsLong();
-
-        public abstract int getAsInteger();
-
-        public abstract byte getAsByte();
     }
 }

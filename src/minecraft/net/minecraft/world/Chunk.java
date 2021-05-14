@@ -1,8 +1,6 @@
-package net.minecraft.world.chunk;
+package net.minecraft.world;
 
 import net.minecraft.block.Block;
-import net.minecraft.world.ChunkCoordIntPair;
-import net.minecraft.world.WorldServer;
 
 public class Chunk
 {

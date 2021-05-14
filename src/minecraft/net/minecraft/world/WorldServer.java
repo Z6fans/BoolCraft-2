@@ -2,8 +2,11 @@ package net.minecraft.world;
 
 import com.google.common.collect.Lists;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,10 +25,10 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
-import net.minecraft.world.chunk.AnvilChunkLoader;
-import net.minecraft.world.chunk.Chunk;
 
 public class WorldServer
 {
@@ -49,7 +52,6 @@ public class WorldServer
      * first out)
      */
     private final Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
-    private final AnvilChunkLoader currentChunkLoader;
     private final LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
     private final List<Chunk> loadedChunks = new ArrayList<Chunk>();
     
@@ -104,8 +106,6 @@ public class WorldServer
     	this.minecraft = mc;
     	this.worldDirectory = wd;
         this.worldDirectory.mkdirs();
-        
-        this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
         
         this.blankChunkStorage = new byte[0x10000];
 
@@ -267,7 +267,6 @@ public class WorldServer
             if (!block.isReplaceable())
             {
                 entry.setScheduledTime((long)delay + this.totalTime);
-                entry.setPriority(0);
             }
 
             if (!this.pendingTickListEntriesHashSet.contains(entry))
@@ -278,10 +277,9 @@ public class WorldServer
         }
     }
 
-    public void addBlockUpdateFromSave(int x, int y, int z, Block block, int delay, int priority)
+    private void addBlockUpdateFromSave(int x, int y, int z, Block block, int delay)
     {
         NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
-        entry.setPriority(priority);
 
         if (!block.isReplaceable())
         {
@@ -389,7 +387,7 @@ public class WorldServer
         }
     }
 
-    public List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk)
+    private List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk)
     {
         ChunkCoordIntPair chunkCoords = chunk.getChunkCoordIntPair();
         int xmin = (chunkCoords.chunkXPos << 4) - 2;
@@ -405,7 +403,7 @@ public class WorldServer
     /**
      * Saves all chunks to disk while updating progress bar.
      */
-    public void saveAllChunks() throws SessionLockException
+    public void saveAllChunks()
     {
 
         ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
@@ -520,40 +518,43 @@ public class WorldServer
     {
         long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
         this.chunksToUnload.remove(Long.valueOf(posHash));
-        Chunk newChunk = this.loadedChunkHashMap.getValueByKey(posHash);
+        Chunk chunk = this.loadedChunkHashMap.getValueByKey(posHash);
 
-        if (newChunk == null)
+        if (chunk == null)
         {
-        	if(this.currentChunkLoader != null)
-        	{
+            chunk = new Chunk(x, z);
+            
+        	File chunkFile = new File(this.worldDirectory, "c." + x + "." + z + ".mca");
+        	
+        	if (chunkFile.exists())
+            {
         		try
         		{
-        			newChunk = this.currentChunkLoader.loadChunk(this, x, z);
+            		DataInputStream stream = new DataInputStream(new FileInputStream(chunkFile));
+                	NBTTagCompound masterTag = new NBTTagCompound();
+                	masterTag.read(stream);
+                    chunk.setStorageArrays(masterTag.getByteArray("Blocks"));
+
+                    for (NBTTagCompound tick : masterTag.getTagList("TileTicks"))
+                    {
+                        this.addBlockUpdateFromSave(tick.getInteger("x"), tick.getInteger("y"), tick.getInteger("z"), Block.getBlockById(tick.getInteger("i")), tick.getInteger("t"));
+                    }
         		}
                 catch (Exception e)
                 {
                     logger.error("Couldn\'t load chunk", e);
                 }
-        	}
-
-            if (newChunk == null)
-            {
-            	try
-                {
-                	newChunk = new Chunk(x, z);
-                	newChunk.setStorageArrays(this.blankChunkStorage.clone());
-                }
-                catch (Throwable t)
-                {
-                    throw new RuntimeException("Exception generating new chunk at " + x + ", " + z, t);
-                }
+            }
+        	else
+        	{
+            	chunk.setStorageArrays(this.blankChunkStorage.clone());
             }
 
-            this.loadedChunkHashMap.add(posHash, newChunk);
-            this.loadedChunks.add(newChunk);
+            this.loadedChunkHashMap.add(posHash, chunk);
+            this.loadedChunks.add(chunk);
         }
 
-        return newChunk;
+        return chunk;
     }
 
     /**
@@ -571,20 +572,32 @@ public class WorldServer
      */
     private void safeSaveChunk(Chunk chunk)
     {
-        if (this.currentChunkLoader != null)
+    	try
         {
-            try
+            NBTTagCompound masterTag = new NBTTagCompound();
+            masterTag.setByteArray("Blocks", chunk.getBlockStorageArray());
+            List<NBTTagCompound> tickTags = new ArrayList<NBTTagCompound>();
+
+            for (NextTickListEntry entry : this.getPendingBlockUpdates(chunk))
             {
-                this.currentChunkLoader.saveChunk(this, chunk);
+                NBTTagCompound tickTag = new NBTTagCompound();
+                tickTag.setInteger("i", Block.getIdFromBlock(entry.getBlock()));
+                tickTag.setInteger("x", entry.xCoord);
+                tickTag.setInteger("y", entry.yCoord);
+                tickTag.setInteger("z", entry.zCoord);
+                tickTag.setInteger("t", (int)(entry.scheduledTime - this.getTotalWorldTime()));
+                tickTags.add(tickTag);
             }
-            catch (IOException var3)
-            {
-                logger.error("Couldn\'t save chunk", var3);
-            }
-            catch (SessionLockException var4)
-            {
-                logger.error("Couldn\'t save chunk; already in use by another instance of Minecraft?", var4);
-            }
+
+            masterTag.setTag("TileTicks", new NBTTagList(tickTags));
+            
+            DataOutputStream stream = new DataOutputStream(new FileOutputStream(new File(this.worldDirectory, "c." + chunk.xPosition + "." + chunk.zPosition + ".mca")));
+            masterTag.write(stream);
+            stream.close();
+        }
+        catch (Exception e)
+        {
+        	logger.error("Couldn\'t save chunk", e);
         }
     }
 

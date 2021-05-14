@@ -19,7 +19,6 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
 
     /** Time this tick is scheduled to occur at */
     public long scheduledTime;
-    public int priority;
 
     /** The id of the tick entry */
     private final long tickEntryID;
@@ -60,19 +59,9 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
         return this;
     }
 
-    public void setPriority(int p)
-    {
-        this.priority = p;
-    }
-
     public int compareTo(NextTickListEntry other)
     {
-        return this.scheduledTime < other.scheduledTime ? -1 : (this.scheduledTime > other.scheduledTime ? 1 : (this.priority != other.priority ? this.priority - other.priority : (this.tickEntryID < other.tickEntryID ? -1 : (this.tickEntryID > other.tickEntryID ? 1 : 0))));
-    }
-
-    public String toString()
-    {
-        return Block.getIdFromBlock(this.block) + ": (" + this.xCoord + ", " + this.yCoord + ", " + this.zCoord + "), " + this.scheduledTime + ", " + this.priority + ", " + this.tickEntryID;
+        return this.scheduledTime < other.scheduledTime ? -1 : (this.scheduledTime > other.scheduledTime ? 1 : (this.tickEntryID < other.tickEntryID ? -1 : (this.tickEntryID > other.tickEntryID ? 1 : 0)));
     }
 
     public Block getBlock()

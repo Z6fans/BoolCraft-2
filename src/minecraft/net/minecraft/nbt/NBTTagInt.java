@@ -4,7 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class NBTTagInt extends NBTBase.NBTPrimitive
+public class NBTTagInt extends NBTBase
 {
     /** The integer value for the tag. */
     private int data;
@@ -37,11 +37,6 @@ public class NBTTagInt extends NBTBase.NBTPrimitive
         return (byte)3;
     }
 
-    public String toString()
-    {
-        return "" + this.data;
-    }
-
     public boolean equals(Object p_equals_1_)
     {
         if (super.equals(p_equals_1_))
@@ -60,18 +55,8 @@ public class NBTTagInt extends NBTBase.NBTPrimitive
         return super.hashCode() ^ this.data;
     }
 
-    public long getAsLong()
-    {
-        return (long)this.data;
-    }
-
     public int getAsInteger()
     {
         return this.data;
-    }
-
-    public byte getAsByte()
-    {
-        return (byte)(this.data & 255);
     }
 }

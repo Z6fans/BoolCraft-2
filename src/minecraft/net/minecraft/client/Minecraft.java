@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Timer;
-import net.minecraft.world.SessionLockException;
 import net.minecraft.world.WorldServer;
 
 import org.apache.logging.log4j.LogManager;
@@ -699,14 +698,7 @@ public class Minecraft
     {
     	if (this.worldServer != null)
         {
-            try
-            {
-            	this.worldServer.saveAllChunks();
-            }
-            catch (SessionLockException e)
-            {
-                logger.warn(e.getMessage());
-            }
+            this.worldServer.saveAllChunks();
         }
     }
 

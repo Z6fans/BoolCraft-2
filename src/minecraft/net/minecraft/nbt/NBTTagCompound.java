@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -75,27 +74,11 @@ public class NBTTagCompound extends NBTBase
     }
 
     /**
-     * Stores a new NBTTagByte with the given byte value into the map with the given string key.
-     */
-    public void setByte(String p_74774_1_, byte p_74774_2_)
-    {
-        this.tagMap.put(p_74774_1_, new NBTTagByte(p_74774_2_));
-    }
-
-    /**
      * Stores a new NBTTagInt with the given integer value into the map with the given string key.
      */
     public void setInteger(String p_74768_1_, int p_74768_2_)
     {
         this.tagMap.put(p_74768_1_, new NBTTagInt(p_74768_2_));
-    }
-
-    /**
-     * Stores a new NBTTagLong with the given long value into the map with the given string key.
-     */
-    public void setLong(String p_74772_1_, long p_74772_2_)
-    {
-        this.tagMap.put(p_74772_1_, new NBTTagLong(p_74772_2_));
     }
 
     /**
@@ -119,47 +102,17 @@ public class NBTTagCompound extends NBTBase
     }
 
     /**
-     * Retrieves a byte value using the specified key, or 0 if no such key was stored.
-     */
-    public byte getByte(String p_74771_1_)
-    {
-        try
-        {
-            return !this.tagMap.containsKey(p_74771_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74771_1_)).getAsByte();
-        }
-        catch (ClassCastException var3)
-        {
-            return (byte)0;
-        }
-    }
-
-    /**
      * Retrieves an integer value using the specified key, or 0 if no such key was stored.
      */
     public int getInteger(String p_74762_1_)
     {
         try
         {
-            return !this.tagMap.containsKey(p_74762_1_) ? 0 : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74762_1_)).getAsInteger();
+            return !this.tagMap.containsKey(p_74762_1_) ? 0 : ((NBTTagInt)this.tagMap.get(p_74762_1_)).getAsInteger();
         }
         catch (ClassCastException var3)
         {
             return 0;
-        }
-    }
-
-    /**
-     * Retrieves a long value using the specified key, or 0 if no such key was stored.
-     */
-    public long getLong(String p_74763_1_)
-    {
-        try
-        {
-            return !this.tagMap.containsKey(p_74763_1_) ? 0L : ((NBTBase.NBTPrimitive)this.tagMap.get(p_74763_1_)).getAsLong();
-        }
-        catch (ClassCastException var3)
-        {
-            return 0L;
         }
     }
 
@@ -207,19 +160,6 @@ public class NBTTagCompound extends NBTBase
         {
             throw this.createCrashReport(p_150295_1_, 9, var4);
         }
-    }
-
-    public String toString()
-    {
-        String var1 = "{";
-        String var3;
-
-        for (Iterator<String> var2 = this.tagMap.keySet().iterator(); var2.hasNext(); var1 = var1 + var3 + ':' + this.tagMap.get(var3) + ',')
-        {
-            var3 = var2.next();
-        }
-
-        return var1 + "}";
     }
 
     /**

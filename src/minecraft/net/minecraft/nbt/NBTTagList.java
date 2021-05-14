@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class NBTTagList extends NBTBase
@@ -51,20 +50,6 @@ public class NBTTagList extends NBTBase
     public byte getId()
     {
         return (byte)9;
-    }
-
-    public String toString()
-    {
-        String var1 = "[";
-        int var2 = 0;
-
-        for (Iterator<NBTTagCompound> var3 = this.tagList.iterator(); var3.hasNext(); ++var2)
-        {
-        	NBTTagCompound var4 = var3.next();
-            var1 = var1 + "" + var2 + ':' + var4 + ',';
-        }
-
-        return var1 + "]";
     }
     
     List<NBTTagCompound> getTagList()
