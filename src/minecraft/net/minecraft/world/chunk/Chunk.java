@@ -10,7 +10,7 @@ public class Chunk
      * Used to store block IDs, block MSBs, Sky-light maps, Block-light maps, and metadata. Each entry corresponds to a
      * logical segment of 16x16x16 blocks, stacked vertically.
      */
-    private byte[][] storageArrays;
+    private byte[] storageArray;
 
     /** The x coordinate of the chunk. */
     public final int xPosition;
@@ -26,7 +26,7 @@ public class Chunk
 
     public Chunk(int x, int z)
     {
-        this.storageArrays = new byte[16][4096];
+        this.storageArray = new byte[0x10000];
         this.xPosition = x;
         this.zPosition = z;
     }
@@ -34,20 +34,14 @@ public class Chunk
     /**
      * Returns the ExtendedBlockStorage array for this Chunk.
      */
-    public byte[][] getBlockStorageArray()
+    public byte[] getBlockStorageArray()
     {
-        return this.storageArrays;
+        return this.storageArray;
     }
 
     public Block getBlock(int x, int y, int z)
     {
-        if (y >> 4 < this.storageArrays.length)
-        {
-            byte[] storage = this.storageArrays[y >> 4];
-            if (storage != null) return Block.getBlockById(storage[(y & 15) << 8 | z << 4 | x] & 0xF);
-        }
-        
-        return Block.air;
+        return Block.getBlockById(this.storageArray[y << 8 | z << 4 | x] & 0xF);
     }
 
     /**
@@ -55,13 +49,7 @@ public class Chunk
      */
     public int getBlockMetadata(int x, int y, int z)
     {
-        if (y >> 4 < this.storageArrays.length)
-        {
-            byte[] storage = this.storageArrays[y >> 4];
-            if (storage != null) return (storage[(y & 15) << 8 | z << 4 | x] & 0xF0) >> 4;
-        }
-        
-        return 0;
+        return (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
     }
     
     public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block block, int newMeta)
@@ -69,36 +57,22 @@ public class Chunk
         Block oldBlock = this.getBlock(x, y, z);
         int oldMeta = this.getBlockMetadata(x, y, z);
 
-        if (oldBlock == block && oldMeta == newMeta)
+        if (oldBlock != block || oldMeta != newMeta)
         {
-            return false;
-        }
-        else
-        {
-            byte[] storage = this.storageArrays[y >> 4];
-
-            if (storage == null)
-            {
-                if (block == Block.air)
-                {
-                    return false;
-                }
-
-                storage = this.storageArrays[y >> 4] = new byte[4096];
-            }
-
             int trueX = this.xPosition * 16 + x;
             int trueZ = this.zPosition * 16 + z;
 
             oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
 
-            storage[(y & 15) << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(block) & 0xF));
+            this.storageArray[y << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(block) & 0xF));
 
             block.onBlockAdded(world, trueX, y, trueZ);
 
             this.isModified = true;
             return true;
         }
+        
+        return false;
     }
 
     /**
@@ -106,18 +80,13 @@ public class Chunk
      */
     public boolean setBlockMetadata(int x, int y, int z, int newMeta)
     {
-        byte[] storage = this.storageArrays[y >> 4];
+    	int oldMeta = (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
 
-        if (storage != null)
+        if (oldMeta != newMeta)
         {
-            int oldMeta = (storage[(y & 15) << 8 | z << 4 | x] & 0xF0) >> 4;
-
-            if (oldMeta != newMeta)
-            {
-                this.isModified = true;
-                storage[(y & 15) << 8 | z << 4 | x] = (byte)((storage[y << 8 | z << 4 | x] & 0xF) | ((newMeta & 0xF) << 4));
-                return true;
-            }
+            this.isModified = true;
+            this.storageArray[y << 8 | z << 4 | x] = (byte)((this.storageArray[y << 8 | z << 4 | x] & 0xF) | ((newMeta & 0xF) << 4));
+            return true;
         }
         
         return false;
@@ -141,8 +110,8 @@ public class Chunk
         return new ChunkCoordIntPair(this.xPosition, this.zPosition);
     }
 
-    public void setStorageArrays(byte[][] storageArray)
+    public void setStorageArrays(byte[] storageArray)
     {
-        this.storageArrays = storageArray;
+        this.storageArray = storageArray;
     }
 }

@@ -2,13 +2,7 @@ package net.minecraft.world;
 
 import com.google.common.collect.Lists;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,15 +16,12 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.chunk.AnvilChunkLoader;
@@ -50,11 +41,6 @@ public class WorldServer
     
     /** The directory in which to save world data. */
     private final File worldDirectory;
-
-    /**
-     * The time in milliseconds when this field was initialized. Stored in the session lock file.
-     */
-    private final long initializationTime = System.currentTimeMillis();
     
     private static final Logger logger = LogManager.getLogger();
 
@@ -68,7 +54,7 @@ public class WorldServer
     private final List<Chunk> loadedChunks = new ArrayList<Chunk>();
     
     /** Total time for this world. */
-    private long totalTime;
+    private long totalTime = 0;
     
     private double playerPosX;
     private double playerPosZ;
@@ -118,109 +104,21 @@ public class WorldServer
     	this.minecraft = mc;
     	this.worldDirectory = wd;
         this.worldDirectory.mkdirs();
-        (new File(this.worldDirectory, "data")).mkdirs();
-
-        try
-        {
-            final File sessionLock = new File(this.worldDirectory, "session.lock");
-            final DataOutputStream stream = new DataOutputStream(new FileOutputStream(sessionLock));
-
-            try
-            {
-                stream.writeLong(this.initializationTime);
-            }
-            finally
-            {
-                stream.close();
-            }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to check session lock, aborting");
-        }
-        
-        NBTTagCompound info = this.loadWorldInfo();
-        
-        if(info != null)
-    	{
-    		this.totalTime = info.getLong("Time");
-    	}
         
         this.currentChunkLoader = new AnvilChunkLoader(this.worldDirectory);
         
-        this.blankChunkStorage = new byte[4096];
+        this.blankChunkStorage = new byte[0x10000];
 
         for (int y = 0; y < 5; ++y)
         {
-            for (int localX = 0; localX < 16; ++localX)
+            for (int x = 0; x < 16; ++x)
             {
-                for (int localZ = 0; localZ < 16; ++localZ)
+                for (int z = 0; z < 16; ++z)
                 {
-                	this.blankChunkStorage[y << 8 | localZ << 4 | localX] = 1;
+                	this.blankChunkStorage[y << 8 | z << 4 | x] = 1;
                 }
             }
         }
-    }
-    
-    /**
-     * Loads and returns the world info
-     */
-    private NBTTagCompound loadWorldInfo()
-    {
-        File file = new File(this.worldDirectory, "level.dat");
-
-        if (file.exists())
-        {
-            try
-            {
-            	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
-                NBTTagCompound tag = new NBTTagCompound();
-
-                try
-                {
-                    tag.read(stream);
-                }
-                finally
-                {
-                    stream.close();
-                }
-
-            	return tag.getCompoundTag("Data");
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        file = new File(this.worldDirectory, "level.dat_old");
-
-        if (file.exists())
-        {
-            try
-            {
-            	DataInputStream stream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(file))));
-                NBTTagCompound tag = new NBTTagCompound();
-
-                try
-                {
-                    tag.read(stream);
-                }
-                finally
-                {
-                    stream.close();
-                }
-
-            	return tag.getCompoundTag("Data");
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -335,12 +233,10 @@ public class WorldServer
             Chunk chunk = this.provideChunk(var4.chunkXPos, var4.chunkZPos);
             chunk.setLoaded();
         }
-        
-        long worldTime = this.getTotalWorldTime();
 
-        if (worldTime - this.previousTotalWorldTime > 8000L)
+        if (this.totalTime - this.previousTotalWorldTime > 8000L)
         {
-            this.previousTotalWorldTime = worldTime;
+            this.previousTotalWorldTime = this.totalTime;
 
             for (int var18 = 0; var18 < this.playerInstanceList.size(); ++var18)
             {
@@ -511,51 +407,6 @@ public class WorldServer
      */
     public void saveAllChunks() throws SessionLockException
     {
-    	this.checkSessionLock();
-        NBTTagCompound dataTag = new NBTTagCompound();
-        dataTag.setLong("Time", this.totalTime);
-        NBTTagCompound masterTag = new NBTTagCompound();
-        masterTag.setTag("Data", dataTag);
-
-        try
-        {
-            File levelNew = new File(this.worldDirectory, "level.dat_new");
-            File levelOld = new File(this.worldDirectory, "level.dat_old");
-            File level = new File(this.worldDirectory, "level.dat");
-            DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(levelNew))));
-
-            try
-            {
-                masterTag.write(stream);
-            }
-            finally
-            {
-                stream.close();
-            }
-
-            if (levelOld.exists())
-            {
-                levelOld.delete();
-            }
-
-            level.renameTo(levelOld);
-
-            if (level.exists())
-            {
-                level.delete();
-            }
-
-            levelNew.renameTo(level);
-
-            if (levelNew.exists())
-            {
-                levelNew.delete();
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
 
         ArrayList<Chunk> chunkList = Lists.newArrayList(this.loadedChunks);
 
@@ -617,33 +468,6 @@ public class WorldServer
         }
 
         return -1;
-    }
-    
-    /**
-     * Checks whether the session lock file was modified by another process
-     */
-    public void checkSessionLock() throws SessionLockException
-    {
-    	try
-        {
-            DataInputStream stream = new DataInputStream(new FileInputStream(new File(this.worldDirectory, "session.lock")));
-
-            try
-            {
-                if (stream.readLong() != this.initializationTime)
-                {
-                    throw new SessionLockException("The save is being accessed from another location, aborting");
-                }
-            }
-            finally
-            {
-                stream.close();
-            }
-        }
-        catch (IOException e)
-        {
-            throw new SessionLockException("Failed to check session lock, aborting");
-        }
     }
     
     public void spawnPlayerInWorld(Minecraft mc)
@@ -717,9 +541,7 @@ public class WorldServer
             	try
                 {
                 	newChunk = new Chunk(x, z);
-                	byte[][] newStorage = new byte[16][4096];
-                	newStorage[0] = this.blankChunkStorage.clone();
-                    newChunk.setStorageArrays(newStorage);
+                	newChunk.setStorageArrays(this.blankChunkStorage.clone());
                 }
                 catch (Throwable t)
                 {

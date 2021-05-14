@@ -23,9 +23,7 @@ public class AnvilChunkLoader
 
     public AnvilChunkLoader(File file)
     {
-        this.chunkDirectory = new File(file, "chunk");
-        
-        if (!this.chunkDirectory.exists()) this.chunkDirectory.mkdirs();
+        this.chunkDirectory = file;
     }
 
     /**
@@ -38,34 +36,21 @@ public class AnvilChunkLoader
     	if (chunkFile.exists())
         {
         	DataInputStream stream = new DataInputStream(new FileInputStream(chunkFile));
-        	
         	NBTTagCompound tag = new NBTTagCompound();
         	tag.read(stream);
-            
-            if (tag.isTagIdEqual("Level", 10) && tag.getCompoundTag("Level").isTagIdEqual("Sections", 9))
+        	NBTTagCompound levelTag = tag.getCompoundTag("Level");
+            Chunk chunk = new Chunk(chunkX, chunkZ);
+            chunk.setStorageArrays(levelTag.getByteArray("Blocks"));
+
+            if (levelTag.isTagIdEqual("TileTicks", 9))
             {
-                NBTTagCompound levelTag = tag.getCompoundTag("Level");
-                byte[][] storageArray = new byte[16][4096];
-
-                for (NBTTagCompound section : levelTag.getTagList("Sections"))
+            	for (NBTTagCompound tick : levelTag.getTagList("TileTicks"))
                 {
-                    byte y = section.getByte("Y");
-                    storageArray[y] = section.getByteArray("Blocks");
+                    world.addBlockUpdateFromSave(tick.getInteger("x"), tick.getInteger("y"), tick.getInteger("z"), Block.getBlockById(tick.getInteger("i")), tick.getInteger("t"), tick.getInteger("p"));
                 }
-
-                Chunk chunk = new Chunk(chunkX, chunkZ);
-                chunk.setStorageArrays(storageArray);
-
-                if (levelTag.isTagIdEqual("TileTicks", 9))
-                {
-                	for (NBTTagCompound tick : levelTag.getTagList("TileTicks"))
-                    {
-                        world.addBlockUpdateFromSave(tick.getInteger("x"), tick.getInteger("y"), tick.getInteger("z"), Block.getBlockById(tick.getInteger("i")), tick.getInteger("t"), tick.getInteger("p"));
-                    }
-                }
-
-                return chunk;
             }
+
+            return chunk;
         }
         
         return null;
@@ -73,31 +58,12 @@ public class AnvilChunkLoader
 
     public void saveChunk(WorldServer world, Chunk chunk) throws SessionLockException, IOException
     {
-    	world.checkSessionLock();
-
-        try
+    	try
         {
             NBTTagCompound masterTag = new NBTTagCompound();
             NBTTagCompound levelTag = new NBTTagCompound();
             masterTag.setTag("Level", levelTag);
-            
-            byte[][] storageArray = chunk.getBlockStorageArray();
-            List<NBTTagCompound> sectionTags = new ArrayList<NBTTagCompound>();
-
-            for (int i = 0; i < storageArray.length; ++i)
-            {
-                byte[] storage = storageArray[i];
-
-                if (storage != null)
-                {
-                    NBTTagCompound sectionTag = new NBTTagCompound();
-                    sectionTag.setByte("Y", (byte)(i & 255));
-                    sectionTag.setByteArray("Blocks", storage);
-                    sectionTags.add(sectionTag);
-                }
-            }
-
-            levelTag.setTag("Sections", new NBTTagList(sectionTags));
+            levelTag.setByteArray("Blocks", chunk.getBlockStorageArray());
             List<NextTickListEntry> pendingUpdates = world.getPendingBlockUpdates(chunk);
 
             if (!pendingUpdates.isEmpty())
