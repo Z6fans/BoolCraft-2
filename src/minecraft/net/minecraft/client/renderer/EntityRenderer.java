@@ -141,7 +141,8 @@ public class EntityRenderer
                 double playerX = player.getPartialPosX(partialTickTime);
                 double playerY = player.getPartialPosY(partialTickTime);
                 double playerZ = player.getPartialPosZ(partialTickTime);
-                AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
+                int meta = this.minecraft.worldServer.getBlockMetadata(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
+                AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ, meta).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
                 Tessellator tess = Tessellator.instance;
                 tess.startDrawing(3);
                 tess.setColor_I(0xFF000000);

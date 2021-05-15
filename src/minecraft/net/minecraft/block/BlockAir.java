@@ -5,11 +5,6 @@ import net.minecraft.world.WorldServer;
 public class BlockAir extends Block
 {
     
-    public BlockAir()
-    {
-        this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
-    
     public boolean isReplaceable()
     {
     	return true;
@@ -25,7 +20,7 @@ public class BlockAir extends Block
         return -1;
     }
 
-	public int colorMultiplier(WorldServer world, int x, int y, int z)
+	public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
 	{
 		return 0;
 	}

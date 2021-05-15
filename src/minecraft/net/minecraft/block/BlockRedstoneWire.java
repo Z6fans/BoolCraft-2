@@ -5,10 +5,10 @@ import net.minecraft.world.WorldServer;
 public class BlockRedstoneWire extends Block
 {
     private boolean isCheckingForPower = false;
-
-    public BlockRedstoneWire()
+    
+    protected double maxY(int meta)
     {
-        this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 0.0625F, 1.0F);
+    	return 0.0625F;
     }
     
     public boolean isSolid()
@@ -28,7 +28,7 @@ public class BlockRedstoneWire extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldServer world, int x, int y, int z)
+    public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
     {
     	int scale[] = {0, 136, 181, 204, 218, 227, 233, 238, 242, 245, 247, 249, 251, 253, 254, 255};
         return 0xFF000000 | (0x101 * scale[world.getBlockMetadata(x, y, z)]);

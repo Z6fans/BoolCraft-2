@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.util.AxisAlignedBB;
@@ -12,7 +11,7 @@ import org.lwjgl.opengl.GL11;
 public class WorldRenderer
 {
     /** Reference to the World object. */
-    private WorldServer worldObj;
+    private WorldServer world;
     private final int glRenderList;
     private final static Tessellator tessellator = Tessellator.instance;
     private int posX;
@@ -68,7 +67,7 @@ public class WorldRenderer
 
     public WorldRenderer(WorldServer world, int x, int y, int z, int renderList)
     {
-        this.worldObj = world;
+        this.world = world;
         this.glRenderList = renderList;
         this.posX = -999;
         this.setPosition(x, y, z);
@@ -108,51 +107,23 @@ public class WorldRenderer
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
-
             this.skipRenderPass = true;
-
-            RenderBlocks renderBlocks = new RenderBlocks(this.worldObj);
-            boolean doRenderPass = false;
-            boolean doPostRenderBlocks = false;
+            RenderBlocks renderBlocks = new RenderBlocks(this.world);
+            GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
+            GL11.glPushMatrix();
+            GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
+            tessellator.startDrawing(7);
+            tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
 
             for (int y = this.posY; y < this.posY + 16; ++y)
-            {
                 for (int z = this.posZ; z < this.posZ + 16; ++z)
-                {
                     for (int x = this.posX; x < this.posX + 16; ++x)
-                    {
-                        Block block = this.worldObj.getBlock(x, y, z);
+                    	this.skipRenderPass &= !renderBlocks.renderBlockByRenderType(this.world.getBlock(x, y, z), x, y, z);
 
-                        if (!block.isReplaceable())
-                        {
-                            if (!doPostRenderBlocks)
-                            {
-                                doPostRenderBlocks = true;
-                                GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
-                                GL11.glPushMatrix();
-                                GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
-                                tessellator.startDrawing(7);
-                                tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
-                            }
-
-                            doRenderPass |= renderBlocks.renderBlockByRenderType(block, x, y, z);
-                        }
-                    }
-                }
-            }
-
-            if (doRenderPass)
-            {
-                this.skipRenderPass = false;
-            }
-
-            if (doPostRenderBlocks)
-            {
-            	tessellator.draw();
-                GL11.glPopMatrix();
-                GL11.glEndList();
-                tessellator.setTranslation(0.0D, 0.0D, 0.0D);
-            }
+            tessellator.draw();
+            GL11.glPopMatrix();
+            GL11.glEndList();
+            tessellator.setTranslation(0.0D, 0.0D, 0.0D);
             
             this.isInitialized = true;
         }
@@ -183,7 +154,7 @@ public class WorldRenderer
     public void stopRendering()
     {
         this.setDontDraw();
-        this.worldObj = null;
+        this.world = null;
     }
     
     public int getGLCallList()

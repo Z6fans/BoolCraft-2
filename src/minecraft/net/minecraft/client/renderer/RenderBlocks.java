@@ -34,7 +34,7 @@ public class RenderBlocks
 
     public boolean renderBlockByRenderType(Block block, int x, int y, int z)
     {
-        AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0);
+        AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0, this.world.getBlockMetadata(x, y, z));
     	this.renderMinX = aabb.minX;
         this.renderMaxX = aabb.maxX;
         this.renderMinY = aabb.minY;
@@ -44,78 +44,17 @@ public class RenderBlocks
         
         switch (block.getRenderType())
         {
-        case 0: return this.renderStandardBlock(x, y, z);
+        case 0: return this.renderStandardBlock(block, x, y, z);
         case 5: return this.renderBlockRedstoneWire(block, x, y, z);
-        case 12: return this.renderBlockLever(block, x, y, z);
         default: return false;
         }
-    }
-
-    private void setRenderBounds(double minx, double miny, double minz, double maxx, double maxy, double maxz)
-    {
-    	this.renderMinX = minx;
-        this.renderMaxX = maxx;
-        this.renderMinY = miny;
-        this.renderMaxY = maxy;
-        this.renderMinZ = minz;
-        this.renderMaxZ = maxz;
-    }
-
-    private boolean renderBlockLever(Block block, int x, int y, int z)
-    {
-        int var6 = this.world.getBlockMetadata(x, y, z) & 7;
-
-        float d = 0.1875F;
-
-        if (var6 == 5)
-        {
-            this.setRenderBounds((0.5F - d), 0.0D, (0.5F - d), (0.5F + d), d, (0.5F + d));
-        }
-        else if (var6 == 6)
-        {
-            this.setRenderBounds((0.5F - d), 0.0D, (0.5F - d), (0.5F + d), d, (0.5F + d));
-        }
-        else if (var6 == 4)
-        {
-            this.setRenderBounds((0.5F - d), (0.5F - d), (1.0F - d), (0.5F + d), (0.5F + d), 1.0D);
-        }
-        else if (var6 == 3)
-        {
-            this.setRenderBounds((0.5F - d), (0.5F - d), 0.0D, (0.5F + d), (0.5F + d), d);
-        }
-        else if (var6 == 2)
-        {
-            this.setRenderBounds((1.0F - d), (0.5F - d), (0.5F - d), 1.0D, (0.5F + d), (0.5F + d));
-        }
-        else if (var6 == 1)
-        {
-            this.setRenderBounds(0.0D, (0.5F - d), (0.5F - d), d, (0.5F + d), (0.5F + d));
-        }
-        else if (var6 == 0)
-        {
-            this.setRenderBounds((0.5F - d), (1.0F - d), (0.5F - d), (0.5F + d), 1.0D, (0.5F + d));
-        }
-        else if (var6 == 7)
-        {
-            this.setRenderBounds((0.5F - d), (1.0F - d), (0.5F - d), (0.5F + d), 1.0D, (0.5F + d));
-        }
-        
-        Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z));
-        this.renderFaceYNeg(x, y, z);
-        this.renderFaceYPos(x, y, z);
-        this.renderFaceZNeg(x, y, z);
-        this.renderFaceZPos(x, y, z);
-        this.renderFaceXNeg(x, y, z);
-        this.renderFaceXPos(x, y, z);
-
-        return true;
     }
 
     private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
     {
         Tessellator tess = Tessellator.instance;
         
-        tess.setColor_I(block.colorMultiplier(this.world, x, y, z));
+        tess.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
         
         tess.addVertex(x + 1, y + 0.01, z + 1);
         tess.addVertex(x + 1, y + 0.01, z + 0);
@@ -160,46 +99,44 @@ public class RenderBlocks
         return true;
     }
 
-    private boolean renderStandardBlock(int x, int y, int z)
+    private boolean renderStandardBlock(Block block, int x, int y, int z)
     {
         boolean didRender = false;
-        
-        int shift = (x + y + z) % 2 == 0 ? 0x060000 : 0x000006;
 
-    	Tessellator.instance.setColor_I(0xFF404040 | shift);
-        if (!this.world.getBlock(x, y - 1, z).isSolid())
+    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 2));
+        if (!this.world.getBlock(x, y - 1, z).isSolid() || this.renderMinY > 0.0D)
         {
             this.renderFaceYNeg(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(0xFF606060 | shift);
-        if (!this.world.getBlock(x, y + 1, z).isSolid())
+    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
+        if (!this.world.getBlock(x, y + 1, z).isSolid() || this.renderMinY < 1.0D)
         {
             this.renderFaceYPos(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(0xFF505050 | shift);
-        if (!this.world.getBlock(x, y, z - 1).isSolid())
+    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 1));
+        if (!this.world.getBlock(x, y, z - 1).isSolid() || this.renderMinZ > 0.0D)
         {
             this.renderFaceZNeg(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x, y, z + 1).isSolid())
+        if (!this.world.getBlock(x, y, z + 1).isSolid() || this.renderMinZ < 1.0D)
         {
             this.renderFaceZPos(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x - 1, y, z).isSolid())
+        if (!this.world.getBlock(x - 1, y, z).isSolid() || this.renderMinX > 0.0D)
         {
             this.renderFaceXNeg(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x + 1, y, z).isSolid())
+        if (!this.world.getBlock(x + 1, y, z).isSolid() || this.renderMinX < 1.0D)
         {
             this.renderFaceXPos(x, y, z);
             didRender = true;

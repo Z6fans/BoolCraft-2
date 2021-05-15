@@ -1,11 +1,11 @@
 package net.minecraft.block;
 
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldServer;
 
 public class BlockLever extends Block
 {
+	private final float d = 0.1875F;
+	
     public boolean isSolid()
     {
         return false;
@@ -16,7 +16,7 @@ public class BlockLever extends Block
      */
     public int getRenderType()
     {
-        return 12;
+        return 0;
     }
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
@@ -79,39 +79,41 @@ public class BlockLever extends Block
             world.setBlock(x, y, z, Block.air, 0);
         }
     }
-
-    public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    
+    protected double minX(int meta)
     {
-        int meta = world.getBlockMetadata(x, y, z) & 7;
-
-        float d = 0.1875F;
-
-        if (meta == 5)
-        {
-            this.setBlockBounds(0.5F - d, 0.0F, 0.5F - d, 0.5F + d, d, 0.5F + d);
-        }
-        else if (meta == 4)
-        {
-            this.setBlockBounds(0.5F - d, 0.5F - d, 1.0F - d, 0.5F + d, 0.5F + d, 1.0F);
-        }
-        else if (meta == 3)
-        {
-            this.setBlockBounds(0.5F - d, 0.5F - d, 0.0F, 0.5F + d, 0.5F + d, d);
-        }
-        else if (meta == 2)
-        {
-            this.setBlockBounds(1.0F - d, 0.5F - d, 0.5F - d, 1.0F, 0.5F + d, 0.5F + d);
-        }
-        else if (meta == 1)
-        {
-            this.setBlockBounds(0.0F, 0.5F - d, 0.5F - d, d, 0.5F + d, 0.5F + d);
-        }
-        else if (meta == 0)
-        {
-            this.setBlockBounds(0.5F - d, 1.0F - d, 0.5F - d, 0.5F + d, 1.0F, 0.5F + d);
-        }
-
-        return super.collisionRayTrace(world, x, y, z, playerPos, playerLook);
+    	int s = meta & 7;
+    	return s == 1 ? 0.0F : s == 2 ? 1.0F - d : 0.5F - d;
+    }
+    
+    protected double minY(int meta)
+    {
+    	int s = meta & 7;
+    	return s == 5 ? 0.0F : s == 0 ? 1.0F - d : 0.5F - d;
+    }
+    
+    protected double minZ(int meta)
+    {
+    	int s = meta & 7;
+    	return s == 3 ? 0.0F : s == 4 ? 1.0F - d : 0.5F - d;
+    }
+    
+    protected double maxX(int meta)
+    {
+    	int s = meta & 7;
+    	return s == 1 ? d : s == 2 ? 1.0F : 0.5F + d;
+    }
+    
+    protected double maxY(int meta)
+    {
+    	int s = meta & 7;
+    	return s == 5 ? d : s == 0 ? 1.0F : 0.5F + d;
+    }
+    
+    protected double maxZ(int meta)
+    {
+    	int s = meta & 7;
+    	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
     }
     
     /**
@@ -214,7 +216,7 @@ public class BlockLever extends Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public int colorMultiplier(WorldServer world, int x, int y, int z)
+    public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
     {
     	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
     }

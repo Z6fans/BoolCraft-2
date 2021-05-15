@@ -5,11 +5,6 @@ import net.minecraft.world.WorldServer;
 public class BlockStone extends Block
 {
 	
-	public BlockStone()
-    {
-        this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
-
 	public boolean isReplaceable()
 	{
 		return false;
@@ -25,9 +20,10 @@ public class BlockStone extends Block
 		return 0;
 	}
 	
-	public int colorMultiplier(WorldServer world, int x, int y, int z)
+	public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
     {
-    	return 0;
+		int shift = (x + y + z) % 2 == 0 ? 0x060000 : 0x000006;
+    	return (said == 0 ? 0xFF606060 : said == 1 ? 0xFF505050 : 0xFF404040) | shift;
     }
 
 	public int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)

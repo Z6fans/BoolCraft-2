@@ -26,17 +26,6 @@ public abstract class Block
     	registry.put((byte)4, redstone_torch);
     }
     
-    /**
-     * Flags whether or not this block is of a type that needs random ticking. Ref-counted by ExtendedBlockStorage in
-     * order to broadly cull a chunk from the random chunk update list for efficiency's sake.
-     */
-    private double minX;
-    private double minY;
-    private double minZ;
-    private double maxX;
-    private double maxY;
-    private double maxZ;
-    
     public static byte getIdFromBlock(Block block)
     {
     	Byte id = registry.inverse().get(block);
@@ -48,59 +37,80 @@ public abstract class Block
     	Block block = registry.get(id);
     	return block == null ? air : block;
     }
-
-    protected final void setBlockBounds(float minXCoord, float minYCoord, float minZCoord, float maxXCoord, float maxYCoord, float maxZCoord)
+    
+    protected double minX(int meta)
     {
-        this.minX = (double)minXCoord;
-        this.minY = (double)minYCoord;
-        this.minZ = (double)minZCoord;
-        this.maxX = (double)maxXCoord;
-        this.maxY = (double)maxYCoord;
-        this.maxZ = (double)maxZCoord;
+    	return 0;
     }
     
-    public final AxisAlignedBB generateCubicBoundingBox(int x, int y, int z)
+    protected double minY(int meta)
     {
-        return AxisAlignedBB.getBoundingBox((double)x + this.minX, (double)y + this.minY, (double)z + this.minZ, (double)x + this.maxX, (double)y + this.maxY, (double)z + this.maxZ);
+    	return 0;
+    }
+    
+    protected double minZ(int meta)
+    {
+    	return 0;
+    }
+    
+    protected double maxX(int meta)
+    {
+    	return 1;
+    }
+    
+    protected double maxY(int meta)
+    {
+    	return 1;
+    }
+    
+    protected double maxZ(int meta)
+    {
+    	return 1;
+    }
+    
+    public final AxisAlignedBB generateCubicBoundingBox(int x, int y, int z, int meta)
+    {
+        return AxisAlignedBB.getBoundingBox(x + this.minX(meta), y + this.minY(meta), z + this.minZ(meta), x + this.maxX(meta), y + this.maxY(meta), z + this.maxZ(meta));
     }
 
     public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
+    	int meta = world.getBlockMetadata(x, y, z);
         playerPos = playerPos.addVector((double)(-x), (double)(-y), (double)(-z));
         playerLook = playerLook.addVector((double)(-x), (double)(-y), (double)(-z));
-        Vec3 var7 = playerPos.getIntermediateWithXValue(playerLook, this.minX);
-        Vec3 var8 = playerPos.getIntermediateWithXValue(playerLook, this.maxX);
-        Vec3 var9 = playerPos.getIntermediateWithYValue(playerLook, this.minY);
-        Vec3 var10 = playerPos.getIntermediateWithYValue(playerLook, this.maxY);
-        Vec3 var11 = playerPos.getIntermediateWithZValue(playerLook, this.minZ);
-        Vec3 var12 = playerPos.getIntermediateWithZValue(playerLook, this.maxZ);
+        Vec3 var7 = playerPos.getIntermediateWithXValue(playerLook, this.minX(meta));
+        Vec3 var8 = playerPos.getIntermediateWithXValue(playerLook, this.maxX(meta));
+        Vec3 var9 = playerPos.getIntermediateWithYValue(playerLook, this.minY(meta));
+        Vec3 var10 = playerPos.getIntermediateWithYValue(playerLook, this.maxY(meta));
+        Vec3 var11 = playerPos.getIntermediateWithZValue(playerLook, this.minZ(meta));
+        Vec3 var12 = playerPos.getIntermediateWithZValue(playerLook, this.maxZ(meta));
 
-        if (!this.isVecInsideYZBounds(var7))
+        if (!this.isVecInsideYZBounds(var7, meta))
         {
             var7 = null;
         }
 
-        if (!this.isVecInsideYZBounds(var8))
+        if (!this.isVecInsideYZBounds(var8, meta))
         {
             var8 = null;
         }
 
-        if (!this.isVecInsideXZBounds(var9))
+        if (!this.isVecInsideXZBounds(var9, meta))
         {
             var9 = null;
         }
 
-        if (!this.isVecInsideXZBounds(var10))
+        if (!this.isVecInsideXZBounds(var10, meta))
         {
             var10 = null;
         }
 
-        if (!this.isVecInsideXYBounds(var11))
+        if (!this.isVecInsideXYBounds(var11, meta))
         {
             var11 = null;
         }
 
-        if (!this.isVecInsideXYBounds(var12))
+        if (!this.isVecInsideXYBounds(var12, meta))
         {
             var12 = null;
         }
@@ -182,25 +192,25 @@ public abstract class Block
     /**
      * Checks if a vector is within the Y and Z bounds of the block.
      */
-    private boolean isVecInsideYZBounds(Vec3 v)
+    private boolean isVecInsideYZBounds(Vec3 v, int meta)
     {
-        return v == null ? false : v.y >= this.minY && v.y <= this.maxY && v.z >= this.minZ && v.z <= this.maxZ;
+        return v == null ? false : v.y >= this.minY(meta) && v.y <= this.maxY(meta) && v.z >= this.minZ(meta) && v.z <= this.maxZ(meta);
     }
 
     /**
      * Checks if a vector is within the X and Z bounds of the block.
      */
-    private boolean isVecInsideXZBounds(Vec3 v)
+    private boolean isVecInsideXZBounds(Vec3 v, int meta)
     {
-        return v == null ? false : v.x >= this.minX && v.x <= this.maxX && v.z >= this.minZ && v.z <= this.maxZ;
+        return v == null ? false : v.x >= this.minX(meta) && v.x <= this.maxX(meta) && v.z >= this.minZ(meta) && v.z <= this.maxZ(meta);
     }
 
     /**
      * Checks if a vector is within the X and Y bounds of the block.
      */
-    private boolean isVecInsideXYBounds(Vec3 v)
+    private boolean isVecInsideXYBounds(Vec3 v, int meta)
     {
-        return v == null ? false : v.x >= this.minX && v.x <= this.maxX && v.y >= this.minY && v.y <= this.maxY;
+        return v == null ? false : v.x >= this.minX(meta) && v.x <= this.maxX(meta) && v.y >= this.minY(meta) && v.y <= this.maxY(meta);
     }
 
     /**
@@ -250,7 +260,7 @@ public abstract class Block
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
      */
-    public abstract int colorMultiplier(WorldServer world, int x, int y, int z);
+    public abstract int colorMultiplier(WorldServer world, int x, int y, int z, int said);
 
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 
