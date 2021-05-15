@@ -328,12 +328,12 @@ public class EntityPlayer
     	return this.lastTickPosZ + (this.posZ - this.lastTickPosZ) * ptt;
     }
     
-    public float getPartialRotationYaw(float ptt)
+    public double getPartialRotationYaw(double ptt)
     {
     	return this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
     }
     
-    public float getPartialRotationPitch(float ptt)
+    public double getPartialRotationPitch(double ptt)
     {
     	return this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
     }
@@ -449,11 +449,11 @@ public class EntityPlayer
     /**
      * Pure function. Performs a ray trace for the distance specified and using the partial tick time. Args: distance, partialTickTime
      */
-    public MovingObjectPosition rayTrace8(float ptt)
+    public MovingObjectPosition rayTrace8(double ptt)
     {
-        double x = this.prevPosX + (this.posX - this.prevPosX) * (double)ptt;
-        double y = this.prevPosY + (this.posY - this.prevPosY) * (double)ptt;
-        double z = this.prevPosZ + (this.posZ - this.prevPosZ) * (double)ptt;
+        double x = this.prevPosX + (this.posX - this.prevPosX) * ptt;
+        double y = this.prevPosY + (this.posY - this.prevPosY) * ptt;
+        double z = this.prevPosZ + (this.posZ - this.prevPosZ) * ptt;
         Vec3 playerPos = Vec3.createVectorHelper(x, y, z);
         Vec3 lookVec = this.getLook(ptt);
         Vec3 viewVec = playerPos.addVector(lookVec.x * 8, lookVec.y * 8, lookVec.z * 8);
@@ -663,10 +663,10 @@ public class EntityPlayer
     /**
      * Pure function. interpolated look vector
      */
-    private Vec3 getLook(float ptt)
+    private Vec3 getLook(double ptt)
     {
-        float pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
-        float yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+        float pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * (float)ptt;
+        float yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * (float)ptt;
         double cy = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
         double sy = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
         double cp = -MathHelper.cos(-pitch * 0.017453292F);

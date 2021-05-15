@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Timer;
 import net.minecraft.world.WorldServer;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +32,6 @@ public class Minecraft
     private static final Logger logger = LogManager.getLogger();
     public int displayWidth;
     public int displayHeight;
-    private final Timer timer = new Timer();
     public RenderGlobal renderGlobal;
     public EntityPlayer thePlayer;
 
@@ -97,6 +95,16 @@ public class Minecraft
      * Reference to the File object representing the directory for the world saves
      */
     private File savesDirectory;
+
+    /**
+     * How much time has elapsed since the last tick, in ticks (range: 0.0 - 1.0).
+     */
+    private double renderPartialTicks;
+    
+    /**
+     * The time reported by the high-resolution clock at the last call of updateTimer(), in seconds
+     */
+    private double lastHRTime;
 
     public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
     {
@@ -230,10 +238,32 @@ public class Minecraft
                     {
                         this.shutdown();
                     }
+                    
+                    double currentHRClockSecs = (double)System.nanoTime() / 1000000000.0D;
 
-                    this.timer.updateTimer();
+                    double diffHRClockSecs = currentHRClockSecs - this.lastHRTime;
+                    this.lastHRTime = currentHRClockSecs;
 
-                    for (int tick = 0; tick < this.timer.elapsedTicks; ++tick)
+                    if (diffHRClockSecs < 0.0D)
+                    {
+                        diffHRClockSecs = 0.0D;
+                    }
+
+                    if (diffHRClockSecs > 1.0D)
+                    {
+                        diffHRClockSecs = 1.0D;
+                    }
+
+                    this.renderPartialTicks = this.renderPartialTicks + diffHRClockSecs * 20;
+                    int elapsedTicks = (int)this.renderPartialTicks;
+                    this.renderPartialTicks -= (double)elapsedTicks;
+
+                    if (elapsedTicks > 10)
+                    {
+                        elapsedTicks = 10;
+                    }
+
+                    for (int tick = 0; tick < elapsedTicks; ++tick)
                     {
                     	if (this.rightClickDelayTimer > 0)
                         {
@@ -350,7 +380,7 @@ public class Minecraft
                     GL11.glPushMatrix();
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
-                    this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks);
+                    this.entityRenderer.updateCameraAndRender(this.renderPartialTicks);
                     GL11.glFlush();
                     GL11.glPopMatrix();
                     GL11.glPushMatrix();
@@ -705,7 +735,7 @@ public class Minecraft
     /**
      * Finds what block or object the mouse is over at the specified partial tick time. Args: partialTickTime
      */
-    public void computeMouseOver(float partialTickTime)
+    public void computeMouseOver(double partialTickTime)
     {
         if (this.renderViewEntity != null)
         {

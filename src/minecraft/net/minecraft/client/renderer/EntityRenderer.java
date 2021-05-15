@@ -46,7 +46,7 @@ public class EntityRenderer
     /**
      * Will update any inputs that effect the camera angle (mouse) and then render the world and GUI
      */
-    public void updateCameraAndRender(float partialTickTime)
+    public void updateCameraAndRender(double partialTickTime)
     {
         boolean isDisplayActive = Display.isActive();
 
@@ -105,8 +105,8 @@ public class EntityRenderer
             GL11.glLoadIdentity();
             GL11.glRotatef(0.0F, 0.0F, 0.0F, 1.0F);
             GL11.glTranslatef(0.0F, 0.0F, -0.1F);
-            GL11.glRotatef(player.getPartialRotationPitch(partialTickTime), 1.0F, 0.0F, 0.0F);
-            GL11.glRotatef(player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glRotatef((float)player.getPartialRotationPitch(partialTickTime), 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef((float)player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
             GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
             
             GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);

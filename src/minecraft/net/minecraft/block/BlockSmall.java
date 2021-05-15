@@ -4,7 +4,7 @@ import net.minecraft.world.WorldServer;
 
 public abstract class BlockSmall extends Block
 {
-	protected final float d = 0.1875F;
+	private final float d = 0.1875F;
 	
     public boolean isSolid()
     {
