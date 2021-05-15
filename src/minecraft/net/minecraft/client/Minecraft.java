@@ -9,7 +9,6 @@ import javax.imageio.ImageIO;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
@@ -180,8 +179,6 @@ public class Minecraft
 
                 Display.create();
             }
-
-            OpenGlHelper.initializeTextures();
 
             File saves = new File(this.mcDataDir, "saves");
             if (!saves.exists())

@@ -175,7 +175,6 @@ public class EntityRenderer
             }
 
             GL11.glEnable(GL11.GL_BLEND);
-            OpenGlHelper.glBlendFunc(770, 1, 1, 0);
             GL11.glDisable(GL11.GL_BLEND);
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_LIGHT0);
@@ -186,7 +185,6 @@ public class EntityRenderer
             GL11.glDepthMask(true);
             GL11.glDisable(GL11.GL_BLEND);
             GL11.glEnable(GL11.GL_CULL_FACE);
-            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glNormal3f(0.0F, -1.0F, 0.0F);
             GL11.glEnable(GL11.GL_COLOR_MATERIAL);
@@ -255,7 +253,6 @@ public class EntityRenderer
         Tessellator tessellator = Tessellator.instance;
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        OpenGlHelper.glBlendFunc(770, 771, 1, 0);
         tessellator.startDrawing(7);
         tessellator.setColor_I(color);
         tessellator.addVertex(x1, y2, 0);
