@@ -100,14 +100,6 @@ public class Chunk
         return this.isLoaded;
     }
 
-    /**
-     * Gets a ChunkCoordIntPair representing the Chunk's position.
-     */
-    public ChunkCoordIntPair getChunkCoordIntPair()
-    {
-        return new ChunkCoordIntPair(this.xPosition, this.zPosition);
-    }
-
     public void setStorageArrays(byte[] storageArray)
     {
         this.storageArray = storageArray;
