@@ -2,34 +2,22 @@ package net.minecraft.block;
 
 import net.minecraft.world.WorldServer;
 
-public class BlockRedstoneTorch extends Block
+public class BlockRedstoneTorch extends BlockSmall
 {
-	private final float d = 0.1875F;
+	protected void notifyAppropriateNeighbors(WorldServer world, int x, int y, int z, int orientation)
+	{
+		world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+        world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+        world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+        world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+        world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+        world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+	}
 	
-    public void onBlockAdded(WorldServer world, int x, int y, int z)
+	public void onBlockAdded(WorldServer world, int x, int y, int z)
     {
-    	if ((world.getBlockMetadata(x, y, z) & 8) > 0)
-        {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        }
-    }
-
-    public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
-    {
-        if ((meta & 8) > 0)
-        {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        }
+		int meta = world.getBlockMetadata(x, y, z);
+    	if ((meta & 8) > 0) this.notifyAppropriateNeighbors(world, x, y, z, meta & 7);
     }
 
     public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
@@ -86,24 +74,6 @@ public class BlockRedstoneTorch extends Block
         return side == 0 ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
 
-    /**
-     * Can this block provide power. Only wire currently seems to have this change based on its state.
-     */
-    public boolean canProvidePower()
-    {
-        return true;
-    }
-    
-    public boolean isSolid()
-    {
-        return false;
-    }
-    
-    public int getRenderType()
-    {
-        return 0;
-    }
-
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
         return world.getBlock(x - 1, y, z).isSolid()
@@ -145,42 +115,6 @@ public class BlockRedstoneTorch extends Block
         }
     }
     
-    protected double minX(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 1 ? 0.0F : s == 2 ? 1.0F - d : 0.5F - d;
-    }
-    
-    protected double minY(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 5 ? 0.0F : s == 0 ? 1.0F - d : 0.5F - d;
-    }
-    
-    protected double minZ(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 3 ? 0.0F : s == 4 ? 1.0F - d : 0.5F - d;
-    }
-    
-    protected double maxX(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 1 ? d : s == 2 ? 1.0F : 0.5F + d;
-    }
-    
-    protected double maxY(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 5 ? d : s == 0 ? 1.0F : 0.5F + d;
-    }
-    
-    protected double maxZ(int meta)
-    {
-    	int s = meta & 7;
-    	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
-    }
-    
     /**
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
      * when first determining what to render.
@@ -189,11 +123,6 @@ public class BlockRedstoneTorch extends Block
     {
         return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
     }
-
-	public boolean isReplaceable()
-	{
-		return false;
-	}
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
 	{
