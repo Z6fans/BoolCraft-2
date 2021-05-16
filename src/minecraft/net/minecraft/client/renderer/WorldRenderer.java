@@ -192,7 +192,7 @@ public class WorldRenderer
         
         double[] xs = {this.aabb.minX - x, this.aabb.maxX - x};
         double[] ys = {this.aabb.minY - y, this.aabb.maxY - y};
-        double[] zs = {this.aabb.minZ - x, this.aabb.maxZ - z};
+        double[] zs = {this.aabb.minZ - z, this.aabb.maxZ - z};
         
         this.inFrustum = true;
     	

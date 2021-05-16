@@ -111,7 +111,7 @@ public class RenderBlocks
         }
 
     	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
-        if (!this.world.getBlock(x, y + 1, z).isSolid() || this.renderMinY < 1.0D)
+        if (!this.world.getBlock(x, y + 1, z).isSolid() || this.renderMaxY < 1.0D)
         {
             this.renderFaceYPos(x, y, z);
             didRender = true;
@@ -124,7 +124,7 @@ public class RenderBlocks
             didRender = true;
         }
 
-        if (!this.world.getBlock(x, y, z + 1).isSolid() || this.renderMinZ < 1.0D)
+        if (!this.world.getBlock(x, y, z + 1).isSolid() || this.renderMaxZ < 1.0D)
         {
             this.renderFaceZPos(x, y, z);
             didRender = true;
@@ -136,7 +136,7 @@ public class RenderBlocks
             didRender = true;
         }
 
-        if (!this.world.getBlock(x + 1, y, z).isSolid() || this.renderMinX < 1.0D)
+        if (!this.world.getBlock(x + 1, y, z).isSolid() || this.renderMaxX < 1.0D)
         {
             this.renderFaceXPos(x, y, z);
             didRender = true;
