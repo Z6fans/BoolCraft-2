@@ -40,7 +40,7 @@ public class Minecraft
      * modify the camera likewise, with the caveat of triggering chunk rebuilds as it moves, making it unsuitable for
      * changing the viewpoint mid-render.
      */
-    public EntityPlayer renderViewEntity;
+    private EntityPlayer renderViewEntity;
 
     /** The GuiScreen that's being displayed at the moment. */
     public GuiScreen currentScreen;
@@ -213,7 +213,7 @@ public class Minecraft
             GL11.glLoadIdentity();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             this.checkGLError("Startup");
-            this.renderGlobal = new RenderGlobal(this);
+            this.renderGlobal = new RenderGlobal();
             this.entityRenderer = new EntityRenderer(this, this.renderGlobal);
             GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
             this.checkGLError("Post startup");
@@ -377,11 +377,8 @@ public class Minecraft
                     GL11.glPushMatrix();
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
-                    this.entityRenderer.updateCameraAndRender(this.renderPartialTicks);
+                    this.entityRenderer.updateCameraAndRender(this.renderViewEntity, this.renderPartialTicks);
                     GL11.glFlush();
-                    GL11.glPopMatrix();
-                    GL11.glPushMatrix();
-                    this.entityRenderer.setupOverlayRendering();
                     GL11.glPopMatrix();
                     this.updateDisplaySize();
                     Thread.yield();
@@ -660,8 +657,6 @@ public class Minecraft
             
             prevTime = System.currentTimeMillis();
             tickTimer = 0L;
-            
-            this.renderViewEntity = null;
 
             if (this.renderGlobal != null)
             {

@@ -8,7 +8,6 @@ import java.util.List;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.EntityPlayer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.WorldServer;
 import net.minecraft.util.MathHelper;
 
@@ -24,9 +23,6 @@ public class RenderGlobal
 
     /** OpenGL render lists base */
     private final int glRenderListBase;
-
-    /** A reference to the Minecraft object. */
-    private final Minecraft mc;
 
     /** Minimum block X */
     private int minBlockX;
@@ -84,9 +80,8 @@ public class RenderGlobal
      */
     private int frustumCheckOffset;
 
-    public RenderGlobal(Minecraft minecraft)
+    public RenderGlobal()
     {
-        this.mc = minecraft;
         this.glRenderListBase = GLAllocation.generateDisplayLists(34 * 34 * 16 * 3);
     }
 
@@ -105,70 +100,50 @@ public class RenderGlobal
         this.prevChunkSortY = -9999;
         this.prevChunkSortZ = -9999;
         this.theWorld = world;
-        this.loadRenderers();
-    }
-
-    /**
-     * Loads all the renderers and sets up the basic settings usage
-     */
-    private void loadRenderers()
-    {
-        if (this.theWorld != null)
+        
+        if (this.worldRenderers != null)
         {
-            if (this.worldRenderers != null)
+            for (int i = 0; i < this.worldRenderers.length; ++i)
             {
-                for (int i = 0; i < this.worldRenderers.length; ++i)
-                {
-                    this.worldRenderers[i].stopRendering();
-                }
+                this.worldRenderers[i].stopRendering();
             }
+        }
 
-            this.renderChunksWide = 33;
-            this.renderChunksTall = 16;
-            this.renderChunksDeep = 33;
-            this.worldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
-            this.sortedWorldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
-            int var2 = 0;
-            int var3 = 0;
-            this.minBlockX = 0;
-            this.minBlockY = 0;
-            this.minBlockZ = 0;
-            this.maxBlockX = this.renderChunksWide;
-            this.maxBlockY = this.renderChunksTall;
-            this.maxBlockZ = this.renderChunksDeep;
-            int var4;
+        this.renderChunksWide = 33;
+        this.renderChunksTall = 16;
+        this.renderChunksDeep = 33;
+        this.worldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
+        this.sortedWorldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
+        this.minBlockX = 0;
+        this.minBlockY = 0;
+        this.minBlockZ = 0;
+        this.maxBlockX = this.renderChunksWide;
+        this.maxBlockY = this.renderChunksTall;
+        this.maxBlockZ = this.renderChunksDeep;
 
-            for (var4 = 0; var4 < this.worldRenderersToUpdate.size(); ++var4)
+        for (int i = 0; i < this.worldRenderersToUpdate.size(); ++i)
+        {
+            this.worldRenderersToUpdate.get(i).needsUpdate = false;
+        }
+
+        this.worldRenderersToUpdate.clear();
+        
+        int var2 = 0;
+        int var3 = 0;
+
+        for (int x = 0; x < this.renderChunksWide; ++x)
+        {
+            for (int y = 0; y < this.renderChunksTall; ++y)
             {
-                this.worldRenderersToUpdate.get(var4).needsUpdate = false;
-            }
-
-            this.worldRenderersToUpdate.clear();
-
-            for (var4 = 0; var4 < this.renderChunksWide; ++var4)
-            {
-                for (int var5 = 0; var5 < this.renderChunksTall; ++var5)
+                for (int z = 0; z < this.renderChunksDeep; ++z)
                 {
-                    for (int var6 = 0; var6 < this.renderChunksDeep; ++var6)
-                    {
-                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4] = new WorldRenderer(this.theWorld, var4 * 16, var5 * 16, var6 * 16, this.glRenderListBase + var2);
-                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].setInFrustrum();
-                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].chunkIndex = var3++;
-                        this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4].markDirty();
-                        this.sortedWorldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4] = this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4];
-                        this.worldRenderersToUpdate.add(this.worldRenderers[(var6 * this.renderChunksTall + var5) * this.renderChunksWide + var4]);
-                        var2 += 3;
-                    }
-                }
-            }
-
-            if (this.theWorld != null)
-            {
-                EntityPlayer var7 = this.mc.renderViewEntity;
-
-                if (var7 != null)
-                {
-                    this.markRenderersForNewPosition(MathHelper.floor_double(var7.getPosX()), MathHelper.floor_double(var7.getPosY()), MathHelper.floor_double(var7.getPosZ()));
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x] = new WorldRenderer(this.theWorld, x * 16, y * 16, z * 16, this.glRenderListBase + var2);
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].setInFrustrum();
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].chunkIndex = var3++;
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].markDirty();
+                    this.sortedWorldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x] = this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x];
+                    this.worldRenderersToUpdate.add(this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x]);
+                    var2 += 3;
                 }
             }
         }
@@ -332,9 +307,9 @@ public class RenderGlobal
             }
         }
 
-        double ppx = this.mc.renderViewEntity.getPartialPosX(ptt);
-        double ppy = this.mc.renderViewEntity.getPartialPosY(ptt);
-        double ppz = this.mc.renderViewEntity.getPartialPosZ(ptt);
+        double ppx = player.getPartialPosX(ptt);
+        double ppy = player.getPartialPosY(ptt);
+        double ppz = player.getPartialPosZ(ptt);
         int nextList = 0;
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
