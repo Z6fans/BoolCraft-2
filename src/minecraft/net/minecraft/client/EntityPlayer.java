@@ -70,7 +70,17 @@ public class EntityPlayer
         this.boundingBox = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
-        this.prevPosY = this.posY = this.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
+        int topBlock = -1;
+        
+        for (int y = 255; y > 0; --y)
+        {
+            if (this.worldServer.isSolid(0, y, 0))
+            {
+                topBlock =  y + 1;
+            }
+        }
+        
+        this.prevPosY = this.posY = topBlock + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
         
         this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
@@ -352,7 +362,7 @@ public class EntityPlayer
 
     private boolean isBlockSolid(int x, int y, int z)
     {
-        return this.worldServer.getBlock(x, y, z).isSolid();
+        return this.worldServer.isSolid(x, y, z);
     }
 
     private void pushPlayerOutOfBlock(double xpos, double ypos, double zpos)
@@ -637,7 +647,7 @@ public class EntityPlayer
             {
             	for (int y = miny - 1; y <= maxy; ++y)
                 {
-                    if (this.worldServer.getBlock(x, y, z) == Block.stone)
+                    if (this.worldServer.isSolid(x, y, z))
                     {
                         if (aabb.intersectsWith(x, y, z)) collidingBoundingBoxes.add(new Becktor(x, y, z));
                     }

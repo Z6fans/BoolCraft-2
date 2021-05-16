@@ -10,7 +10,7 @@ import net.minecraft.world.WorldServer;
 public abstract class Block
 {
 	public static final Block air = new BlockAir();
-    public static final Block stone = new BlockStone();
+    private static final Block stone = new BlockStone();
     public static final Block redstone_wire = new BlockRedstoneWire();
     private static final Block lever = new BlockLever();
     private static final Block redstone_torch = new BlockRedstoneTorch();
@@ -226,7 +226,7 @@ public abstract class Block
         return block1 != null && block2 != null && block1 == block2;
     }
 
-    public abstract boolean isSolid();
+    public abstract boolean isSoled();
     
     public abstract boolean isReplaceable();
 
@@ -244,7 +244,7 @@ public abstract class Block
 
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
-    public abstract void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta);
+    public abstract void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta);
     
     /**
      * Called upon block activation (right click on the block.)

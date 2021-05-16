@@ -11,7 +11,7 @@ public class BlockRedstoneWire extends Block
     	return 0.0625F;
     }
     
-    public boolean isSolid()
+    public boolean isSoled()
     {
         return false;
     }
@@ -36,7 +36,7 @@ public class BlockRedstoneWire extends Block
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return world.getBlock(x, y - 1, z).isSolid();
+        return world.isSolid(x, y - 1, z);
     }
 
     private void computeMetadata(WorldServer world, int x, int y, int z)
@@ -79,14 +79,14 @@ public class BlockRedstoneWire extends Block
                 directPower = this.maxRedstonePowerAt(world, xToCheck, y, zToCheck, directPower);
             }
 
-            if (world.getBlock(xToCheck, y, zToCheck).isSolid() && !world.getBlock(x, y + 1, z).isSolid())
+            if (world.isSolid(xToCheck, y, zToCheck) && !world.isSolid(x, y + 1, z))
             {
                 if (xToCheck != x || zToCheck != z)
                 {
                     directPower = this.maxRedstonePowerAt(world, xToCheck, y + 1, zToCheck, directPower);
                 }
             }
-            else if (!world.getBlock(xToCheck, y, zToCheck).isSolid() && (xToCheck != x || zToCheck != z))
+            else if (!world.isSolid(xToCheck, y, zToCheck) && (xToCheck != x || zToCheck != z))
             {
                 directPower = this.maxRedstonePowerAt(world, xToCheck, y - 1, zToCheck, directPower);
             }
@@ -128,53 +128,6 @@ public class BlockRedstoneWire extends Block
             return Math.max(world.getBlockMetadata(x, y, z), other);
         }
     }
-
-    private void propagateSignal(WorldServer world, int x, int y, int z)
-    {
-        if (world.getBlock(x, y, z) == this)
-        {
-        	this.notifyNeighbors(world, x - 1, y, z);
-            this.notifyNeighbors(world, x + 1, y, z);
-            this.notifyNeighbors(world, x, y, z - 1);
-            this.notifyNeighbors(world, x, y, z + 1);
-
-            if (world.getBlock(x - 1, y, z).isSolid())
-            {
-                this.notifyNeighbors(world, x - 1, y + 1, z);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x - 1, y - 1, z);
-            }
-
-            if (world.getBlock(x + 1, y, z).isSolid())
-            {
-                this.notifyNeighbors(world, x + 1, y + 1, z);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x + 1, y - 1, z);
-            }
-
-            if (world.getBlock(x, y, z - 1).isSolid())
-            {
-                this.notifyNeighbors(world, x, y + 1, z - 1);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x, y - 1, z - 1);
-            }
-
-            if (world.getBlock(x, y, z + 1).isSolid())
-            {
-                this.notifyNeighbors(world, x, y + 1, z + 1);
-            }
-            else
-            {
-                this.notifyNeighbors(world, x, y - 1, z + 1);
-            }
-        }
-    }
     
     private void notifyNeighbors(WorldServer world, int x, int y, int z)
     {
@@ -192,10 +145,49 @@ public class BlockRedstoneWire extends Block
     	this.computeMetadata(world, x, y, z);
         world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
         world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        this.propagateSignal(world, x, y, z);
+        this.notifyNeighbors(world, x - 1, y, z);
+        this.notifyNeighbors(world, x + 1, y, z);
+        this.notifyNeighbors(world, x, y, z - 1);
+        this.notifyNeighbors(world, x, y, z + 1);
+
+        if (world.isSolid(x - 1, y, z))
+        {
+            this.notifyNeighbors(world, x - 1, y + 1, z);
+        }
+        else
+        {
+            this.notifyNeighbors(world, x - 1, y - 1, z);
+        }
+
+        if (world.isSolid(x + 1, y, z))
+        {
+            this.notifyNeighbors(world, x + 1, y + 1, z);
+        }
+        else
+        {
+            this.notifyNeighbors(world, x + 1, y - 1, z);
+        }
+
+        if (world.isSolid(x, y, z - 1))
+        {
+            this.notifyNeighbors(world, x, y + 1, z - 1);
+        }
+        else
+        {
+            this.notifyNeighbors(world, x, y - 1, z - 1);
+        }
+
+        if (world.isSolid(x, y, z + 1))
+        {
+            this.notifyNeighbors(world, x, y + 1, z + 1);
+        }
+        else
+        {
+            this.notifyNeighbors(world, x, y - 1, z + 1);
+        }
     }
 
-    public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
+    public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
     {
     	world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
         world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
@@ -204,7 +196,6 @@ public class BlockRedstoneWire extends Block
         world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
         world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
         this.computeMetadata(world, x, y, z);
-        this.propagateSignal(world, x, y, z);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
@@ -244,17 +235,17 @@ public class BlockRedstoneWire extends Block
             }
             else
             {
-                boolean xm = shouldConnect(world, x - 1, y, z, true) || !world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y - 1, z, false);
-                boolean xp = shouldConnect(world, x + 1, y, z, true) || !world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y - 1, z, false);
-                boolean zm = shouldConnect(world, x, y, z - 1, true) || !world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y - 1, z - 1, false);
-                boolean zp = shouldConnect(world, x, y, z + 1, true) || !world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y - 1, z + 1, false);
+                boolean xm = shouldConnect(world, x - 1, y, z, true) || !world.isSolid(x - 1, y, z) && shouldConnect(world, x - 1, y - 1, z, false);
+                boolean xp = shouldConnect(world, x + 1, y, z, true) || !world.isSolid(x + 1, y, z) && shouldConnect(world, x + 1, y - 1, z, false);
+                boolean zm = shouldConnect(world, x, y, z - 1, true) || !world.isSolid(x, y, z - 1) && shouldConnect(world, x, y - 1, z - 1, false);
+                boolean zp = shouldConnect(world, x, y, z + 1, true) || !world.isSolid(x, y, z + 1) && shouldConnect(world, x, y - 1, z + 1, false);
 
-                if (!world.getBlock(x, y + 1, z).isSolid())
+                if (!world.isSolid(x, y + 1, z))
                 {
-                    xm |= world.getBlock(x - 1, y, z).isSolid() && shouldConnect(world, x - 1, y + 1, z, false);
-                    xp |= world.getBlock(x + 1, y, z).isSolid() && shouldConnect(world, x + 1, y + 1, z, false);
-                    zm |= world.getBlock(x, y, z - 1).isSolid() && shouldConnect(world, x, y + 1, z - 1, false);
-                    zp |= world.getBlock(x, y, z + 1).isSolid() && shouldConnect(world, x, y + 1, z + 1, false);
+                    xm |= world.isSolid(x - 1, y, z) && shouldConnect(world, x - 1, y + 1, z, false);
+                    xp |= world.isSolid(x + 1, y, z) && shouldConnect(world, x + 1, y + 1, z, false);
+                    zm |= world.isSolid(x, y, z - 1) && shouldConnect(world, x, y + 1, z - 1, false);
+                    zp |= world.isSolid(x, y, z + 1) && shouldConnect(world, x, y + 1, z + 1, false);
                 }
 
                 return !zm && !xp && !xm && !zp && side >= 2 && side <= 5 ? meta : (side == 2 && zm && !xm && !xp ? meta : (side == 3 && zp && !xm && !xp ? meta : (side == 4 && xm && !zm && !zp ? meta : (side == 5 && xp && !zm && !zp ? meta : 0))));

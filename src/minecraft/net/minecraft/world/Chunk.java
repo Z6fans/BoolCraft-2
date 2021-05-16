@@ -50,20 +50,20 @@ public class Chunk
         return (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
     }
     
-    public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block block, int newMeta)
+    public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block newBlock, int newMeta)
     {
         Block oldBlock = this.getBlock(x, y, z);
         int oldMeta = this.getBlockMetadata(x, y, z);
 
-        if (oldBlock != block || oldMeta != newMeta)
+        if (oldBlock != newBlock || oldMeta != newMeta)
         {
             int trueX = this.xPosition * 16 + x;
             int trueZ = this.zPosition * 16 + z;
 
-            this.storageArray[y << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(block) & 0xF));
+            this.storageArray[y << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(newBlock) & 0xF));
 
-            oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
-            block.onBlockAdded(world, trueX, y, trueZ);
+            oldBlock.onBlockBreak(world, trueX, y, trueZ, oldBlock, oldMeta);
+            newBlock.onBlockAdded(world, trueX, y, trueZ);
 
             this.isModified = true;
             return true;

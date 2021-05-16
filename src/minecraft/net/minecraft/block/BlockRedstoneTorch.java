@@ -19,7 +19,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta)
+    public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
     {
         if ((meta & 8) > 0)
         {
@@ -39,7 +39,7 @@ public class BlockRedstoneTorch extends Block
         	|| (meta == 3 && side == 3)
         	|| (meta == 4 && side == 2)
         	|| (meta == 1 && side == 5)
-        	|| (meta == 2 && side == 4) 
+        	|| (meta == 2 && side == 4)
         	|| (world.getBlockMetadata(x, y, z) & 8) == 0 ? 0 : 15;
     }
 
@@ -60,18 +60,18 @@ public class BlockRedstoneTorch extends Block
     {
     	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8), true);
         world.notifyBlocksOfNeighborChange(x, y, z, this);
-        if (world.getBlock(x, y + 1, z).isSolid()) world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+        if (world.isSolid(x, y + 1, z)) world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 
-        if (  (!world.getBlock(x - 1, y, z).isSolid() && meta == 1)
-           || (!world.getBlock(x + 1, y, z).isSolid() && meta == 2)
-           || (!world.getBlock(x, y, z - 1).isSolid() && meta == 3)
-           || (!world.getBlock(x, y, z + 1).isSolid() && meta == 4)
-           || (!world.getBlock(x, y - 1, z).isSolid() && meta == 5))
+        if (  (!world.isSolid(x - 1, y, z) && meta == 1)
+           || (!world.isSolid(x + 1, y, z) && meta == 2)
+           || (!world.isSolid(x, y, z - 1) && meta == 3)
+           || (!world.isSolid(x, y, z + 1) && meta == 4)
+           || (!world.isSolid(x, y - 1, z) && meta == 5))
         {
             world.setBlock(x, y, z, Block.air, 0);
         }
@@ -94,7 +94,7 @@ public class BlockRedstoneTorch extends Block
         return true;
     }
     
-    public boolean isSolid()
+    public boolean isSoled()
     {
         return false;
     }
@@ -106,11 +106,11 @@ public class BlockRedstoneTorch extends Block
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
-        return world.getBlock(x - 1, y, z).isSolid()
-        	|| world.getBlock(x + 1, y, z).isSolid()
-        	|| world.getBlock(x, y, z - 1).isSolid()
-        	|| world.getBlock(x, y, z + 1).isSolid()
-        	|| world.getBlock(x, y - 1, z).isSolid();
+        return world.isSolid(x - 1, y, z)
+        	|| world.isSolid(x + 1, y, z)
+        	|| world.isSolid(x, y, z - 1)
+        	|| world.isSolid(x, y, z + 1)
+        	|| world.isSolid(x, y - 1, z);
     }
 
     public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
@@ -119,23 +119,23 @@ public class BlockRedstoneTorch extends Block
     	int[] yOff = {-1, 1, 0, 0, 0, 0};
     	int[] zOff = {0, 0, -1, 1, 0, 0};
         
-        if(side != 0 && world.getBlock(x - xOff[side], y - yOff[side], z - zOff[side]).isSolid())
+        if(side != 0 && world.isSolid(x - xOff[side], y - yOff[side], z - zOff[side]))
         {
         	return ((6 - side) % 6) | 8;
         }
-        else if (world.getBlock(x - 1, y, z).isSolid())
+        else if (world.isSolid(x - 1, y, z))
         {
             return 9;
         }
-        else if (world.getBlock(x + 1, y, z).isSolid())
+        else if (world.isSolid(x + 1, y, z))
         {
             return 10;
         }
-        else if (world.getBlock(x, y, z - 1).isSolid())
+        else if (world.isSolid(x, y, z - 1))
         {
             return 11;
         }
-        else if (world.getBlock(x, y, z + 1).isSolid())
+        else if (world.isSolid(x, y, z + 1))
         {
             return 12;
         }

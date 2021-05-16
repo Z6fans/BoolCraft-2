@@ -168,18 +168,13 @@ public class WorldServer
 
                 if (this.checkChunksExist(entry.xCoord - var5, entry.yCoord - var5, entry.zCoord - var5, entry.xCoord + var5, entry.yCoord + var5, entry.zCoord + var5))
                 {
-                    Block block = this.getBlock(entry.xCoord, entry.yCoord, entry.zCoord);
-
-                    if (!block.isReplaceable() && Block.isEqualTo(block, entry.getBlock()))
+                    try
                     {
-                        try
-                        {
-                            block.updateTick(this, entry.xCoord, entry.yCoord, entry.zCoord);
-                        }
-                        catch (Throwable t)
-                        {
-                            throw new RuntimeException("Exception while ticking a block", t);
-                        }
+                    	this.getBlock(entry.xCoord, entry.yCoord, entry.zCoord).updateTick(this, entry.xCoord, entry.yCoord, entry.zCoord);
+                    }
+                    catch (Throwable t)
+                    {
+                        throw new RuntimeException("Exception while ticking a block", t);
                     }
                 }
                 else
@@ -388,24 +383,6 @@ public class WorldServer
             throw new RuntimeException("Exception while updating neighbors", t);
         }
     }
-	
-	/**
-     * Finds the highest block on the x, z coordinate that is solid and returns its y coord. Args x, z
-     */
-    public int getTopBlockAtSpawn()
-    {
-        Chunk chunk = this.provideChunk(0, 0);
-
-        for (int y = 255; y > 0; --y)
-        {
-            if (chunk.getBlock(0, y, 0).isSolid())
-            {
-                return y + 1;
-            }
-        }
-
-        return -1;
-    }
     
     public void spawnPlayerInWorld(Minecraft mc)
     {
@@ -580,7 +557,7 @@ public class WorldServer
      */
     private int getIndirectPowerLevelTo(int x, int y, int z, int side)
     {
-        return this.getBlock(x, y, z).isSolid() ? this.getBlockPowerInput(x, y, z) : this.getBlock(x, y, z).isProvidingWeakPower(this, x, y, z, side);
+        return this.isSolid(x, y, z) ? this.getBlockPowerInput(x, y, z) : this.getBlock(x, y, z).isProvidingWeakPower(this, x, y, z, side);
     }
 
     public int getStrongestIndirectPower(int x, int y, int z)
@@ -809,5 +786,10 @@ public class WorldServer
                 this.prevPosZ = this.playerPosZ;
             }
         }
+    }
+    
+    public boolean isSolid(int x, int y, int z)
+    {
+    	return this.getBlock(x, y, z).isSoled();
     }
 }

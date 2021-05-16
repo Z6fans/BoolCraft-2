@@ -10,7 +10,7 @@ public class BlockAir extends Block
     	return true;
     }
     
-    public boolean isSolid()
+    public boolean isSoled()
     {
         return false;
     }
@@ -56,5 +56,5 @@ public class BlockAir extends Block
 
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
-	public void breakBlock(WorldServer world, int x, int y, int z, Block block, int meta){}
+	public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta){}
 }

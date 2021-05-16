@@ -61,9 +61,9 @@ public class RenderBlocks
         tess.addVertex(x + 0, y + 0.01, z + 0);
         tess.addVertex(x + 0, y + 0.01, z + 1);
 
-        if (!this.world.getBlock(x, y + 1, z).isSolid())
+        if (!this.world.isSolid(x, y + 1, z))
         {
-            if (this.world.getBlock(x - 1, y, z).isSolid() && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.isSolid(x - 1, y, z) && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
             {
                 tess.addVertex(x + 0.01, y + 1, z + 1);
                 tess.addVertex(x + 0.01, y + 0, z + 1);
@@ -71,7 +71,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0.01, y + 1, z + 0);
             }
 
-            if (this.world.getBlock(x + 1, y, z).isSolid() && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.isSolid(x + 1, y, z) && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
             {
                 tess.addVertex(x + 0.99, y + 0, z + 1);
                 tess.addVertex(x + 0.99, y + 1, z + 1);
@@ -79,7 +79,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0.99, y + 0, z + 0);
             }
 
-            if (this.world.getBlock(x, y, z - 1).isSolid() && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
+            if (this.world.isSolid(x, y, z - 1) && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
             {
                 tess.addVertex(x + 1, y + 0, z + 0.01);
                 tess.addVertex(x + 1, y + 1, z + 0.01);
@@ -87,7 +87,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0, y + 0, z + 0.01);
             }
 
-            if (this.world.getBlock(x, y, z + 1).isSolid() && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
+            if (this.world.isSolid(x, y, z + 1) && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
             {
                 tess.addVertex(x + 1, y + 1, z + 0.99);
                 tess.addVertex(x + 1, y + 0, z + 0.99);
@@ -104,39 +104,39 @@ public class RenderBlocks
         boolean didRender = false;
 
     	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 2));
-        if (!this.world.getBlock(x, y - 1, z).isSolid() || this.renderMinY > 0.0D)
+        if (!this.world.isSolid(x, y - 1, z) || this.renderMinY > 0.0D)
         {
             this.renderFaceYNeg(x, y, z);
             didRender = true;
         }
 
     	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
-        if (!this.world.getBlock(x, y + 1, z).isSolid() || this.renderMaxY < 1.0D)
+        if (!this.world.isSolid(x, y + 1, z) || this.renderMaxY < 1.0D)
         {
             this.renderFaceYPos(x, y, z);
             didRender = true;
         }
 
     	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 1));
-        if (!this.world.getBlock(x, y, z - 1).isSolid() || this.renderMinZ > 0.0D)
+        if (!this.world.isSolid(x, y, z - 1) || this.renderMinZ > 0.0D)
         {
             this.renderFaceZNeg(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x, y, z + 1).isSolid() || this.renderMaxZ < 1.0D)
+        if (!this.world.isSolid(x, y, z + 1) || this.renderMaxZ < 1.0D)
         {
             this.renderFaceZPos(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x - 1, y, z).isSolid() || this.renderMinX > 0.0D)
+        if (!this.world.isSolid(x - 1, y, z) || this.renderMinX > 0.0D)
         {
             this.renderFaceXNeg(x, y, z);
             didRender = true;
         }
 
-        if (!this.world.getBlock(x + 1, y, z).isSolid() || this.renderMaxX < 1.0D)
+        if (!this.world.isSolid(x + 1, y, z) || this.renderMaxX < 1.0D)
         {
             this.renderFaceXPos(x, y, z);
             didRender = true;
