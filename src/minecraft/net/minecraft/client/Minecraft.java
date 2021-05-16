@@ -32,15 +32,7 @@ public class Minecraft
     public int displayWidth;
     public int displayHeight;
     public RenderGlobal renderGlobal;
-    public EntityPlayer thePlayer;
-
-    /**
-     * The Entity from which the renderer determines the render viewpoint. Currently is always the parent Minecraft
-     * class's 'thePlayer' instance. Modification of its location, rotation, or other settings at render time will
-     * modify the camera likewise, with the caveat of triggering chunk rebuilds as it moves, making it unsuitable for
-     * changing the viewpoint mid-render.
-     */
-    private EntityPlayer renderViewEntity;
+    private EntityPlayer thePlayer;
 
     /** The GuiScreen that's being displayed at the moment. */
     public GuiScreen currentScreen;
@@ -131,7 +123,15 @@ public class Minecraft
     private void displayGuiScreen()
     {
     	this.currentScreen = new GuiScreen();
-        this.setIngameNotInFocus();
+    	
+        if (this.inGameHasFocus)
+        {
+            KeyBinding.unPressAllKeys();
+            this.inGameHasFocus = false;
+            Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
+            Mouse.setGrabbed(false);
+        }
+        
         this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
     }
 
@@ -188,16 +188,9 @@ public class Minecraft
             this.savesDirectory = saves;
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
-            GL11.glOrtho(0.0D, this.getScaledWidth(), this.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
             GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glEnable(GL11.GL_TEXTURE_2D);
-            GL11.glDisable(GL11.GL_LIGHTING);
-            GL11.glDisable(GL11.GL_FOG);
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glFlush();
             this.updateDisplaySize();
             this.checkGLError("Pre startup");
@@ -209,9 +202,6 @@ public class Minecraft
             GL11.glEnable(GL11.GL_ALPHA_TEST);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glCullFace(GL11.GL_BACK);
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glLoadIdentity();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
             this.checkGLError("Startup");
             this.renderGlobal = new RenderGlobal();
             this.entityRenderer = new EntityRenderer(this, this.renderGlobal);
@@ -352,11 +342,6 @@ public class Minecraft
                                 this.playerRightClick();
                             }
                         }
-
-                        if (this.renderViewEntity == null)
-                        {
-                            this.renderViewEntity = this.thePlayer;
-                        }
                         
                         if (this.thePlayer != null)
                         {
@@ -377,7 +362,7 @@ public class Minecraft
                     GL11.glPushMatrix();
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
-                    this.entityRenderer.updateCameraAndRender(this.renderViewEntity, this.renderPartialTicks);
+                    this.entityRenderer.updateCameraAndRender(this.thePlayer, this.renderPartialTicks);
                     GL11.glFlush();
                     GL11.glPopMatrix();
                     this.updateDisplaySize();
@@ -555,20 +540,6 @@ public class Minecraft
             Mouse.setGrabbed(true);
         }
     }
-
-    /**
-     * Resets the player keystate, disables the ingame focus, and ungrabs the mouse cursor.
-     */
-    private void setIngameNotInFocus()
-    {
-        if (this.inGameHasFocus)
-        {
-            KeyBinding.unPressAllKeys();
-            this.inGameHasFocus = false;
-            Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
-            Mouse.setGrabbed(false);
-        }
-    }
     
     public boolean getInGameHasFocus()
     {
@@ -664,7 +635,6 @@ public class Minecraft
             }
 
             this.thePlayer = new EntityPlayer(this.worldServer);
-            this.renderViewEntity = this.thePlayer;
 
             System.gc();
             this.systemTime = 0L;
@@ -685,7 +655,6 @@ public class Minecraft
     {
     	this.serverRunning = false;
         this.stopServer();
-        this.renderViewEntity = null;
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;
@@ -729,12 +698,9 @@ public class Minecraft
      */
     public void computeMouseOver(double partialTickTime)
     {
-        if (this.renderViewEntity != null)
+        if (this.thePlayer != null)
         {
-            if (this.worldServer != null)
-            {
-                this.objectMouseOver = this.renderViewEntity.rayTrace8(partialTickTime);
-            }
+        	this.objectMouseOver = this.thePlayer.rayTrace8(partialTickTime);
         }
     }
     

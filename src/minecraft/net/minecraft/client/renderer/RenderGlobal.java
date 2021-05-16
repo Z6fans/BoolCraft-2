@@ -10,6 +10,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.Vec3;
 
 public class RenderGlobal
 {
@@ -307,9 +308,7 @@ public class RenderGlobal
             }
         }
 
-        double ppx = player.getPartialPosX(ptt);
-        double ppy = player.getPartialPosY(ptt);
-        double ppz = player.getPartialPosZ(ptt);
+        Vec3 ppos = player.pttPos(ptt);
         int nextList = 0;
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
@@ -333,7 +332,7 @@ public class RenderGlobal
             if (whichList < 0)
             {
                 whichList = nextList++;
-                this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppx, ppy, ppz);
+                this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppos.x, ppos.y, ppos.z);
             }
 
             this.allRenderLists[whichList].addGLRenderList(renderPass == 1 ? -1 : renderer.getGLCallList());
@@ -351,42 +350,20 @@ public class RenderGlobal
     public void updateRenderers(EntityPlayer player)
     {
         RenderSorter rs = new RenderSorter(player);
-        WorldRenderer[] rendererArray = new WorldRenderer[2];
+        WorldRenderer rendererArray = null;
         ArrayList<WorldRenderer> rendererList = null;
         int initialSize = this.worldRenderersToUpdate.size();
-        label136:
 
         for (int i = 0; i < initialSize; ++i)
         {
-        	WorldRenderer wr = (WorldRenderer)this.worldRenderersToUpdate.get(i);
+        	WorldRenderer wr = this.worldRenderersToUpdate.get(i);
 
             if (wr != null)
             {
             	if (wr.quadranceToPlayer(player) > 272.0F)
                 {
-            		int var11;
-                    for (var11 = 0; var11 < 2 && (rendererArray[var11] == null || rs.compare(rendererArray[var11], wr) <= 0); ++var11);
-
-                    --var11;
-
-                    if (var11 > 0)
-                    {
-                        int var12 = var11;
-
-                        while (true)
-                        {
-                            --var12;
-
-                            if (var12 == 0)
-                            {
-                                rendererArray[var11] = wr;
-                                continue label136;
-                            }
-
-                            rendererArray[var12 - 1] = rendererArray[var12];
-                        }
-                    }
-
+            		if (rendererArray == null || rs.compare(rendererArray, wr) <= 0)
+                    	rendererArray = wr;
                     continue;
                 }
 
@@ -396,7 +373,7 @@ public class RenderGlobal
                 }
 
                 rendererList.add(wr);
-                this.worldRenderersToUpdate.set(i, (WorldRenderer)null);
+                this.worldRenderersToUpdate.set(i, null);
             }
         }
 
@@ -409,29 +386,21 @@ public class RenderGlobal
 
             for (int i = rendererList.size() - 1; i >= 0; --i)
             {
-            	WorldRenderer wr = (WorldRenderer)rendererList.get(i);
+            	WorldRenderer wr = rendererList.get(i);
                 wr.updateRenderer(player);
                 wr.needsUpdate = false;
             }
         }
 
-        for (int i = 1; i >= 0; --i)
+    	if (!rendererArray.getInFrustrum())
         {
-            WorldRenderer wr = rendererArray[i];
-
-            if (wr != null)
-            {
-                if (!wr.getInFrustrum() && i != 1)
-                {
-                    rendererArray[i] = null;
-                    rendererArray[0] = null;
-                    break;
-                }
-
-                rendererArray[i].updateRenderer(player);
-                rendererArray[i].needsUpdate = false;
-            }
+            rendererArray = null;
         }
+    	else
+    	{
+    		rendererArray.updateRenderer(player);
+            rendererArray.needsUpdate = false;
+    	}
         
         int i = 0;
         int var11 = 0;
@@ -442,7 +411,7 @@ public class RenderGlobal
 
             if (wr != null)
             {
-                if (!(wr == rendererArray[0] || wr == rendererArray[1]))
+                if (!(wr == null || wr == rendererArray))
                 {
                     if (var11 != i)
                     {

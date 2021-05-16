@@ -11,16 +11,7 @@ public class Vec3
     /** Z coordinate of Vec3D */
     public double z;
 
-    /**
-     * Static method for creating a new Vec3D given the three x,y,z values. This is only called from the other static
-     * method which creates and places it in the list.
-     */
-    public static Vec3 createVectorHelper(double xCoord, double yCoord, double zCoord)
-    {
-        return new Vec3(xCoord, yCoord, zCoord);
-    }
-
-    private Vec3(double xCoord, double yCoord, double zCoord)
+    public Vec3(double xCoord, double yCoord, double zCoord)
     {
         if (xCoord == -0.0D)
         {
@@ -48,7 +39,7 @@ public class Vec3
      */
     public Vec3 addVector(double xCoord, double yCoord, double zCoord)
     {
-        return createVectorHelper(this.x + xCoord, this.y + yCoord, this.z + zCoord);
+        return new Vec3(this.x + xCoord, this.y + yCoord, this.z + zCoord);
     }
 
     /**
@@ -79,7 +70,7 @@ public class Vec3
         else
         {
             double var10 = (xCoord - this.x) / var4;
-            return var10 >= 0.0D && var10 <= 1.0D ? createVectorHelper(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
         }
     }
 
@@ -100,7 +91,7 @@ public class Vec3
         else
         {
             double var10 = (yCoord - this.y) / var6;
-            return var10 >= 0.0D && var10 <= 1.0D ? createVectorHelper(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
         }
     }
 
@@ -121,12 +112,7 @@ public class Vec3
         else
         {
             double var10 = (zCoord - this.z) / var8;
-            return var10 >= 0.0D && var10 <= 1.0D ? createVectorHelper(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
         }
-    }
-
-    public String toString()
-    {
-        return "(" + this.x + ", " + this.y + ", " + this.z + ")";
     }
 }

@@ -70,7 +70,7 @@ public abstract class Block
     
     public final AxisAlignedBB generateCubicBoundingBox(int x, int y, int z, int meta)
     {
-        return AxisAlignedBB.getBoundingBox(x + this.minX(meta), y + this.minY(meta), z + this.minZ(meta), x + this.maxX(meta), y + this.maxY(meta), z + this.maxZ(meta));
+        return new AxisAlignedBB(x + this.minX(meta), y + this.minY(meta), z + this.minZ(meta), x + this.maxX(meta), y + this.maxY(meta), z + this.maxZ(meta));
     }
 
     public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)

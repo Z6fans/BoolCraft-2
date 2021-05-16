@@ -5,6 +5,7 @@ import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -46,7 +47,7 @@ public class EntityRenderer
     /**
      * Will update any inputs that effect the camera angle (mouse) and then render the world and GUI
      */
-    public void updateCameraAndRender(EntityPlayer player, double partialTickTime)
+    public void updateCameraAndRender(EntityPlayer player, double ptt)
     {
         boolean isDisplayActive = Display.isActive();
 
@@ -62,14 +63,6 @@ public class EntityRenderer
             this.prevFrameTime = Minecraft.getSystemTime();
         }
 
-        if (this.minecraft.getInGameHasFocus() && isDisplayActive)
-        {
-            float mouseDX = (float)Mouse.getDX();
-            float mouseDY = (float)Mouse.getDY();
-
-            this.minecraft.thePlayer.setAngles(mouseDX, mouseDY);
-        }
-
         int scaledWidth = this.minecraft.getScaledWidth();
         int scaledHeight = this.minecraft.getScaledHeight();
         final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
@@ -77,15 +70,21 @@ public class EntityRenderer
 
         if (player != null)
         {
+            if (this.minecraft.getInGameHasFocus() && isDisplayActive)
+            {
+                float mouseDX = (float)Mouse.getDX();
+                float mouseDY = (float)Mouse.getDY();
+
+                player.setAngles(mouseDX, mouseDY);
+            }
+            
         	GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glEnable(GL11.GL_DEPTH_TEST);
             GL11.glEnable(GL11.GL_ALPHA_TEST);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.5F);
-            this.minecraft.computeMouseOver(partialTickTime);
+            this.minecraft.computeMouseOver(ptt);
             
-            double partialX = player.getPartialPosX(partialTickTime);
-            double partialY = player.getPartialPosY(partialTickTime);
-            double partialZ = player.getPartialPosZ(partialTickTime);
+            Vec3 ppos = player.pttPos(ptt);
 
             GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
@@ -99,9 +98,9 @@ public class EntityRenderer
             GL11.glLoadIdentity();
             GL11.glRotatef(0.0F, 0.0F, 0.0F, 1.0F);
             GL11.glTranslatef(0.0F, 0.0F, -0.1F);
-            GL11.glRotatef((float)player.getPartialRotationPitch(partialTickTime), 1.0F, 0.0F, 0.0F);
-            GL11.glRotatef((float)player.getPartialRotationYaw(partialTickTime) + 180.0F, 0.0F, 1.0F, 0.0F);
-            GL11.glTranslatef(0.0F, player.getYOffset() - 1.62F, 0.0F);
+            GL11.glRotatef((float)player.getPartialRotationPitch(ptt), 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef((float)player.getPartialRotationYaw(ptt) + 180.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glTranslatef(0.0F, 0.0F, 0.0F);
             
             GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
             GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
@@ -110,7 +109,7 @@ public class EntityRenderer
             float var3 = (float)((viewport.get(1) + viewport.get(3)) / 2);
             GLU.gluUnProject(var2, var3, 0.0F, modelview, projection, viewport, objectCoords);
 
-            this.renderGlobal.clipRenderersByFrustum(partialX, partialY, partialZ);
+            this.renderGlobal.clipRenderersByFrustum(ppos.x, ppos.y, ppos.z);
             this.renderGlobal.updateRenderers(player);
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_LIGHT0);
@@ -118,7 +117,7 @@ public class EntityRenderer
             GL11.glDisable(GL11.GL_COLOR_MATERIAL);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glPushMatrix();
-            this.renderGlobal.sortAndRender(player, 0, (double)partialTickTime);
+            this.renderGlobal.sortAndRender(player, 0, ptt);
             GL11.glShadeModel(GL11.GL_FLAT);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
@@ -132,11 +131,8 @@ public class EntityRenderer
                 GL11.glLineWidth(2.0F);
                 double d = 0.002F;
                 Block block = this.minecraft.worldServer.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-                double playerX = player.getPartialPosX(partialTickTime);
-                double playerY = player.getPartialPosY(partialTickTime);
-                double playerZ = player.getPartialPosZ(partialTickTime);
                 int meta = this.minecraft.worldServer.getBlockMetadata(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-                AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ, meta).expand(d, d, d).getOffsetBoundingBox(-playerX, -playerY, -playerZ);
+                AxisAlignedBB aabb = block.generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ, meta).expand(d).offset(-ppos.x, -ppos.y, -ppos.z);
                 Tessellator tess = Tessellator.instance;
                 tess.startDrawing(3);
                 tess.setColor_I(0xFF000000);
@@ -171,7 +167,7 @@ public class EntityRenderer
             GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
             GL11.glDepthMask(false);
 
-            this.renderGlobal.sortAndRender(player, 1, (double)partialTickTime);
+            this.renderGlobal.sortAndRender(player, 1, (double)ptt);
 
             GL11.glDepthMask(true);
             GL11.glEnable(GL11.GL_CULL_FACE);
@@ -207,10 +203,6 @@ public class EntityRenderer
         else
         {
             GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glLoadIdentity();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glLoadIdentity();
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
             GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -218,20 +210,7 @@ public class EntityRenderer
             GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
-        }
-
-        if (this.minecraft.currentScreen != null)
-        {
-            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-
-            try
-            {
-                this.minecraft.currentScreen.drawScreen(mouseX, mouseY);
-            }
-            catch (Throwable t)
-            {
-                throw new RuntimeException("Rendering screen", t);
-            }
+            this.minecraft.currentScreen.drawScreen(mouseX, mouseY);
         }
     }
     

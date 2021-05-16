@@ -28,8 +28,8 @@ public class EntityPlayer
     /** Old Minimum Y of the bounding box */
     private double oldMinY;
     private double oldPosZ;
-    private float oldRotationYaw;
-    private float oldRotationPitch;
+    private double oldRotationYaw;
+    private double oldRotationPitch;
 
     /** Entity motion X */
     private double motionX;
@@ -47,7 +47,7 @@ public class EntityPlayer
     private int ticksSinceMovePacket;
 
     /** Axis aligned bounding box. */
-    private final AxisAlignedBB boundingBox;
+    private AxisAlignedBB boundingBox;
 
     /** How wide this entity is considered to be */
     private final double width = 0.6F;
@@ -56,50 +56,30 @@ public class EntityPlayer
     private double prevPosZ;
 
     /** Entity rotation Yaw */
-    private float rotationYaw;
+    private double rotationYaw;
 
     /** Entity rotation Pitch */
-    private float rotationPitch;
-    private float prevRotationYaw;
-    private float prevRotationPitch;
-
-    /**
-     * The entity's X coordinate at the previous tick, used to calculate position during rendering routines
-     */
-    private double lastTickPosX;
-
-    /**
-     * The entity's Y coordinate at the previous tick, used to calculate position during rendering routines
-     */
-    private double lastTickPosY;
-
-    /**
-     * The entity's Z coordinate at the previous tick, used to calculate position during rendering routines
-     */
-    private double lastTickPosZ;
+    private double rotationPitch;
+    private double prevRotationYaw;
+    private double prevRotationPitch;
 
     public EntityPlayer(WorldServer worldServ)
     {
     	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
         this.worldServer = worldServ;
-        this.boundingBox = AxisAlignedBB.getBoundingBox(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+        this.boundingBox = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
         this.prevPosY = this.posY = this.worldServer.getTopBlockAtSpawn() + 1.6200000047683716D;
         this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
         
-        this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
+        this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
         
         while (!this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
         {
             ++this.posY;
-            this.boundingBox.setBounds(-this.width/2.0F, this.posY - (double)this.getYOffset(), -this.width/2.0F, this.width/2.0F, this.posY - (double)this.getYOffset() + 1.8F, this.width/2.0F);
+            this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
         }
-    }
-    
-    public float getYOffset()
-    {
-    	return 1.62F;
     }
     
     /**
@@ -107,9 +87,9 @@ public class EntityPlayer
      */
     public void onUpdate()
     {
-    	this.lastTickPosX = this.prevPosX = this.posX;
-    	this.lastTickPosY = this.prevPosY = this.posY;
-    	this.lastTickPosZ = this.prevPosZ = this.posZ;
+    	this.prevPosX = this.posX;
+    	this.prevPosY = this.posY;
+    	this.prevPosZ = this.posZ;
     	this.prevRotationYaw = this.rotationYaw;
     	this.prevRotationPitch = this.rotationPitch;
         
@@ -192,31 +172,31 @@ public class EntityPlayer
             this.motionZ += forward * var6 + strafe * var5;
         }
 
-        List<AxisAlignedBB> var36 = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
+        List<Becktor> becs = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
 
-        for (int var22 = 0; var22 < var36.size(); ++var22)
+        for (Becktor bec : becs)
         {
-        	this.motionY = var36.get(var22).calculateYOffset(this.boundingBox, this.motionY);
+        	this.motionY = bec.calculateYOffset(this.boundingBox, this.motionY);
         }
 
-        this.boundingBox.offset(0.0D, this.motionY, 0.0D);
-        int var23;
+        this.boundingBox = this.boundingBox.offset(0.0D, this.motionY, 0.0D);
 
-        for (var23 = 0; var23 < var36.size(); ++var23)
+        for (Becktor bec : becs)
         {
-        	this.motionX = var36.get(var23).calculateXOffset(this.boundingBox, this.motionX);
+        	this.motionX = bec.calculateXOffset(this.boundingBox, this.motionX);
         }
 
-        this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
+        this.boundingBox = this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
 
-        for (var23 = 0; var23 < var36.size(); ++var23)
+        for (Becktor bec : becs)
         {
-        	this.motionZ = var36.get(var23).calculateZOffset(this.boundingBox, this.motionZ);
+        	this.motionZ = bec.calculateZOffset(this.boundingBox, this.motionZ);
         }
 
-        this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
+        this.boundingBox = this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
+        
         this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
-        this.posY = this.boundingBox.minY + (double)this.getYOffset();
+        this.posY = this.boundingBox.minY + 1.62D;
         this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
         
         this.motionX = xMov * 0.6D;
@@ -274,17 +254,17 @@ public class EntityPlayer
 
         if (Double.isNaN(this.posX) || Double.isInfinite(this.posX))
         {
-        	this.posX = this.lastTickPosX;
+        	this.posX = this.prevPosX;
         }
 
         if (Double.isNaN(this.posY) || Double.isInfinite(this.posY))
         {
-        	this.posY = this.lastTickPosY;
+        	this.posY = this.prevPosY;
         }
 
         if (Double.isNaN(this.posZ) || Double.isInfinite(this.posZ))
         {
-        	this.posZ = this.lastTickPosZ;
+        	this.posZ = this.prevPosZ;
         }
 
         if (Double.isNaN((double)this.rotationPitch) || Double.isInfinite((double)this.rotationPitch))
@@ -313,19 +293,11 @@ public class EntityPlayer
     	return this.posZ;
     }
     
-    public double getPartialPosX(double ptt)
+    public Vec3 pttPos(double ptt)
     {
-    	return this.lastTickPosX + (this.posX - this.lastTickPosX) * ptt;
-    }
-    
-    public double getPartialPosY(double ptt)
-    {
-    	return this.lastTickPosY + (this.posY - this.lastTickPosY) * ptt;
-    }
-    
-    public double getPartialPosZ(double ptt)
-    {
-    	return this.lastTickPosZ + (this.posZ - this.lastTickPosZ) * ptt;
+    	return new Vec3(this.prevPosX + (this.posX - this.prevPosX) * ptt,
+    			        this.prevPosY + (this.posY - this.prevPosY) * ptt,
+    			        this.prevPosZ + (this.posZ - this.prevPosZ) * ptt);
     }
     
     public double getPartialRotationYaw(double ptt)
@@ -359,8 +331,8 @@ public class EntityPlayer
      */
     public void setAngles(double dYaw, double dPitch)
     {
-        float oldPitch = this.rotationPitch;
-        float oldYaw = this.rotationYaw;
+    	double oldPitch = this.rotationPitch;
+    	double oldYaw = this.rotationYaw;
         this.rotationYaw = (float)((double)this.rotationYaw + dYaw * 0.15D);
         this.rotationPitch = (float)((double)this.rotationPitch - dPitch * 0.15D);
 
@@ -451,258 +423,369 @@ public class EntityPlayer
      */
     public MovingObjectPosition rayTrace8(double ptt)
     {
-        double x = this.prevPosX + (this.posX - this.prevPosX) * ptt;
-        double y = this.prevPosY + (this.posY - this.prevPosY) * ptt;
-        double z = this.prevPosZ + (this.posZ - this.prevPosZ) * ptt;
-        Vec3 playerPos = Vec3.createVectorHelper(x, y, z);
-        Vec3 lookVec = this.getLook(ptt);
-        Vec3 viewVec = playerPos.addVector(lookVec.x * 8, lookVec.y * 8, lookVec.z * 8);
-        if (!Double.isNaN(playerPos.x) && !Double.isNaN(playerPos.y) && !Double.isNaN(playerPos.z))
+        Vec3 playerPos = this.pttPos(ptt);
+        double pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
+        double yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+        double cy = MathHelper.cos(-yaw * 0.017453292D - Math.PI);
+        double sy = MathHelper.sin(-yaw * 0.017453292D - Math.PI);
+        double cp = -MathHelper.cos(-pitch * 0.017453292D);
+        double sp = MathHelper.sin(-pitch * 0.017453292D);
+        Vec3 viewVec = playerPos.addVector(sy * cp * 8, sp * 8, cy * cp * 8);
+        if (!Double.isNaN(playerPos.x) && !Double.isNaN(playerPos.y) && !Double.isNaN(playerPos.z)
+         && !Double.isNaN(  viewVec.x) && !Double.isNaN(  viewVec.y) && !Double.isNaN(viewVec.z))
         {
-            if (!Double.isNaN(viewVec.x) && !Double.isNaN(viewVec.y) && !Double.isNaN(viewVec.z))
+        	int viewBlockX = MathHelper.floor_double(viewVec.x);
+            int viewBlockY = MathHelper.floor_double(viewVec.y);
+            int viewBlockZ = MathHelper.floor_double(viewVec.z);
+            int playerBlockX = MathHelper.floor_double(playerPos.x);
+            int playerBlockY = MathHelper.floor_double(playerPos.y);
+            int playerBlockZ = MathHelper.floor_double(playerPos.z);
+            Block playerBlock = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
+
+            if (!playerBlock.isReplaceable())
             {
-                int viewBlockX = MathHelper.floor_double(viewVec.x);
-                int viewBlockY = MathHelper.floor_double(viewVec.y);
-                int viewBlockZ = MathHelper.floor_double(viewVec.z);
-                int playerBlockX = MathHelper.floor_double(playerPos.x);
-                int playerBlockY = MathHelper.floor_double(playerPos.y);
-                int playerBlockZ = MathHelper.floor_double(playerPos.z);
-                Block playerBlock = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
+                MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
-                if (!playerBlock.isReplaceable())
+                if (playerBlockPos != null)
                 {
-                    MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                    return playerBlockPos;
+                }
+            }
 
-                    if (playerBlockPos != null)
-                    {
-                        return playerBlockPos;
-                    }
+            for (int i = 0; i <= 200; i++)
+            {
+                if (Double.isNaN(playerPos.x) || Double.isNaN(playerPos.y) || Double.isNaN(playerPos.z) || (playerBlockX == viewBlockX && playerBlockY == viewBlockY && playerBlockZ == viewBlockZ))
+                {
+                    return null;
                 }
 
-                int var13 = 200;
+                boolean var41 = true;
+                boolean var15 = true;
+                boolean var16 = true;
+                double var17 = 999.0D;
+                double var19 = 999.0D;
+                double var21 = 999.0D;
 
-                while (var13-- >= 0)
+                if (viewBlockX > playerBlockX)
                 {
-                    if (Double.isNaN(playerPos.x) || Double.isNaN(playerPos.y) || Double.isNaN(playerPos.z))
-                    {
-                        return null;
-                    }
+                    var17 = (double)playerBlockX + 1.0D;
+                }
+                else if (viewBlockX < playerBlockX)
+                {
+                    var17 = (double)playerBlockX + 0.0D;
+                }
+                else
+                {
+                    var41 = false;
+                }
 
-                    if (playerBlockX == viewBlockX && playerBlockY == viewBlockY && playerBlockZ == viewBlockZ)
-                    {
-                        return null;
-                    }
+                if (viewBlockY > playerBlockY)
+                {
+                    var19 = (double)playerBlockY + 1.0D;
+                }
+                else if (viewBlockY < playerBlockY)
+                {
+                    var19 = (double)playerBlockY + 0.0D;
+                }
+                else
+                {
+                    var15 = false;
+                }
 
-                    boolean var41 = true;
-                    boolean var15 = true;
-                    boolean var16 = true;
-                    double var17 = 999.0D;
-                    double var19 = 999.0D;
-                    double var21 = 999.0D;
+                if (viewBlockZ > playerBlockZ)
+                {
+                    var21 = (double)playerBlockZ + 1.0D;
+                }
+                else if (viewBlockZ < playerBlockZ)
+                {
+                    var21 = (double)playerBlockZ + 0.0D;
+                }
+                else
+                {
+                    var16 = false;
+                }
 
+                double var23 = 999.0D;
+                double var25 = 999.0D;
+                double var27 = 999.0D;
+                double var29 = viewVec.x - playerPos.x;
+                double var31 = viewVec.y - playerPos.y;
+                double var33 = viewVec.z - playerPos.z;
+
+                if (var41)
+                {
+                    var23 = (var17 - playerPos.x) / var29;
+                }
+
+                if (var15)
+                {
+                    var25 = (var19 - playerPos.y) / var31;
+                }
+
+                if (var16)
+                {
+                    var27 = (var21 - playerPos.z) / var33;
+                }
+
+                byte var42;
+
+                if (var23 < var25 && var23 < var27)
+                {
                     if (viewBlockX > playerBlockX)
                     {
-                        var17 = (double)playerBlockX + 1.0D;
-                    }
-                    else if (viewBlockX < playerBlockX)
-                    {
-                        var17 = (double)playerBlockX + 0.0D;
+                        var42 = 4;
                     }
                     else
                     {
-                        var41 = false;
+                        var42 = 5;
                     }
 
+                    playerPos.x = var17;
+                    playerPos.y += var31 * var23;
+                    playerPos.z += var33 * var23;
+                }
+                else if (var25 < var27)
+                {
                     if (viewBlockY > playerBlockY)
                     {
-                        var19 = (double)playerBlockY + 1.0D;
-                    }
-                    else if (viewBlockY < playerBlockY)
-                    {
-                        var19 = (double)playerBlockY + 0.0D;
+                        var42 = 0;
                     }
                     else
                     {
-                        var15 = false;
+                        var42 = 1;
                     }
 
+                    playerPos.x += var29 * var25;
+                    playerPos.y = var19;
+                    playerPos.z += var33 * var25;
+                }
+                else
+                {
                     if (viewBlockZ > playerBlockZ)
                     {
-                        var21 = (double)playerBlockZ + 1.0D;
-                    }
-                    else if (viewBlockZ < playerBlockZ)
-                    {
-                        var21 = (double)playerBlockZ + 0.0D;
+                        var42 = 2;
                     }
                     else
                     {
-                        var16 = false;
+                        var42 = 3;
                     }
 
-                    double var23 = 999.0D;
-                    double var25 = 999.0D;
-                    double var27 = 999.0D;
-                    double var29 = viewVec.x - playerPos.x;
-                    double var31 = viewVec.y - playerPos.y;
-                    double var33 = viewVec.z - playerPos.z;
-
-                    if (var41)
-                    {
-                        var23 = (var17 - playerPos.x) / var29;
-                    }
-
-                    if (var15)
-                    {
-                        var25 = (var19 - playerPos.y) / var31;
-                    }
-
-                    if (var16)
-                    {
-                        var27 = (var21 - playerPos.z) / var33;
-                    }
-
-                    byte var42;
-
-                    if (var23 < var25 && var23 < var27)
-                    {
-                        if (viewBlockX > playerBlockX)
-                        {
-                            var42 = 4;
-                        }
-                        else
-                        {
-                            var42 = 5;
-                        }
-
-                        playerPos.x = var17;
-                        playerPos.y += var31 * var23;
-                        playerPos.z += var33 * var23;
-                    }
-                    else if (var25 < var27)
-                    {
-                        if (viewBlockY > playerBlockY)
-                        {
-                            var42 = 0;
-                        }
-                        else
-                        {
-                            var42 = 1;
-                        }
-
-                        playerPos.x += var29 * var25;
-                        playerPos.y = var19;
-                        playerPos.z += var33 * var25;
-                    }
-                    else
-                    {
-                        if (viewBlockZ > playerBlockZ)
-                        {
-                            var42 = 2;
-                        }
-                        else
-                        {
-                            var42 = 3;
-                        }
-
-                        playerPos.x += var29 * var27;
-                        playerPos.y += var31 * var27;
-                        playerPos.z = var21;
-                    }
-
-                    Vec3 var36 = Vec3.createVectorHelper(playerPos.x, playerPos.y, playerPos.z);
-                    playerBlockX = (int)(var36.x = (double)MathHelper.floor_double(playerPos.x));
-
-                    if (var42 == 5)
-                    {
-                        --playerBlockX;
-                        ++var36.x;
-                    }
-
-                    playerBlockY = (int)(var36.y = (double)MathHelper.floor_double(playerPos.y));
-
-                    if (var42 == 1)
-                    {
-                        --playerBlockY;
-                        ++var36.y;
-                    }
-
-                    playerBlockZ = (int)(var36.z = (double)MathHelper.floor_double(playerPos.z));
-
-                    if (var42 == 3)
-                    {
-                        --playerBlockZ;
-                        ++var36.z;
-                    }
-
-                    Block var37 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
-
-                    if (!var37.isReplaceable())
-                    {
-                        MovingObjectPosition var39 = var37.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
-
-                        if (var39 != null)
-                        {
-                            return var39;
-                        }
-                    }
+                    playerPos.x += var29 * var27;
+                    playerPos.y += var31 * var27;
+                    playerPos.z = var21;
                 }
 
-                return null;
-            }
-            else
-            {
-                return null;
-            }
-        }
-        else
-        {
-            return null;
-        }
-    }
+                Vec3 var36 = new Vec3(playerPos.x, playerPos.y, playerPos.z);
+                playerBlockX = (int)(var36.x = (double)MathHelper.floor_double(playerPos.x));
 
-    /**
-     * Pure function. interpolated look vector
-     */
-    private Vec3 getLook(double ptt)
-    {
-        float pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * (float)ptt;
-        float yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * (float)ptt;
-        double cy = MathHelper.cos(-yaw * 0.017453292F - (float)Math.PI);
-        double sy = MathHelper.sin(-yaw * 0.017453292F - (float)Math.PI);
-        double cp = -MathHelper.cos(-pitch * 0.017453292F);
-        double sp = MathHelper.sin(-pitch * 0.017453292F);
-        return Vec3.createVectorHelper(sy * cp, sp, cy * cp);
+                if (var42 == 5)
+                {
+                    --playerBlockX;
+                    ++var36.x;
+                }
+
+                playerBlockY = (int)(var36.y = (double)MathHelper.floor_double(playerPos.y));
+
+                if (var42 == 1)
+                {
+                    --playerBlockY;
+                    ++var36.y;
+                }
+
+                playerBlockZ = (int)(var36.z = (double)MathHelper.floor_double(playerPos.z));
+
+                if (var42 == 3)
+                {
+                    --playerBlockZ;
+                    ++var36.z;
+                }
+
+                Block var37 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
+
+                if (!var37.isReplaceable())
+                {
+                    MovingObjectPosition var39 = var37.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+
+                    if (var39 != null)
+                    {
+                        return var39;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
     
     /**
      * Pure function. Returns a list of bounding boxes that collide with aabb excluding the passed in entity's collision. Args: entity,
      * aabb
      */
-    private List<AxisAlignedBB> getCollidingBoundingBoxes(AxisAlignedBB aabb)
+    private List<Becktor> getCollidingBoundingBoxes(AxisAlignedBB aabb)
     {
-        ArrayList<AxisAlignedBB> collidingBoundingBoxes = new ArrayList<AxisAlignedBB>();
+        List<Becktor> collidingBoundingBoxes = new ArrayList<Becktor>();
         int minx = MathHelper.floor_double(aabb.minX);
-        int maxx = MathHelper.floor_double(aabb.maxX + 1.0D);
+        int maxx = MathHelper.floor_double(aabb.maxX);
         int miny = MathHelper.floor_double(aabb.minY);
-        int maxy = MathHelper.floor_double(aabb.maxY + 1.0D);
+        int maxy = MathHelper.floor_double(aabb.maxY);
         int minz = MathHelper.floor_double(aabb.minZ);
-        int maxz = MathHelper.floor_double(aabb.maxZ + 1.0D);
+        int maxz = MathHelper.floor_double(aabb.maxZ);
 
-        for (int x = minx; x < maxx; ++x)
+        for (int x = minx; x <= maxx; ++x)
         {
-            for (int z = minz; z < maxz; ++z)
+            for (int z = minz; z <= maxz; ++z)
             {
-            	for (int y = miny - 1; y < maxy; ++y)
+            	for (int y = miny - 1; y <= maxy; ++y)
                 {
                     if (this.worldServer.getBlock(x, y, z) == Block.stone)
                     {
-                    	AxisAlignedBB thisAABB = AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1);
-                        if (aabb.intersectsWith(thisAABB)) collidingBoundingBoxes.add(thisAABB);
+                        if (aabb.intersectsWith(x, y, z)) collidingBoundingBoxes.add(new Becktor(x, y, z));
                     }
                 }
             }
         }
 
         return collidingBoundingBoxes;
+    }
+    
+    private class Becktor
+    {
+    	private final int x;
+    	private final int y;
+    	private final int z;
+    	
+    	public Becktor(int xval, int yval, int zval)
+    	{
+    		this.x = xval;
+    		this.y = yval;
+    		this.z = zval;
+    	}
+    	
+
+
+        /**
+         * if instance and the argument bounding boxes overlap in the Y and Z dimensions, calculate the offset between them
+         * in the X dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
+         * calculated offset.  Otherwise return the calculated offset.
+         */
+        public double calculateXOffset(AxisAlignedBB other, double ret)
+        {
+            if (other.maxY > y && other.minY < y + 1 && other.maxZ > z && other.minZ < z + 1)
+            {
+            	if (ret > 0.0D && other.maxX <= x)
+                {
+                	double var4 = x - other.maxX;
+
+                    if (var4 < ret)
+                    {
+                        ret = var4;
+                    }
+                }
+
+                if (ret < 0.0D && other.minX >= x + 1)
+                {
+                	double var4 = x + 1 - other.minX;
+
+                    if (var4 > ret)
+                    {
+                        ret = var4;
+                    }
+                }
+            }
+            
+            return ret;
+        }
+
+        /**
+         * if instance and the argument bounding boxes overlap in the X and Z dimensions, calculate the offset between them
+         * in the Y dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
+         * calculated offset.  Otherwise return the calculated offset.
+         */
+        public double calculateYOffset(AxisAlignedBB other, double ret)
+        {
+            if (other.maxX > x && other.minX < x + 1)
+            {
+                if (other.maxZ > z && other.minZ < z + 1)
+                {
+                    double var4;
+
+                    if (ret > 0.0D && other.maxY <= y)
+                    {
+                        var4 = y - other.maxY;
+
+                        if (var4 < ret)
+                        {
+                            ret = var4;
+                        }
+                    }
+
+                    if (ret < 0.0D && other.minY >= y + 1)
+                    {
+                        var4 = y + 1 - other.minY;
+
+                        if (var4 > ret)
+                        {
+                            ret = var4;
+                        }
+                    }
+
+                    return ret;
+                }
+                else
+                {
+                    return ret;
+                }
+            }
+            else
+            {
+                return ret;
+            }
+        }
+
+        /**
+         * if instance and the argument bounding boxes overlap in the Y and X dimensions, calculate the offset between them
+         * in the Z dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
+         * calculated offset.  Otherwise return the calculated offset.
+         */
+        public double calculateZOffset(AxisAlignedBB other, double ret)
+        {
+            if (other.maxX > x && other.minX < x + 1)
+            {
+                if (other.maxY > y && other.minY < y + 1)
+                {
+                    double var4;
+
+                    if (ret > 0.0D && other.maxZ <= z)
+                    {
+                        var4 = z - other.maxZ;
+
+                        if (var4 < ret)
+                        {
+                            ret = var4;
+                        }
+                    }
+
+                    if (ret < 0.0D && other.minZ >= z + 1)
+                    {
+                        var4 = z + 1 - other.minZ;
+
+                        if (var4 > ret)
+                        {
+                            ret = var4;
+                        }
+                    }
+
+                    return ret;
+                }
+                else
+                {
+                    return ret;
+                }
+            }
+            else
+            {
+                return ret;
+            }
+        }
     }
 }

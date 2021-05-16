@@ -94,7 +94,7 @@ public class WorldRenderer
             this.posXMinus = x - this.posXClip;
             this.posYMinus = y - this.posYClip;
             this.posZMinus = z - this.posZClip;
-            this.aabb = AxisAlignedBB.getBoundingBox(x - 6, y - 6, z - 6, x + 22, y + 22, z + 22);
+            this.aabb = new AxisAlignedBB(x - 6, y - 6, z - 6, x + 22, y + 22, z + 22);
             this.markDirty();
         }
     }
