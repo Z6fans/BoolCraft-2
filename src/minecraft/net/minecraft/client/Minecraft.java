@@ -596,7 +596,7 @@ public class Minecraft
             int y = this.objectMouseOver.blockY;
             int z = this.objectMouseOver.blockZ;
 
-            if (!this.worldServer.getBlock(x, y, z).isReplaceable())
+            if (!this.worldServer.isReplaceable(x, y, z))
             {
                 this.worldServer.setBlock(x, y, z, Block.air, 0);
             }

@@ -5,7 +5,7 @@ import net.minecraft.world.WorldServer;
 public class BlockAir extends Block
 {
     
-    public boolean isReplaceable()
+    public boolean isReplaceobble()
     {
     	return true;
     }

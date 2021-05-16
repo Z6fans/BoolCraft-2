@@ -267,7 +267,7 @@ public class BlockRedstoneWire extends Block
         return !this.isCheckingForPower;
     }
 
-	public boolean isReplaceable()
+	public boolean isReplaceobble()
 	{
 		return false;
 	}

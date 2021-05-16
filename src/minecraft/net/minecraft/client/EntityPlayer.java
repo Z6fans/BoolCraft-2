@@ -3,7 +3,6 @@ package net.minecraft.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
@@ -450,11 +449,10 @@ public class EntityPlayer
             int playerBlockX = MathHelper.floor_double(playerPos.x);
             int playerBlockY = MathHelper.floor_double(playerPos.y);
             int playerBlockZ = MathHelper.floor_double(playerPos.z);
-            Block playerBlock = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
 
-            if (!playerBlock.isReplaceable())
+            if (!this.worldServer.isReplaceable(playerBlockX, playerBlockY, playerBlockZ))
             {
-                MovingObjectPosition playerBlockPos = playerBlock.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                MovingObjectPosition playerBlockPos = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
                 if (playerBlockPos != null)
                 {
@@ -610,11 +608,9 @@ public class EntityPlayer
                     ++var36.z;
                 }
 
-                Block var37 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ);
-
-                if (!var37.isReplaceable())
+                if (!this.worldServer.isReplaceable(playerBlockX, playerBlockY, playerBlockZ))
                 {
-                    MovingObjectPosition var39 = var37.collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                    MovingObjectPosition var39 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
                     if (var39 != null)
                     {

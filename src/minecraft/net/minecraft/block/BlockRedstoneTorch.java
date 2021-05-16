@@ -190,7 +190,7 @@ public class BlockRedstoneTorch extends Block
         return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
     }
 
-	public boolean isReplaceable()
+	public boolean isReplaceobble()
 	{
 		return false;
 	}

@@ -218,7 +218,7 @@ public abstract class Block
      */
     public boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
     {
-    	return p_149742_1_.getBlock(p_149742_2_, p_149742_3_, p_149742_4_).isReplaceable();
+    	return p_149742_1_.isReplaceable(p_149742_2_, p_149742_3_, p_149742_4_);
     }
 
     public static boolean isEqualTo(Block block1, Block block2)
@@ -228,7 +228,7 @@ public abstract class Block
 
     public abstract boolean isSoled();
     
-    public abstract boolean isReplaceable();
+    public abstract boolean isReplaceobble();
 
     /**
      * The type of render function that is called for this block

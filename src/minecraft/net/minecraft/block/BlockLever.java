@@ -221,7 +221,7 @@ public class BlockLever extends Block
     	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
     }
 
-	public boolean isReplaceable()
+	public boolean isReplaceobble()
 	{
 		return false;
 	}

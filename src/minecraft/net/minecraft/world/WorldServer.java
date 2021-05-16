@@ -217,7 +217,7 @@ public class WorldServer
     	if (this.checkChunksExist(x, y, z, x, y, z))
         {
         	NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
-            if (!block.isReplaceable())
+            if (!block.isReplaceobble())
             {
                 entry.setScheduledTime((long)delay + this.totalTime);
             }
@@ -234,7 +234,7 @@ public class WorldServer
     {
         NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
 
-        if (!block.isReplaceable())
+        if (!block.isReplaceobble())
         {
             entry.setScheduledTime(delay + this.totalTime);
         }
@@ -588,7 +588,7 @@ public class WorldServer
 
     public boolean canPlaceEntity(Block block, int x, int y, int z)
     {
-        return this.getBlock(x, y, z).isReplaceable() && block.canPlaceBlockAt(this, x, y, z);
+        return this.isReplaceable(x, y, z) && block.canPlaceBlockAt(this, x, y, z);
     }
 
     /**
@@ -791,5 +791,10 @@ public class WorldServer
     public boolean isSolid(int x, int y, int z)
     {
     	return this.getBlock(x, y, z).isSoled();
+    }
+    
+    public boolean isReplaceable(int x, int y, int z)
+    {
+    	return this.getBlock(x, y, z).isReplaceobble();
     }
 }

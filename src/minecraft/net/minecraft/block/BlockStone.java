@@ -5,7 +5,7 @@ import net.minecraft.world.WorldServer;
 public class BlockStone extends Block
 {
 	
-	public boolean isReplaceable()
+	public boolean isReplaceobble()
 	{
 		return false;
 	}
