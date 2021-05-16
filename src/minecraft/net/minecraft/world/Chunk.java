@@ -60,10 +60,9 @@ public class Chunk
             int trueX = this.xPosition * 16 + x;
             int trueZ = this.zPosition * 16 + z;
 
-            oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
-
             this.storageArray[y << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(block) & 0xF));
 
+            oldBlock.breakBlock(world, trueX, y, trueZ, oldBlock, oldMeta);
             block.onBlockAdded(world, trueX, y, trueZ);
 
             this.isModified = true;
