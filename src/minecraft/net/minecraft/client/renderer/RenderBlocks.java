@@ -32,9 +32,12 @@ public class RenderBlocks
         this.world = wc;
     }
 
-    public boolean renderBlockByRenderType(Block block, int x, int y, int z)
+    public boolean renderBlockByRenderType(int bm, int x, int y, int z)
     {
-        AxisAlignedBB aabb = block.generateCubicBoundingBox(0, 0, 0, this.world.getBlockMetadata(x, y, z));
+    	int block = bm & 0xF;
+    	int meta = (bm >> 4) & 0xF;
+    	
+        AxisAlignedBB aabb = Block.getBlockById(block).generateCubicBoundingBox(0, 0, 0, this.world.getBlockMetadata(x, y, z));
     	this.renderMinX = aabb.minX;
         this.renderMaxX = aabb.maxX;
         this.renderMinY = aabb.minY;
@@ -42,19 +45,33 @@ public class RenderBlocks
         this.renderMinZ = aabb.minZ;
         this.renderMaxZ = aabb.maxZ;
         
-        switch (block.getRenderType())
+        switch (block)
         {
-        case 0: return this.renderStandardBlock(block, x, y, z);
-        case 5: return this.renderBlockRedstoneWire(block, x, y, z);
+        case 2: return this.renderBlockRedstoneWire(block, meta, x, y, z);
+        case 1: case 3: case 4: return this.renderStandardBlock(block, meta, x, y, z);
         default: return false;
         }
     }
+    
+    private int getColor(int block, int meta, int x, int y, int z, int said)
+    {
+    	int scale[] = {0, 136, 181, 204, 218, 227, 233, 238, 242, 245, 247, 249, 251, 253, 254, 255};
+    	
+    	switch (block)
+    	{
+    	case 1: return (said == 0 ? 0xFF606060 : said == 1 ? 0xFF505050 : 0xFF404040) | ((x + y + z) % 2 == 0 ? 0x060000 : 0x000006);
+    	case 2: return 0xFF000000 | (0x101 * scale[meta]);
+    	case 3: return (meta & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
+    	case 4: return (meta & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
+    	default: return 0xFF000000;
+    	}
+    }
 
-    private boolean renderBlockRedstoneWire(Block block, int x, int y, int z)
+    private boolean renderBlockRedstoneWire(int block, int meta, int x, int y, int z)
     {
         Tessellator tess = Tessellator.instance;
         
-        tess.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
+        tess.setColor_I(this.getColor(block, meta, x, y, z, 0));
         
         tess.addVertex(x + 1, y + 0.01, z + 1);
         tess.addVertex(x + 1, y + 0.01, z + 0);
@@ -63,7 +80,7 @@ public class RenderBlocks
 
         if (!this.world.isSolid(x, y + 1, z))
         {
-            if (this.world.isSolid(x - 1, y, z) && this.world.getBlock(x - 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.isSolid(x - 1, y, z) && this.world.isWire(x - 1, y + 1, z))
             {
                 tess.addVertex(x + 0.01, y + 1, z + 1);
                 tess.addVertex(x + 0.01, y + 0, z + 1);
@@ -71,7 +88,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0.01, y + 1, z + 0);
             }
 
-            if (this.world.isSolid(x + 1, y, z) && this.world.getBlock(x + 1, y + 1, z) == Block.redstone_wire)
+            if (this.world.isSolid(x + 1, y, z) && this.world.isWire(x + 1, y + 1, z))
             {
                 tess.addVertex(x + 0.99, y + 0, z + 1);
                 tess.addVertex(x + 0.99, y + 1, z + 1);
@@ -79,7 +96,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0.99, y + 0, z + 0);
             }
 
-            if (this.world.isSolid(x, y, z - 1) && this.world.getBlock(x, y + 1, z - 1) == Block.redstone_wire)
+            if (this.world.isSolid(x, y, z - 1) && this.world.isWire(x, y + 1, z - 1))
             {
                 tess.addVertex(x + 1, y + 0, z + 0.01);
                 tess.addVertex(x + 1, y + 1, z + 0.01);
@@ -87,7 +104,7 @@ public class RenderBlocks
                 tess.addVertex(x + 0, y + 0, z + 0.01);
             }
 
-            if (this.world.isSolid(x, y, z + 1) && this.world.getBlock(x, y + 1, z + 1) == Block.redstone_wire)
+            if (this.world.isSolid(x, y, z + 1) && this.world.isWire(x, y + 1, z + 1))
             {
                 tess.addVertex(x + 1, y + 1, z + 0.99);
                 tess.addVertex(x + 1, y + 0, z + 0.99);
@@ -99,25 +116,25 @@ public class RenderBlocks
         return true;
     }
 
-    private boolean renderStandardBlock(Block block, int x, int y, int z)
+    private boolean renderStandardBlock(int block, int meta, int x, int y, int z)
     {
         boolean didRender = false;
 
-    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 2));
+    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 2));
         if (!this.world.isSolid(x, y - 1, z) || this.renderMinY > 0.0D)
         {
             this.renderFaceYNeg(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 0));
+    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 0));
         if (!this.world.isSolid(x, y + 1, z) || this.renderMaxY < 1.0D)
         {
             this.renderFaceYPos(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(block.colorMultiplier(this.world, x, y, z, 1));
+    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 1));
         if (!this.world.isSolid(x, y, z - 1) || this.renderMinZ > 0.0D)
         {
             this.renderFaceZNeg(x, y, z);

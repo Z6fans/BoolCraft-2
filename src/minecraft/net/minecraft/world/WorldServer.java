@@ -162,7 +162,7 @@ public class WorldServer
 
             while (entryListIterator.hasNext())
             {
-            	NextTickListEntry entry = (NextTickListEntry)entryListIterator.next();
+            	NextTickListEntry entry = entryListIterator.next();
                 entryListIterator.remove();
                 byte var5 = 0;
 
@@ -179,7 +179,7 @@ public class WorldServer
                 }
                 else
                 {
-                    this.scheduleBlockUpdate(entry.xCoord, entry.yCoord, entry.zCoord, entry.getBlock(), 0);
+                    this.scheduleBlockUpdate(entry.xCoord, entry.yCoord, entry.zCoord, 0);
                 }
             }
             this.pendingTickListEntriesThisTick.clear();
@@ -212,32 +212,9 @@ public class WorldServer
     /**
      * Schedules a tick to a block with a delay (Most commonly the tick rate)
      */
-    public void scheduleBlockUpdate(int x, int y, int z, Block block, int delay)
+    public void scheduleBlockUpdate(int x, int y, int z, long delay)
     {
-    	if (this.checkChunksExist(x, y, z, x, y, z))
-        {
-        	NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
-            if (!block.isReplaceobble())
-            {
-                entry.setScheduledTime((long)delay + this.totalTime);
-            }
-
-            if (!this.pendingTickListEntriesHashSet.contains(entry))
-            {
-                this.pendingTickListEntriesHashSet.add(entry);
-                this.pendingTickListEntriesTreeSet.add(entry);
-            }
-        }
-    }
-
-    private void addBlockUpdateFromSave(int x, int y, int z, Block block, long delay)
-    {
-        NextTickListEntry entry = new NextTickListEntry(x, y, z, block);
-
-        if (!block.isReplaceobble())
-        {
-            entry.setScheduledTime(delay + this.totalTime);
-        }
+    	NextTickListEntry entry = new NextTickListEntry(x, y, z, delay + this.totalTime);
 
         if (!this.pendingTickListEntriesHashSet.contains(entry))
         {
@@ -453,10 +430,9 @@ public class WorldServer
                         int entryX = stream.readInt();
                         int entryY = stream.readInt();
                         int entryZ = stream.readInt();
-                        byte entryI = stream.readByte();
                         long entryT = stream.readLong();
                         
-                        this.addBlockUpdateFromSave(entryX, entryY, entryZ, Block.getBlockById(entryI), entryT);
+                        this.scheduleBlockUpdate(entryX, entryY, entryZ, entryT);
                     }
                     
                     stream.close();
@@ -509,7 +485,6 @@ public class WorldServer
                 stream.writeInt(entry.xCoord);
                 stream.writeInt(entry.yCoord);
                 stream.writeInt(entry.zCoord);
-                stream.writeByte(Block.getIdFromBlock(entry.getBlock()));
                 stream.writeLong(entry.scheduledTime - this.getTotalWorldTime());
             }
             
@@ -674,8 +649,7 @@ public class WorldServer
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
-            Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-            return chunk.getBlock(x & 15, y, z & 15);
+            return Block.getBlockById(this.provideChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y, z & 15) & 0xF);
         }
         else
         {
@@ -690,8 +664,7 @@ public class WorldServer
     {
         if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
         {
-        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-            return chunk.getBlockMetadata(x & 15, y, z & 15);
+        	return this.provideChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y, z & 15) >> 4;
         }
         else
         {
@@ -790,11 +763,29 @@ public class WorldServer
     
     public boolean isSolid(int x, int y, int z)
     {
-    	return this.getBlock(x, y, z).isSoled();
+    	return (this.getBlocMeta(x, y, z) & 0xF) == 1;
     }
     
     public boolean isReplaceable(int x, int y, int z)
     {
-    	return this.getBlock(x, y, z).isReplaceobble();
+    	return (this.getBlocMeta(x, y, z) & 0xF) == 0;
+    }
+    
+    public boolean isWire(int x, int y, int z)
+    {
+    	return (this.getBlocMeta(x, y, z) & 0xF) == 2;
+    }
+    
+    public int getBlocMeta(int x, int y, int z)
+    {
+    	if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
+        {
+        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+            return chunk.getBlocMeta(x & 15, y, z & 15);
+        }
+        else
+        {
+            return 0;
+        }
     }
 }

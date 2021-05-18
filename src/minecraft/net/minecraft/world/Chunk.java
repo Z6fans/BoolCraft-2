@@ -39,7 +39,7 @@ public class Chunk
 
     public Block getBlock(int x, int y, int z)
     {
-        return Block.getBlockById((byte)(this.storageArray[y << 8 | z << 4 | x] & 0xF));
+        return Block.getBlockById(this.storageArray[y << 8 | z << 4 | x] & 0xF);
     }
 
     /**
@@ -48,6 +48,11 @@ public class Chunk
     public int getBlockMetadata(int x, int y, int z)
     {
         return (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
+    }
+    
+    public int getBlocMeta(int x, int y, int z)
+    {
+    	return this.storageArray[y << 8 | z << 4 | x] & 0xFF;
     }
     
     public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block newBlock, int newMeta)

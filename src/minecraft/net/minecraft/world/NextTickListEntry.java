@@ -1,12 +1,9 @@
 package net.minecraft.world;
 
-import net.minecraft.block.Block;
-
 public class NextTickListEntry implements Comparable<NextTickListEntry>
 {
     /** The id number for the next tick entry */
     private static long nextTickEntryID;
-    private final Block block;
 
     /** X position this tick is occuring at */
     public final int xCoord;
@@ -18,18 +15,18 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
     public final int zCoord;
 
     /** Time this tick is scheduled to occur at */
-    public long scheduledTime;
+    public final long scheduledTime;
 
     /** The id of the tick entry */
     private final long tickEntryID;
 
-    public NextTickListEntry(int x, int y, int z, Block b)
+    public NextTickListEntry(int x, int y, int z, long time)
     {
         this.tickEntryID = (long)(nextTickEntryID++);
         this.xCoord = x;
         this.yCoord = y;
         this.zCoord = z;
-        this.block = b;
+        this.scheduledTime = time;
     }
 
     public boolean equals(Object other)
@@ -41,7 +38,7 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
         else
         {
             NextTickListEntry otherEntry = (NextTickListEntry)other;
-            return this.xCoord == otherEntry.xCoord && this.yCoord == otherEntry.yCoord && this.zCoord == otherEntry.zCoord && Block.isEqualTo(this.block, otherEntry.block);
+            return this.xCoord == otherEntry.xCoord && this.yCoord == otherEntry.yCoord && this.zCoord == otherEntry.zCoord;
         }
     }
 
@@ -50,22 +47,8 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
         return (this.xCoord * 1024 * 1024 + this.zCoord * 1024 + this.yCoord) * 256;
     }
 
-    /**
-     * Sets the scheduled time for this tick entry
-     */
-    public NextTickListEntry setScheduledTime(long time)
-    {
-        this.scheduledTime = time;
-        return this;
-    }
-
     public int compareTo(NextTickListEntry other)
     {
         return this.scheduledTime < other.scheduledTime ? -1 : (this.scheduledTime > other.scheduledTime ? 1 : (this.tickEntryID < other.tickEntryID ? -1 : (this.tickEntryID > other.tickEntryID ? 1 : 0)));
-    }
-
-    public Block getBlock()
-    {
-        return this.block;
     }
 }

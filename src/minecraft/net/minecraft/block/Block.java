@@ -15,27 +15,25 @@ public abstract class Block
     private static final Block lever = new BlockLever();
     private static final Block redstone_torch = new BlockRedstoneTorch();
     
-    private static final HashBiMap<Byte, Block> registry = HashBiMap.create();
+    private static final HashBiMap<Integer, Block> registry = HashBiMap.create();
     
     static
     {
-    	registry.put((byte)0, air);
-    	registry.put((byte)1, stone);
-    	registry.put((byte)2, redstone_wire);
-    	registry.put((byte)3, lever);
-    	registry.put((byte)4, redstone_torch);
+    	registry.put(0, air);
+    	registry.put(1, stone);
+    	registry.put(2, redstone_wire);
+    	registry.put(3, lever);
+    	registry.put(4, redstone_torch);
     }
     
-    public static byte getIdFromBlock(Block block)
+    public static int getIdFromBlock(Block block)
     {
-    	Byte id = registry.inverse().get(block);
-        return id == null ? (byte)-1 : id.byteValue();
+    	return registry.inverse().get(block);
     }
 
-    public static Block getBlockById(byte id)
+    public static Block getBlockById(int id)
     {
-    	Block block = registry.get(id);
-    	return block == null ? air : block;
+    	return registry.get(id);
     }
     
     protected double minX(int meta)

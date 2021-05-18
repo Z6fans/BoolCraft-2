@@ -77,7 +77,7 @@ public class BlockRedstoneTorch extends Block
         }
         else
         {
-        	if (((world.getBlockMetadata(x, y, z) & 8) == 0) ^ this.isGettingPower(world, x, y, z)) world.scheduleBlockUpdate(x, y, z, this, 2);
+        	if (((world.getBlockMetadata(x, y, z) & 8) == 0) ^ this.isGettingPower(world, x, y, z)) world.scheduleBlockUpdate(x, y, z, 2);
         }
     }
 

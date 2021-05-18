@@ -119,13 +119,13 @@ public class BlockRedstoneWire extends Block
 
     private int maxRedstonePowerAt(WorldServer world, int x, int y, int z, int other)
     {
-        if (world.getBlock(x, y, z) != this)
+        if (world.isWire(x, y, z))
         {
-            return other;
+            return Math.max(world.getBlockMetadata(x, y, z), other);
         }
         else
         {
-            return Math.max(world.getBlockMetadata(x, y, z), other);
+            return other;
         }
     }
     
@@ -255,8 +255,7 @@ public class BlockRedstoneWire extends Block
 
     private static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
     {
-        Block block = world.getBlock(x, y, z);
-        return block == Block.redstone_wire || (block.canProvidePower() && flag);
+        return world.isWire(x, y, z) || (world.getBlock(x, y, z).canProvidePower() && flag);
     }
 
     /**

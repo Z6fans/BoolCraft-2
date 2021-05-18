@@ -118,7 +118,7 @@ public class WorldRenderer
             for (int y = this.posY; y < this.posY + 16; ++y)
                 for (int z = this.posZ; z < this.posZ + 16; ++z)
                     for (int x = this.posX; x < this.posX + 16; ++x)
-                    	this.skipRenderPass &= !renderBlocks.renderBlockByRenderType(this.world.getBlock(x, y, z), x, y, z);
+                    	this.skipRenderPass &= !renderBlocks.renderBlockByRenderType(this.world.getBlocMeta(x, y, z), x, y, z);
 
             tessellator.draw();
             GL11.glPopMatrix();
