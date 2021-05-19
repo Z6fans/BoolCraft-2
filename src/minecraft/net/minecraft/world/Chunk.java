@@ -13,7 +13,6 @@ public class Chunk
 
     /** The z coordinate of the chunk. */
     public final int zPosition;
-    private boolean isLoaded;
 
     /**
      * Set to true if the chunk has been modified and needs to be updated internally.
@@ -44,16 +43,6 @@ public class Chunk
     {
     	this.storageArray[y << 8 | z << 4 | x] = (byte)bm;
         this.isModified = true;
-    }
-
-    public void setLoaded()
-    {
-        this.isLoaded = true;
-    }
-
-    public boolean getLoaded()
-    {
-        return this.isLoaded;
     }
 
     public void setStorageArrays(byte[] storageArray)

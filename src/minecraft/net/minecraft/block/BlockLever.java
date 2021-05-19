@@ -5,19 +5,6 @@ import net.minecraft.world.WorldServer;
 public class BlockLever extends Block
 {
 	private final float d = 0.1875F;
-	
-    public boolean isSoled()
-    {
-        return false;
-    }
-
-    /**
-     * The type of render function that is called for this block
-     */
-    public int getRenderType()
-    {
-        return 0;
-    }
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
@@ -154,7 +141,7 @@ public class BlockLever extends Block
         return true;
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
+    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
     {
         if ((meta & 8) > 0)
         {
@@ -220,11 +207,6 @@ public class BlockLever extends Block
     {
     	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
     }
-
-	public boolean isReplaceobble()
-	{
-		return false;
-	}
 
 	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 

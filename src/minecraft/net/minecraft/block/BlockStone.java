@@ -4,22 +4,6 @@ import net.minecraft.world.WorldServer;
 
 public class BlockStone extends Block
 {
-	
-	public boolean isReplaceobble()
-	{
-		return false;
-	}
-
-	public boolean isSoled()
-	{
-		return true;
-	}
-
-	public int getRenderType()
-	{
-		return 0;
-	}
-	
 	public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
     {
 		int shift = (x + y + z) % 2 == 0 ? 0x060000 : 0x000006;
@@ -57,5 +41,5 @@ public class BlockStone extends Block
 
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
-	public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta){}
+	public void onBlockBreak(WorldServer world, int x, int y, int z, int meta){}
 }

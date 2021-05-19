@@ -19,7 +19,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
+    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
     {
         if ((meta & 8) > 0)
         {
@@ -92,16 +92,6 @@ public class BlockRedstoneTorch extends Block
     public boolean canProvidePower()
     {
         return true;
-    }
-    
-    public boolean isSoled()
-    {
-        return false;
-    }
-    
-    public int getRenderType()
-    {
-        return 0;
     }
 
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
@@ -189,11 +179,6 @@ public class BlockRedstoneTorch extends Block
     {
         return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
     }
-
-	public boolean isReplaceobble()
-	{
-		return false;
-	}
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
 	{

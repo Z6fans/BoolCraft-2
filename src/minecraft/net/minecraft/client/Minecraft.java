@@ -617,15 +617,6 @@ public class Minecraft
             this.serverRunning = true;
         	logger.info("Starting integrated minecraft server version 1.7.10");
             this.worldServer = new WorldServer(this, new File(this.savesDirectory, name));
-            logger.info("Preparing start region ");
-
-            for (int x = -192; x <= 192; x += 16)
-            {
-                for (int z = -192; z <= 192; z += 16)
-                {
-                    this.worldServer.loadChunk(x >> 4, z >> 4);
-                }
-            }
             
             prevTime = System.currentTimeMillis();
             tickTimer = 0L;

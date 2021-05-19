@@ -9,7 +9,7 @@ import net.minecraft.world.WorldServer;
 
 public abstract class Block
 {
-	public static final Block air = new BlockAir();
+	private static final Block air = new BlockAir();
     private static final Block stone = new BlockStone();
     private static final Block redstone_wire = new BlockRedstoneWire();
     private static final Block lever = new BlockLever();
@@ -24,11 +24,6 @@ public abstract class Block
     	registry.put(2, redstone_wire);
     	registry.put(3, lever);
     	registry.put(4, redstone_torch);
-    }
-    
-    public static int getIdFromBlock(Block block)
-    {
-    	return registry.inverse().get(block);
     }
 
     public static Block getBlockById(int id)
@@ -219,15 +214,6 @@ public abstract class Block
     	return p_149742_1_.isReplaceable(p_149742_2_, p_149742_3_, p_149742_4_);
     }
 
-    public abstract boolean isSoled();
-    
-    public abstract boolean isReplaceobble();
-
-    /**
-     * The type of render function that is called for this block
-     */
-    public abstract int getRenderType();
-
     /**
      * Ticks the block if it's been scheduled
      */
@@ -237,7 +223,7 @@ public abstract class Block
 
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
-    public abstract void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta);
+    public abstract void onBlockBreak(WorldServer world, int x, int y, int z, int meta);
     
     /**
      * Called upon block activation (right click on the block.)

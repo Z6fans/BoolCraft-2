@@ -34,9 +34,6 @@ public class WorldServer
     private int updateEntityTick;
     private final List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
-    /** Positions to update */
-    private final Set<ChunkCoordIntPair> activeChunkSet = new HashSet<ChunkCoordIntPair>();
-    
     /** The directory in which to save world data. */
     private final File worldDirectory;
     
@@ -100,6 +97,16 @@ public class WorldServer
                 {
                 	this.blankChunkStorage[y << 8 | z << 4 | x] = 1;
                 }
+            }
+        }
+        
+        logger.info("Preparing start region ");
+
+        for (int x = -12; x <= 12; x++)
+        {
+            for (int z = -12; z <= 12; z++)
+            {
+                this.loadChunk(x, z);
             }
         }
     }
@@ -184,8 +191,6 @@ public class WorldServer
             }
             this.pendingTickListEntriesThisTick.clear();
         }
-        
-        this.activeChunkSet.clear();
 
         if (this.isSpawned)
         {
@@ -196,12 +201,10 @@ public class WorldServer
             {
                 for (int zOff = -16; zOff <= 16; ++zOff)
                 {
-                    this.activeChunkSet.add(new ChunkCoordIntPair(xOff + chunkX, zOff + chunkZ));
+                    this.loadChunk(xOff + chunkX, zOff + chunkZ);
                 }
             }
         }
-
-        for (ChunkCoordIntPair coords : this.activeChunkSet) this.provideChunk(coords.chunkXPos, coords.chunkZPos).setLoaded();
 
         if (this.totalTime - this.previousTotalWorldTime > 8000L)
         {
@@ -262,13 +265,8 @@ public class WorldServer
                             {
                                 if (this.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                                 {
-                                    Chunk chunk = this.provideChunk(chunkCoords.chunkXPos, chunkCoords.chunkZPos);
-                                    
-                                    if (chunk.getLoaded())
-                                    {
-                                        this.minecraft.renderGlobal.markChunksForUpdate(chunkCoords.chunkXPos - 1, 0, chunkCoords.chunkZPos - 1, chunkCoords.chunkXPos + 1, 16, chunkCoords.chunkZPos + 1);
-                                        chunkIterator.remove();
-                                    }
+                                    this.minecraft.renderGlobal.markChunksForUpdate(chunkCoords.chunkXPos - 1, 0, chunkCoords.chunkZPos - 1, chunkCoords.chunkXPos + 1, 16, chunkCoords.chunkZPos + 1);
+                                    chunkIterator.remove();
                                 }
                             }
                             else
@@ -364,21 +362,19 @@ public class WorldServer
     public void spawnPlayerInWorld(Minecraft mc)
     {
     	this.isSpawned  = true;
-        int chunkX = (int)this.playerPosX >> 4;
-        int chunkZ = (int)this.playerPosZ >> 4;
-        this.prevPosX = this.playerPosX;
-        this.prevPosZ = this.playerPosZ;
+        this.prevPosX = 0;
+        this.prevPosZ = 0;
 
-        for (int x = chunkX - this.playerViewRadius; x <= chunkX + this.playerViewRadius; ++x)
+        for (int x = -this.playerViewRadius; x <= this.playerViewRadius; x++)
         {
-            for (int y = chunkZ - this.playerViewRadius; y <= chunkZ + this.playerViewRadius; ++y)
+            for (int z = -this.playerViewRadius; z <= this.playerViewRadius; z++)
             {
-                this.playerLoadedChunks.add(new ChunkCoordIntPair(x, y));
+                this.playerLoadedChunks.add(new ChunkCoordIntPair(x, z));
             }
         }
         
         this.filterChunkLoadQueue();
-        this.loadChunk((int)this.playerPosX >> 4, (int)this.playerPosZ >> 4);
+        this.loadChunk(0, 0);
     }
     
     public void notifyBlocksOfNeighborChange(int x, int y, int z)
@@ -402,7 +398,7 @@ public class WorldServer
     /**
      * loads or generates the chunk at the chunk location specified
      */
-    public Chunk loadChunk(int x, int z)
+    private Chunk loadChunk(int x, int z)
     {
         long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
         this.chunksToUnload.remove(Long.valueOf(posHash));
@@ -452,16 +448,6 @@ public class WorldServer
         }
 
         return chunk;
-    }
-
-    /**
-     * Will return back a chunk, if it doesn't exist and its not a MP client it will generates all the blocks for the
-     * specified chunk from the map seed and chunk seed
-     */
-    private Chunk provideChunk(int p_73154_1_, int p_73154_2_)
-    {
-        Chunk var3 = this.loadedChunkHashMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(p_73154_1_, p_73154_2_));
-        return var3 == null ? this.loadChunk(p_73154_1_, p_73154_2_) : var3;
     }
 
     /**
@@ -578,37 +564,23 @@ public class WorldServer
      */
     public boolean setBlockAndMeta(int x, int y, int z, int newBlockID, int newMeta)
     {
-    	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
+    	int oldbm = this.getBlocMeta(x, y, z);
+        int newbm = ((newMeta & 0xF) << 4) | (newBlockID & 0xF);
+
+        if (oldbm != newbm)
         {
-    		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-    		
-    		int localX = x & 15;
-    		int localZ = z & 15;
-    		
-    		int oldbm = chunk.getBlocMeta(localX, y, localZ);
-    		int oldBlockID = oldbm & 0xF;
-    		Block oldBlock = Block.getBlockById(oldBlockID);
-            int oldMeta = oldbm >> 4;
+        	this.loadChunk(x >> 4, z >> 4).setBlocMeta(x & 15, y & 255, z & 15, newbm);
             
-
-            if (oldBlockID != newBlockID || oldMeta != newMeta)
+            if ((oldbm & 0xF) != (newbm & 0xF))
             {
-                chunk.setBlocMeta(localX, y, localZ, ((newMeta & 0xF) << 4) | (newBlockID & 0xF));
-                
-                if (oldBlockID != newBlockID)
-                {
-                	oldBlock.onBlockBreak(this, x, y, z, oldBlock, oldMeta);
-                	Block.getBlockById(newBlockID).onBlockAdded(this, x, y, z);
-                }
-                
-                if (chunk.getLoaded())
-                {
-                    this.markBlockForUpdate(x, y, z);
-                }
-
-                this.notifyBlocksOfNeighborChange(x, y, z);
-                return true;
+            	Block.getBlockById(oldbm & 0xF).onBlockBreak(this, x, y, z, oldbm >> 4);
+            	Block.getBlockById(newbm & 0xF).onBlockAdded(this, x, y, z);
             }
+            
+            this.markBlockForUpdate(x, y, z);
+
+            this.notifyBlocksOfNeighborChange(x, y, z);
+            return true;
         }
     	
         return false;
@@ -616,14 +588,7 @@ public class WorldServer
 
     public Block getBlock(int x, int y, int z)
     {
-        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
-        {
-            return Block.getBlockById(this.provideChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y, z & 15) & 0xF);
-        }
-        else
-        {
-            return Block.getBlockById(0);
-        }
+    	return Block.getBlockById(this.getBlocMeta(x, y, z) & 0xF);
     }
 
     /**
@@ -631,14 +596,7 @@ public class WorldServer
      */
     public int getBlockMetadata(int x, int y, int z)
     {
-        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
-        {
-        	return this.provideChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y, z & 15) >> 4;
-        }
-        else
-        {
-            return 0;
-        }
+    	return this.getBlocMeta(x, y, z) >> 4;
     }
 
     private void markBlockForUpdate(int x, int y, int z)
@@ -747,14 +705,6 @@ public class WorldServer
     
     public int getBlocMeta(int x, int y, int z)
     {
-    	if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000 && y >= 0 && y < 256)
-        {
-        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-            return chunk.getBlocMeta(x & 15, y, z & 15);
-        }
-        else
-        {
-            return 0;
-        }
+    	return this.loadChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y & 255, z & 15);
     }
 }

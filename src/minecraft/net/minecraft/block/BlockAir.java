@@ -4,21 +4,6 @@ import net.minecraft.world.WorldServer;
 
 public class BlockAir extends Block
 {
-    
-    public boolean isReplaceobble()
-    {
-    	return true;
-    }
-    
-    public boolean isSoled()
-    {
-        return false;
-    }
-
-    public int getRenderType()
-    {
-        return -1;
-    }
 
 	public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
 	{
@@ -56,5 +41,5 @@ public class BlockAir extends Block
 
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
-	public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta){}
+	public void onBlockBreak(WorldServer world, int x, int y, int z, int meta){}
 }

@@ -10,19 +10,6 @@ public class BlockRedstoneWire extends Block
     {
     	return 0.0625F;
     }
-    
-    public boolean isSoled()
-    {
-        return false;
-    }
-
-    /**
-     * The type of render function that is called for this block
-     */
-    public int getRenderType()
-    {
-        return 5;
-    }
 
     /**
      * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
@@ -187,7 +174,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
+    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
     {
     	world.notifyBlocksOfNeighborChange(x, y + 1, z);
         world.notifyBlocksOfNeighborChange(x, y - 1, z);
@@ -265,11 +252,6 @@ public class BlockRedstoneWire extends Block
     {
         return !this.isCheckingForPower;
     }
-
-	public boolean isReplaceobble()
-	{
-		return false;
-	}
 
 	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
 	{
