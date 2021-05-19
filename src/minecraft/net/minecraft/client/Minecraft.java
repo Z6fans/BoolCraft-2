@@ -581,7 +581,7 @@ public class Minecraft
         	
         	if (!this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z) && y < 256 && (y < 255 || side != 1) && this.worldServer.canPlaceEntity(block, xPrime, yPrime, zPrime))
             {
-        		this.worldServer.setBlock(xPrime, yPrime, zPrime, block, block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
+        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, block, block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
             }
         }
     }
@@ -598,7 +598,7 @@ public class Minecraft
 
             if (!this.worldServer.isReplaceable(x, y, z))
             {
-                this.worldServer.setBlock(x, y, z, Block.air, 0);
+                this.worldServer.setBlockAndMeta(x, y, z, Block.air, 0);
             }
         }
 	}

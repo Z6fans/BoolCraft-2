@@ -112,7 +112,7 @@ public class BlockRedstoneWire extends Block
 
         if (prevPower != currentPower)
         {
-            world.setBlockMetadataWithNotify(x, y, z, currentPower, false);
+            world.setBlockMetadataWithNotify(x, y, z, currentPower);
             this.notifyNeighbors(world, x, y, z);
         }
     }
@@ -131,20 +131,20 @@ public class BlockRedstoneWire extends Block
     
     private void notifyNeighbors(WorldServer world, int x, int y, int z)
     {
-    	world.notifyBlocksOfNeighborChange(x, y, z, this);
-        world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-        world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+    	world.notifyBlocksOfNeighborChange(x, y, z);
+        world.notifyBlocksOfNeighborChange(x - 1, y, z);
+        world.notifyBlocksOfNeighborChange(x + 1, y, z);
+        world.notifyBlocksOfNeighborChange(x, y, z - 1);
+        world.notifyBlocksOfNeighborChange(x, y, z + 1);
+        world.notifyBlocksOfNeighborChange(x, y - 1, z);
+        world.notifyBlocksOfNeighborChange(x, y + 1, z);
     }
 
     public void onBlockAdded(WorldServer world, int x, int y, int z)
     {
     	this.computeMetadata(world, x, y, z);
-        world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+        world.notifyBlocksOfNeighborChange(x, y + 1, z);
+        world.notifyBlocksOfNeighborChange(x, y - 1, z);
         this.notifyNeighbors(world, x - 1, y, z);
         this.notifyNeighbors(world, x + 1, y, z);
         this.notifyNeighbors(world, x, y, z - 1);
@@ -189,16 +189,16 @@ public class BlockRedstoneWire extends Block
 
     public void onBlockBreak(WorldServer world, int x, int y, int z, Block block, int meta)
     {
-    	world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-        world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-        world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-        world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
-        world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+    	world.notifyBlocksOfNeighborChange(x, y + 1, z);
+        world.notifyBlocksOfNeighborChange(x, y - 1, z);
+        world.notifyBlocksOfNeighborChange(x + 1, y, z);
+        world.notifyBlocksOfNeighborChange(x - 1, y, z);
+        world.notifyBlocksOfNeighborChange(x, y, z + 1);
+        world.notifyBlocksOfNeighborChange(x, y, z - 1);
         this.computeMetadata(world, x, y, z);
     }
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
+    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
     {
     	if (this.canPlaceBlockAt(world, x, y, z))
         {
@@ -206,7 +206,7 @@ public class BlockRedstoneWire extends Block
         }
         else
         {
-            world.setBlock(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, Block.air, 0);
         }
     }
 

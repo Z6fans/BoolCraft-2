@@ -65,7 +65,7 @@ public class BlockLever extends Block
         }
     }
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
+    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 
@@ -76,7 +76,7 @@ public class BlockLever extends Block
          || !world.isSolid(x, y - 1, z) && meta == 5
          || !world.isSolid(x, y + 1, z) && meta == 0)
         {
-            world.setBlock(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, Block.air, 0);
         }
     }
     
@@ -123,32 +123,32 @@ public class BlockLever extends Block
     {
     	int meta = world.getBlockMetadata(x, y, z);
         int orientation = meta & 7;
-        world.setBlockMetadataWithNotify(x, y, z, meta ^ 8, true);
-        world.notifyBlocksOfNeighborChange(x, y, z, this);
+        world.setBlockMetadataWithNotify(x, y, z, meta ^ 8);
+        world.notifyBlocksOfNeighborChange(x, y, z);
 
         if (orientation == 1)
         {
-            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z);
         }
         else if (orientation == 2)
         {
-            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z);
         }
         else if (orientation == 3)
         {
-            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1);
         }
         else if (orientation == 4)
         {
-            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1);
         }
         else if (orientation == 5)
         {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z);
         }
         else if (orientation == 0)
         {
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z);
         }
         
         return true;
@@ -158,32 +158,32 @@ public class BlockLever extends Block
     {
         if ((meta & 8) > 0)
         {
-            world.notifyBlocksOfNeighborChange(x, y, z, this);
+            world.notifyBlocksOfNeighborChange(x, y, z);
             int side = meta & 7;
 
             if (side == 1)
             {
-                world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
+                world.notifyBlocksOfNeighborChange(x - 1, y, z);
             }
             else if (side == 2)
             {
-                world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
+                world.notifyBlocksOfNeighborChange(x + 1, y, z);
             }
             else if (side == 3)
             {
-                world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
+                world.notifyBlocksOfNeighborChange(x, y, z - 1);
             }
             else if (side == 4)
             {
-                world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+                world.notifyBlocksOfNeighborChange(x, y, z + 1);
             }
             else if (side == 5)
             {
-                world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
+                world.notifyBlocksOfNeighborChange(x, y - 1, z);
             }
             else if (side == 0)
             {
-                world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+                world.notifyBlocksOfNeighborChange(x, y + 1, z);
             }
         }
     }

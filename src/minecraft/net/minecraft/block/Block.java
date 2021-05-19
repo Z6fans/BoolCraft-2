@@ -11,7 +11,7 @@ public abstract class Block
 {
 	public static final Block air = new BlockAir();
     private static final Block stone = new BlockStone();
-    public static final Block redstone_wire = new BlockRedstoneWire();
+    private static final Block redstone_wire = new BlockRedstoneWire();
     private static final Block lever = new BlockLever();
     private static final Block redstone_torch = new BlockRedstoneTorch();
     
@@ -219,11 +219,6 @@ public abstract class Block
     	return p_149742_1_.isReplaceable(p_149742_2_, p_149742_3_, p_149742_4_);
     }
 
-    public static boolean isEqualTo(Block block1, Block block2)
-    {
-        return block1 != null && block2 != null && block1 == block2;
-    }
-
     public abstract boolean isSoled();
     
     public abstract boolean isReplaceobble();
@@ -238,7 +233,7 @@ public abstract class Block
      */
     public abstract void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_);
 
-    public abstract void onNeighborBlockChange(WorldServer p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_, Block p_149695_5_);
+    public abstract void onNeighborBlockChange(WorldServer p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_);
 
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 

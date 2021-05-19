@@ -349,11 +349,11 @@ public class WorldServer
         }
     }
 	
-	private void notifyBlockOfNeighborChange(int x, int y, int z, final Block neighborBlock)
+	private void notifyBlockOfNeighborChange(int x, int y, int z)
     {
 		try
         {
-        	this.getBlock(x, y, z).onNeighborBlockChange(this, x, y, z, neighborBlock);
+        	this.getBlock(x, y, z).onNeighborBlockChange(this, x, y, z);
         }
         catch (Throwable t)
         {
@@ -381,14 +381,14 @@ public class WorldServer
         this.loadChunk((int)this.playerPosX >> 4, (int)this.playerPosZ >> 4);
     }
     
-    public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block)
+    public void notifyBlocksOfNeighborChange(int x, int y, int z)
     {
-        this.notifyBlockOfNeighborChange(x - 1, y, z, block);
-        this.notifyBlockOfNeighborChange(x + 1, y, z, block);
-        this.notifyBlockOfNeighborChange(x, y - 1, z, block);
-        this.notifyBlockOfNeighborChange(x, y + 1, z, block);
-        this.notifyBlockOfNeighborChange(x, y, z - 1, block);
-        this.notifyBlockOfNeighborChange(x, y, z + 1, block);
+        this.notifyBlockOfNeighborChange(x - 1, y, z);
+        this.notifyBlockOfNeighborChange(x + 1, y, z);
+        this.notifyBlockOfNeighborChange(x, y - 1, z);
+        this.notifyBlockOfNeighborChange(x, y + 1, z);
+        this.notifyBlockOfNeighborChange(x, y, z - 1);
+        this.notifyBlockOfNeighborChange(x, y, z + 1);
     }
 	
 	/**
@@ -570,47 +570,33 @@ public class WorldServer
      * Sets the blocks metadata and if set will then notify blocks that this block changed, depending on the flag. Args:
      * x, y, z, metadata, flag. See setBlock for flag description
      */
-    public boolean setBlockMetadataWithNotify(int x, int y, int z, int metadata, boolean flag)
+    public boolean setBlockMetadataWithNotify(int x, int y, int z, int newMeta)
     {
-        if (x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000)
+        if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
-            if (y < 0)
-            {
-                return false;
-            }
-            else if (y >= 256)
-            {
-                return false;
-            }
-            else
-            {
-                Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-                int localX = x & 15;
-                int localZ = z & 15;
-                boolean didChange = chunk.setBlockMetadata(localX, y, localZ, metadata);
+        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
+        	
+        	int localX = x & 15;
+    		int localZ = z & 15;
 
-                if (didChange)
+    		int oldBlockID = chunk.getBlocMeta(localX, y, localZ) & 0xF;
+        	int oldMeta = chunk.getBlocMeta(localX, y, localZ) >> 4;
+
+            if (oldMeta != newMeta)
+            {
+                chunk.setBlocMeta(localX, y, localZ, oldBlockID | ((newMeta & 0xF) << 4));
+                
+                if (chunk.getLoaded())
                 {
-                    Block block = chunk.getBlock(localX, y, localZ);
-
-                    if (chunk.getLoaded())
-                    {
-                        this.markBlockForUpdate(x, y, z);
-                    }
-
-                    if (flag)
-                    {
-                        this.notifyBlocksOfNeighborChange(x, y, z, block);
-                    }
+                    this.markBlockForUpdate(x, y, z);
                 }
 
-                return didChange;
+                this.notifyBlocksOfNeighborChange(x, y, z);
+                return true;
             }
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public long getTotalWorldTime()
@@ -623,21 +609,31 @@ public class WorldServer
      * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
      * block from being re-rendered, if this is a client world. Flags can be added together.
      */
-    public boolean setBlock(int x, int y, int z, Block block, int metadata)
+    public boolean setBlockAndMeta(int x, int y, int z, Block newBlock, int newMeta)
     {
     	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
     		Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-            Block oldBlock = chunk.getBlock(x & 15, y, z & 15);
+    		
+    		int localX = x & 15;
+    		int localZ = z & 15;
+    		
+    		Block oldBlock = Block.getBlockById(chunk.getBlocMeta(localX, y, localZ) & 0xF);
+            int oldMeta = chunk.getBlocMeta(localX, y, localZ) >> 4;
 
-            if (chunk.setBlockAndMetaServer(this, x & 15, y, z & 15, block, metadata))
+            if (oldBlock != newBlock || oldMeta != newMeta)
             {
+                chunk.setBlocMeta(localX, y, localZ, ((newMeta & 0xF) << 4) | (Block.getIdFromBlock(newBlock) & 0xF));
+                
+                oldBlock.onBlockBreak(this, x, y, z, oldBlock, oldMeta);
+                newBlock.onBlockAdded(this, x, y, z);
+                
                 if (chunk.getLoaded())
                 {
                     this.markBlockForUpdate(x, y, z);
                 }
 
-                this.notifyBlocksOfNeighborChange(x, y, z, oldBlock);
+                this.notifyBlocksOfNeighborChange(x, y, z);
                 return true;
             }
         }

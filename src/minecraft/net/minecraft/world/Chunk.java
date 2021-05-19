@@ -1,7 +1,5 @@
 package net.minecraft.world;
 
-import net.minecraft.block.Block;
-
 public class Chunk
 {
     /**
@@ -36,62 +34,16 @@ public class Chunk
     {
         return this.storageArray;
     }
-
-    public Block getBlock(int x, int y, int z)
-    {
-        return Block.getBlockById(this.storageArray[y << 8 | z << 4 | x] & 0xF);
-    }
-
-    /**
-     * Return the metadata corresponding to the given coordinates inside a chunk.
-     */
-    public int getBlockMetadata(int x, int y, int z)
-    {
-        return (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
-    }
     
     public int getBlocMeta(int x, int y, int z)
     {
     	return this.storageArray[y << 8 | z << 4 | x] & 0xFF;
     }
     
-    public boolean setBlockAndMetaServer(WorldServer world, int x, int y, int z, Block newBlock, int newMeta)
+    public void setBlocMeta(int x, int y, int z, int bm)
     {
-        Block oldBlock = this.getBlock(x, y, z);
-        int oldMeta = this.getBlockMetadata(x, y, z);
-
-        if (oldBlock != newBlock || oldMeta != newMeta)
-        {
-            int trueX = this.xPosition * 16 + x;
-            int trueZ = this.zPosition * 16 + z;
-
-            this.storageArray[y << 8 | z << 4 | x] = (byte)(((newMeta & 0xF) << 4) | (Block.getIdFromBlock(newBlock) & 0xF));
-
-            oldBlock.onBlockBreak(world, trueX, y, trueZ, oldBlock, oldMeta);
-            newBlock.onBlockAdded(world, trueX, y, trueZ);
-
-            this.isModified = true;
-            return true;
-        }
-        
-        return false;
-    }
-
-    /**
-     * Set the metadata of a block in the chunk
-     */
-    public boolean setBlockMetadata(int x, int y, int z, int newMeta)
-    {
-    	int oldMeta = (this.storageArray[y << 8 | z << 4 | x] & 0xF0) >> 4;
-
-        if (oldMeta != newMeta)
-        {
-            this.isModified = true;
-            this.storageArray[y << 8 | z << 4 | x] = (byte)((this.storageArray[y << 8 | z << 4 | x] & 0xF) | ((newMeta & 0xF) << 4));
-            return true;
-        }
-        
-        return false;
+    	this.storageArray[y << 8 | z << 4 | x] = (byte)bm;
+        this.isModified = true;
     }
 
     public void setLoaded()

@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.AxisAlignedBB;

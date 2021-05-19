@@ -10,12 +10,12 @@ public class BlockRedstoneTorch extends Block
     {
     	if ((world.getBlockMetadata(x, y, z) & 8) > 0)
         {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1);
         }
     }
 
@@ -23,12 +23,12 @@ public class BlockRedstoneTorch extends Block
     {
         if ((meta & 8) > 0)
         {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z, this);
-            world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
-            world.notifyBlocksOfNeighborChange(x - 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x + 1, y, z, this);
-            world.notifyBlocksOfNeighborChange(x, y, z - 1, this);
-            world.notifyBlocksOfNeighborChange(x, y, z + 1, this);
+            world.notifyBlocksOfNeighborChange(x, y - 1, z);
+            world.notifyBlocksOfNeighborChange(x, y + 1, z);
+            world.notifyBlocksOfNeighborChange(x - 1, y, z);
+            world.notifyBlocksOfNeighborChange(x + 1, y, z);
+            world.notifyBlocksOfNeighborChange(x, y, z - 1);
+            world.notifyBlocksOfNeighborChange(x, y, z + 1);
         }
     }
 
@@ -58,12 +58,12 @@ public class BlockRedstoneTorch extends Block
      */
     public void updateTick(WorldServer world, int x, int y, int z)
     {
-    	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8), true);
-        world.notifyBlocksOfNeighborChange(x, y, z, this);
-        if (world.isSolid(x, y + 1, z)) world.notifyBlocksOfNeighborChange(x, y + 1, z, this);
+    	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8));
+        world.notifyBlocksOfNeighborChange(x, y, z);
+        if (world.isSolid(x, y + 1, z)) world.notifyBlocksOfNeighborChange(x, y + 1, z);
     }
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z, Block block)
+    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 
@@ -73,7 +73,7 @@ public class BlockRedstoneTorch extends Block
            || (!world.isSolid(x, y, z + 1) && meta == 4)
            || (!world.isSolid(x, y - 1, z) && meta == 5))
         {
-            world.setBlock(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, Block.air, 0);
         }
         else
         {
