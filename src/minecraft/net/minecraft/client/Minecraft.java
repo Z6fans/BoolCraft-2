@@ -119,9 +119,7 @@ public class Minecraft
      */
     private void displayGuiScreen()
     {
-    	this.currentScreen = new GuiScreen();
-    	
-        if (this.inGameHasFocus)
+    	if (this.inGameHasFocus)
         {
             KeyBinding.unPressAllKeys();
             this.inGameHasFocus = false;
@@ -129,7 +127,7 @@ public class Minecraft
             Mouse.setGrabbed(false);
         }
         
-        this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
+        this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
     }
 
     /**
@@ -489,7 +487,7 @@ public class Minecraft
 
                 if (this.currentScreen != null)
                 {
-                    this.currentScreen.setWorldAndResolution(this, this.getScaledWidth(), this.getScaledHeight());
+                    this.currentScreen.setWorldAndResolution(this.getScaledWidth(), this.getScaledHeight());
                 }
             }
         }

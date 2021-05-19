@@ -18,7 +18,7 @@ import org.lwjgl.opengl.GL12;
 public class GuiScreen
 {
     /** Reference to the Minecraft object. */
-    private Minecraft mc;
+    private final Minecraft mc;
 
     /** The width of the screen object. */
     private int width;
@@ -26,14 +26,73 @@ public class GuiScreen
     /** The height of the screen object. */
     private int height;
 
-    private int glTextureId;
-    private List<String> worldList;
+    private final int glTextureId;
+    private final List<String> worldList;
     private String newWorldName;
     private boolean hasCreatedWorld;
     private String text = "";
     
     private boolean isLaunched = false;
     private float scrollPos;
+    
+    public GuiScreen(Minecraft minecraft, int screenWidth, int screenHeight)
+    {
+    	this.mc = minecraft;
+        try
+        {
+        	InputStream texStream = null;
+
+            try
+            {
+                texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.png");
+                this.glTextureId = GL11.glGenTextures();
+                BufferedImage image = ImageIO.read(texStream);
+                GL11.glDeleteTextures(this.glTextureId);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
+                
+                int w = image.getWidth();
+                int h = image.getHeight();
+                int var7 = 4194304 / w;
+                int[] source = new int[var7 * w];
+                
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+
+                for (int i = 0; i < w * h; i += w * var7)
+                {
+                    int var10 = i / w;
+                    int var11 = Math.min(var7, h - var10);
+                    int limit = w * var11;
+                    image.getRGB(0, var10, w, var11, source, 0, w);
+                    IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
+                    dataBuffer.put(source, 0, limit);
+                    dataBuffer.position(0).limit(limit);
+                    GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
+                }
+            }
+            finally
+            {
+                if (texStream != null)
+                {
+                    texStream.close();
+                }
+            }
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+        this.width = screenWidth;
+        this.height = screenHeight;
+        this.worldList = this.mc.getSaveList();
+        Collections.sort(this.worldList);
+        Keyboard.enableRepeatEvents(true);
+        this.fixWorldName();
+    }
 
     /**
      * Draws the screen and all the components in it.
@@ -144,63 +203,10 @@ public class GuiScreen
      * Causes the screen to lay out its subcomponents again. This is the equivalent of the Java call
      * Container.validate()
      */
-    public void setWorldAndResolution(Minecraft minecraft, int screenWidth, int screenHeight)
+    public void setWorldAndResolution(int w, int h)
     {
-        this.mc = minecraft;
-        try
-        {
-        	InputStream texStream = null;
-
-            try
-            {
-                texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.png");
-                this.glTextureId = GL11.glGenTextures();
-                BufferedImage image = ImageIO.read(texStream);
-                GL11.glDeleteTextures(this.glTextureId);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                
-                int w = image.getWidth();
-                int h = image.getHeight();
-                int var7 = 4194304 / w;
-                int[] source = new int[var7 * w];
-                
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-
-                for (int i = 0; i < w * h; i += w * var7)
-                {
-                    int var10 = i / w;
-                    int var11 = Math.min(var7, h - var10);
-                    int limit = w * var11;
-                    image.getRGB(0, var10, w, var11, source, 0, w);
-                    IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
-                    dataBuffer.put(source, 0, limit);
-                    dataBuffer.position(0).limit(limit);
-                    GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
-                }
-            }
-            finally
-            {
-                if (texStream != null)
-                {
-                    texStream.close();
-                }
-            }
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-        this.width = screenWidth;
-        this.height = screenHeight;
-        this.worldList = this.mc.getSaveList();
-        Collections.sort(this.worldList);
-        Keyboard.enableRepeatEvents(true);
-        this.fixWorldName();
+        this.width = w;
+        this.height = h;
     }
     
     private void fixWorldName()
@@ -248,43 +254,32 @@ public class GuiScreen
     {
         if (Keyboard.getEventKeyState())
         {
-        	char ch = Keyboard.getEventCharacter();
-        	int key = Keyboard.getEventKey();
-            switch (key)
+        	switch (Keyboard.getEventKey())
             {
-                case 14:
-                	if (this.text.length() > 0)
-                    {
-                		this.text = this.text.substring(0, this.text.length() - 1);
-                    }
-                    break;
-                    
-                case 203:
-                	break;
-                	
-                case 205:
-                	break;
-
-                default:
-                	if (ch != 167 && ch >= 32 && ch != 127 && this.text.length() < 32)
-                    {
-                    	this.text += ch;
-                    }
-            }
-            
-            if(key == 1)
-            {
+            case 1:
             	this.mc.shutdown();
-            }
-
-            if (key == 28 || key == 156)
-            {
+            	break;
+            	
+            case 14:
+            	if (this.text.length() > 0) this.text = this.text.substring(0, this.text.length() - 1);
+            	break;
+            	
+            case 28:
+            case 156:
             	if (this.text.length() > 0)
             	{
             		if (this.hasCreatedWorld) return;
                     this.hasCreatedWorld = true;
                     this.mc.launchIntegratedServer(this.newWorldName);
             	}
+            	
+            case 203:
+            case 205:
+            	break;
+
+            default:
+            	char ch = Keyboard.getEventCharacter();
+            	if (ch >= 32 && ch <= 126 && this.text.length() < 32) this.text += ch;
             }
             
             this.fixWorldName();
