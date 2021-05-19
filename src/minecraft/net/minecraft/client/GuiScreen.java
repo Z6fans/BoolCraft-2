@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -28,8 +26,7 @@ public class GuiScreen
     /** The height of the screen object. */
     private int height;
 
-    /** The FontRenderer used by GuiScreen */
-    private FontRenderer fontRendererObj;
+    private int glTextureId;
     private List<String> worldList;
     private String newWorldName;
     private boolean hasCreatedWorld;
@@ -135,24 +132,71 @@ public class GuiScreen
                     worldName = "World " + (id + 1);
                 }
 
-                this.fontRendererObj.drawString(worldName, this.width / 2 - 110 + 4, renderY + 1);
+                this.drawString(worldName, this.width / 2 - 110 + 4, renderY + 1);
             }
         }
         
         GL11.glDisable(GL11.GL_DEPTH_TEST);
-        this.fontRendererObj.drawString(this.text, this.width / 2 - 106, this.height - 52);
+        this.drawString(this.text, this.width / 2 - 106, this.height - 52);
     }
 
     /**
      * Causes the screen to lay out its subcomponents again. This is the equivalent of the Java call
      * Container.validate()
      */
-    public void setWorldAndResolution(Minecraft minecraft, int w, int h)
+    public void setWorldAndResolution(Minecraft minecraft, int screenWidth, int screenHeight)
     {
         this.mc = minecraft;
-        this.fontRendererObj = new FontRenderer();
-        this.width = w;
-        this.height = h;
+        try
+        {
+        	InputStream texStream = null;
+
+            try
+            {
+                texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.png");
+                this.glTextureId = GL11.glGenTextures();
+                BufferedImage image = ImageIO.read(texStream);
+                GL11.glDeleteTextures(this.glTextureId);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
+                
+                int w = image.getWidth();
+                int h = image.getHeight();
+                int var7 = 4194304 / w;
+                int[] source = new int[var7 * w];
+                
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+
+                for (int i = 0; i < w * h; i += w * var7)
+                {
+                    int var10 = i / w;
+                    int var11 = Math.min(var7, h - var10);
+                    int limit = w * var11;
+                    image.getRGB(0, var10, w, var11, source, 0, w);
+                    IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
+                    dataBuffer.put(source, 0, limit);
+                    dataBuffer.position(0).limit(limit);
+                    GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
+                }
+            }
+            finally
+            {
+                if (texStream != null)
+                {
+                    texStream.close();
+                }
+            }
+        }
+        catch (IOException e)
+        {
+        	throw new RuntimeException(e);
+        }
+        this.width = screenWidth;
+        this.height = screenHeight;
         this.worldList = this.mc.getSaveList();
         Collections.sort(this.worldList);
         Keyboard.enableRepeatEvents(true);
@@ -255,132 +299,31 @@ public class GuiScreen
         Keyboard.enableRepeatEvents(false);
     }
     
-    private class FontRenderer
+    /**
+     * Draws the specified string. Args: string, x, y, color, dropShadow
+     */
+    private void drawString(String text, int xStart, int y)
     {
-        private final Map<Integer, Texture> mapTextureObjects = new HashMap<Integer, Texture>();
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glColor4f(1, 1, 1, 1);
         
-        private final Texture theTexture;
-
-        /**
-         * Array of the start/end column (in upper/lower nibble) for every glyph in the /font directory.
-         */
-        private byte[] glyphWidth = new byte[65536];
-
-        /** Current X coordinate at which to draw the next character. */
-        private float posX;
-
-        /** Current Y coordinate at which to draw the next character. */
-        private float posY;
-
-        public FontRenderer()
+        for (int i = 0; i < text.length(); ++i)
         {
-        	try
-            {
-            	this.theTexture = new Texture("/minecraft/font/asky.png");
-                FontRenderer.class.getResourceAsStream("/minecraft/font/glyph_sizes.bin").read(this.glyphWidth);
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /**
-         * Render a single Unicode character at current (posX,posY) location using one of the /font/glyph_XX.png files...
-         */
-        private float renderUnicodeChar(char ch)
-        {
-        	float var3 = (float)(ch % 16 * 8);
-            float var4 = (float)(ch / 16 * 8);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.theTexture.getGlTextureId());
-            float var6 = 7.99F;
+        	int x = xStart + (i * 7);
+        	char ch = text.charAt(i);
+        	int col = (ch & 15) * 8;
+            int row = (ch >> 4) * 8;
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
             GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
-            GL11.glTexCoord2f(var3 / 128.0F, var4 / 128.0F);
-            GL11.glVertex3f(this.posX, this.posY, 0.0F);
-            GL11.glTexCoord2f(var3 / 128.0F, (var4 + 7.99F) / 128.0F);
-            GL11.glVertex3f(this.posX, this.posY + 7.99F, 0.0F);
-            GL11.glTexCoord2f((var3 + var6 - 1.0F) / 128.0F, var4 / 128.0F);
-            GL11.glVertex3f(this.posX + var6 - 1.0F, this.posY, 0.0F);
-            GL11.glTexCoord2f((var3 + var6 - 1.0F) / 128.0F, (var4 + 7.99F) / 128.0F);
-            GL11.glVertex3f(this.posX + var6 - 1.0F, this.posY + 7.99F, 0.0F);
+            GL11.glTexCoord2f(col / 128.0F, row / 128.0F);
+            GL11.glVertex3f(x, y, 0.0F);
+            GL11.glTexCoord2f(col / 128.0F, (row + 7.99F) / 128.0F);
+            GL11.glVertex3f(x, y + 7.99F, 0.0F);
+            GL11.glTexCoord2f((col + 6.99F) / 128.0F, row / 128.0F);
+            GL11.glVertex3f(x + 6.99F, y, 0.0F);
+            GL11.glTexCoord2f((col + 6.99F) / 128.0F, (row + 7.99F) / 128.0F);
+            GL11.glVertex3f(x + 6.99F, y + 7.99F, 0.0F);
             GL11.glEnd();
-            return 8.0F;
-        }
-
-        /**
-         * Draws the specified string. Args: string, x, y, color, dropShadow
-         */
-        public void drawString(String text, int x, int y)
-        {
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glColor4f(1, 1, 1, 1);
-            this.posX = (float)x;
-            this.posY = (float)y;
-            
-            for (int index = 0; index < text.length(); ++index)
-            {
-                char ch = text.charAt(index);
-
-                if (!(ch == 167 && index + 1 < text.length()))
-                {
-                    this.posX += (float)((int)(ch == 32 ? 4.0F : this.renderUnicodeChar(ch)));
-                }
-            }
-        }
-        
-        private class Texture
-        {
-            private int glTextureId;
-            
-            public Texture(String location) throws IOException
-            {
-                InputStream texStream = null;
-
-                try
-                {
-                    texStream = Texture.class.getResourceAsStream(location);
-                    this.glTextureId = GL11.glGenTextures();
-                    BufferedImage image = ImageIO.read(texStream);
-                    GL11.glDeleteTextures(this.glTextureId);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                    GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                    
-                    int w = image.getWidth();
-                    int h = image.getHeight();
-                    int var7 = 4194304 / w;
-                    int[] source = new int[var7 * w];
-                    
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-
-                    for (int i = 0; i < w * h; i += w * var7)
-                    {
-                        int var10 = i / w;
-                        int var11 = Math.min(var7, h - var10);
-                        int limit = w * var11;
-                        image.getRGB(0, var10, w, var11, source, 0, w);
-                        IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
-                        dataBuffer.put(source, 0, limit);
-                        dataBuffer.position(0).limit(limit);
-                        GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
-                    }
-                }
-                finally
-                {
-                    if (texStream != null)
-                    {
-                        texStream.close();
-                    }
-                }
-            }
-
-            public int getGlTextureId()
-            {
-                return this.glTextureId;
-            }
         }
     }
 }
