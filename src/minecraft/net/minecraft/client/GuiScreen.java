@@ -1,15 +1,11 @@
 package net.minecraft.client;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
-import net.minecraft.client.renderer.GLAllocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -44,35 +40,22 @@ public class GuiScreen
 
             try
             {
-                texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.png");
+                texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.bin");
+                
+                byte[] input = new byte[0x10000];
+                texStream.read(input);
+                ByteBuffer bbuf = ByteBuffer.allocateDirect(0x10000).put(input);
+                bbuf.flip();
+                
                 this.glTextureId = GL11.glGenTextures();
-                BufferedImage image = ImageIO.read(texStream);
+                
                 GL11.glDeleteTextures(this.glTextureId);
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer)null);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-                
-                int w = image.getWidth();
-                int h = image.getHeight();
-                int var7 = 4194304 / w;
-                int[] source = new int[var7 * w];
-                
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 128, 128, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, bbuf.asIntBuffer());
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
-
-                for (int i = 0; i < w * h; i += w * var7)
-                {
-                    int var10 = i / w;
-                    int var11 = Math.min(var7, h - var10);
-                    int limit = w * var11;
-                    image.getRGB(0, var10, w, var11, source, 0, w);
-                    IntBuffer dataBuffer = GLAllocation.createDirectIntBuffer(4194304);
-                    dataBuffer.put(source, 0, limit);
-                    dataBuffer.position(0).limit(limit);
-                    GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, 0, var10, w, var11, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
-                }
             }
             finally
             {
@@ -86,6 +69,7 @@ public class GuiScreen
         {
         	throw new RuntimeException(e);
         }
+        
         this.width = screenWidth;
         this.height = screenHeight;
         this.worldList = this.mc.getSaveList();

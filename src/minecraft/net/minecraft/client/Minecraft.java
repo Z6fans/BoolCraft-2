@@ -1,8 +1,9 @@
 package net.minecraft.client;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
@@ -730,24 +731,7 @@ public class Minecraft
     
     public List<String> getSaveList()
     {
-        final ArrayList<String> saveList = new ArrayList<String>();
-        if (this.savesDirectory != null && this.savesDirectory.isDirectory())
-        {
-            final File[] fileList = this.savesDirectory.listFiles();
-            final int length = fileList.length;
-
-            for (int i = 0; i < length; ++i)
-            {
-                File file = fileList[i];
-
-                if (file.isDirectory())
-                {
-                    saveList.add(file.getName());
-                }
-            }
-        }
-
-        return saveList;
+        return Arrays.stream(this.savesDirectory.listFiles()).filter(File::isDirectory).map(File::getName).collect(Collectors.toList());
     }
     
     /**
