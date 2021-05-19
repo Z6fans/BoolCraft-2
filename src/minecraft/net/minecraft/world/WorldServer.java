@@ -566,39 +566,6 @@ public class WorldServer
         return this.isReplaceable(x, y, z) && block.canPlaceBlockAt(this, x, y, z);
     }
 
-    /**
-     * Sets the blocks metadata and if set will then notify blocks that this block changed, depending on the flag. Args:
-     * x, y, z, metadata, flag. See setBlock for flag description
-     */
-    public boolean setBlockMetadataWithNotify(int x, int y, int z, int newMeta)
-    {
-        if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
-        {
-        	Chunk chunk = this.provideChunk(x >> 4, z >> 4);
-        	
-        	int localX = x & 15;
-    		int localZ = z & 15;
-
-    		int oldBlockID = chunk.getBlocMeta(localX, y, localZ) & 0xF;
-        	int oldMeta = chunk.getBlocMeta(localX, y, localZ) >> 4;
-
-            if (oldMeta != newMeta)
-            {
-                chunk.setBlocMeta(localX, y, localZ, oldBlockID | ((newMeta & 0xF) << 4));
-                
-                if (chunk.getLoaded())
-                {
-                    this.markBlockForUpdate(x, y, z);
-                }
-
-                this.notifyBlocksOfNeighborChange(x, y, z);
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public long getTotalWorldTime()
     {
         return this.totalTime;
@@ -609,7 +576,7 @@ public class WorldServer
      * cause a block update. Flag 2 will send the change to clients (you almost always want this). Flag 4 prevents the
      * block from being re-rendered, if this is a client world. Flags can be added together.
      */
-    public boolean setBlockAndMeta(int x, int y, int z, Block newBlock, int newMeta)
+    public boolean setBlockAndMeta(int x, int y, int z, int newBlockID, int newMeta)
     {
     	if (x >= -30000000 && y >= 0 && z >= -30000000 && x < 30000000 && y < 256 && z < 30000000)
         {
@@ -618,15 +585,21 @@ public class WorldServer
     		int localX = x & 15;
     		int localZ = z & 15;
     		
-    		Block oldBlock = Block.getBlockById(chunk.getBlocMeta(localX, y, localZ) & 0xF);
-            int oldMeta = chunk.getBlocMeta(localX, y, localZ) >> 4;
+    		int oldbm = chunk.getBlocMeta(localX, y, localZ);
+    		int oldBlockID = oldbm & 0xF;
+    		Block oldBlock = Block.getBlockById(oldBlockID);
+            int oldMeta = oldbm >> 4;
+            
 
-            if (oldBlock != newBlock || oldMeta != newMeta)
+            if (oldBlockID != newBlockID || oldMeta != newMeta)
             {
-                chunk.setBlocMeta(localX, y, localZ, ((newMeta & 0xF) << 4) | (Block.getIdFromBlock(newBlock) & 0xF));
+                chunk.setBlocMeta(localX, y, localZ, ((newMeta & 0xF) << 4) | (newBlockID & 0xF));
                 
-                oldBlock.onBlockBreak(this, x, y, z, oldBlock, oldMeta);
-                newBlock.onBlockAdded(this, x, y, z);
+                if (oldBlockID != newBlockID)
+                {
+                	oldBlock.onBlockBreak(this, x, y, z, oldBlock, oldMeta);
+                	Block.getBlockById(newBlockID).onBlockAdded(this, x, y, z);
+                }
                 
                 if (chunk.getLoaded())
                 {
@@ -649,7 +622,7 @@ public class WorldServer
         }
         else
         {
-            return Block.air;
+            return Block.getBlockById(0);
         }
     }
 

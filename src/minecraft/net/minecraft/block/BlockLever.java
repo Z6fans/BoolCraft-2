@@ -76,7 +76,7 @@ public class BlockLever extends Block
          || !world.isSolid(x, y - 1, z) && meta == 5
          || !world.isSolid(x, y + 1, z) && meta == 0)
         {
-            world.setBlockAndMeta(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, 0, 0);
         }
     }
     
@@ -123,7 +123,7 @@ public class BlockLever extends Block
     {
     	int meta = world.getBlockMetadata(x, y, z);
         int orientation = meta & 7;
-        world.setBlockMetadataWithNotify(x, y, z, meta ^ 8);
+        world.setBlockAndMeta(x, y, z, 3, meta ^ 8);
         world.notifyBlocksOfNeighborChange(x, y, z);
 
         if (orientation == 1)

@@ -58,7 +58,7 @@ public class BlockRedstoneTorch extends Block
      */
     public void updateTick(WorldServer world, int x, int y, int z)
     {
-    	world.setBlockMetadataWithNotify(x, y, z, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8));
+    	world.setBlockAndMeta(x, y, z, 4, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8));
         world.notifyBlocksOfNeighborChange(x, y, z);
         if (world.isSolid(x, y + 1, z)) world.notifyBlocksOfNeighborChange(x, y + 1, z);
     }
@@ -73,7 +73,7 @@ public class BlockRedstoneTorch extends Block
            || (!world.isSolid(x, y, z + 1) && meta == 4)
            || (!world.isSolid(x, y - 1, z) && meta == 5))
         {
-            world.setBlockAndMeta(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, 0, 0);
         }
         else
         {

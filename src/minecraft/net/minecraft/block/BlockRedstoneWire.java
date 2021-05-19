@@ -112,7 +112,7 @@ public class BlockRedstoneWire extends Block
 
         if (prevPower != currentPower)
         {
-            world.setBlockMetadataWithNotify(x, y, z, currentPower);
+            world.setBlockAndMeta(x, y, z, 2, currentPower);
             this.notifyNeighbors(world, x, y, z);
         }
     }
@@ -206,7 +206,7 @@ public class BlockRedstoneWire extends Block
         }
         else
         {
-            world.setBlockAndMeta(x, y, z, Block.air, 0);
+            world.setBlockAndMeta(x, y, z, 0, 0);
         }
     }
 
