@@ -7,10 +7,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +21,6 @@ import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.LongHashMap;
 import net.minecraft.util.MathHelper;
 
 public class WorldServer
@@ -39,7 +40,7 @@ public class WorldServer
      * first out)
      */
     private final Set<Long> chunksToUnload = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
-    private final LongHashMap<Chunk> loadedChunkHashMap = new LongHashMap<Chunk>();
+    private final Map<Long, Chunk> loadedChunkHashMap = new HashMap<Long, Chunk>();
     private final List<Chunk> loadedChunks = new ArrayList<Chunk>();
     
     /** Total time for this world. */
@@ -113,7 +114,7 @@ public class WorldServer
     {
     	for (Long hash : this.chunksToUnload)
     	{
-    		Chunk chunk = this.loadedChunkHashMap.getValueByKey(hash);
+    		Chunk chunk = this.loadedChunkHashMap.get(hash);
 
             if (chunk != null)
             {
@@ -148,7 +149,7 @@ public class WorldServer
 
             for (int i = 0; i < numEntries; ++i)
             {
-            	NextTickListEntry entry = (NextTickListEntry)this.pendingTickListEntriesTreeSet.first();
+            	NextTickListEntry entry = this.pendingTickListEntriesTreeSet.first();
 
                 if (entry.scheduledTime > this.totalTime)
                 {
@@ -387,7 +388,7 @@ public class WorldServer
      */
     private boolean chunkExists(int p_73149_1_, int p_73149_2_)
     {
-        return this.loadedChunkHashMap.containsItem(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
+        return this.loadedChunkHashMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
     }
 
     /**
@@ -397,7 +398,7 @@ public class WorldServer
     {
         long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
         this.chunksToUnload.remove(Long.valueOf(posHash));
-        Chunk chunk = this.loadedChunkHashMap.getValueByKey(posHash);
+        Chunk chunk = this.loadedChunkHashMap.get(posHash);
 
         if (chunk == null)
         {
@@ -439,7 +440,7 @@ public class WorldServer
             	chunk.setStorageArrays(this.blankChunkStorage.clone());
             }
 
-            this.loadedChunkHashMap.add(posHash, chunk);
+            this.loadedChunkHashMap.put(posHash, chunk);
             this.loadedChunks.add(chunk);
         }
 
