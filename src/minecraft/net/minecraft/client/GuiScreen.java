@@ -258,6 +258,8 @@ public class GuiScreen
     private class FontRenderer
     {
         private final Map<Integer, Texture> mapTextureObjects = new HashMap<Integer, Texture>();
+        
+        private final Texture theTexture;
 
         /**
          * Array of the start/end column (in upper/lower nibble) for every glyph in the /font directory.
@@ -272,8 +274,9 @@ public class GuiScreen
 
         public FontRenderer()
         {
-            try
+        	try
             {
+            	this.theTexture = new Texture("/minecraft/font/asky.png");
                 FontRenderer.class.getResourceAsStream("/minecraft/font/glyph_sizes.bin").read(this.glyphWidth);
             }
             catch (IOException e)
@@ -287,51 +290,21 @@ public class GuiScreen
          */
         private float renderUnicodeChar(char ch)
         {
-            if (this.glyphWidth[ch] == 0)
-            {
-                return 0.0F;
-            }
-            else
-            {
-                int page = ch / 256;
-                
-                Texture texture = this.mapTextureObjects.get(page);
-
-                if (texture == null)
-                {
-                    try
-                    {
-                    	texture = new Texture(page);
-                    }
-                    catch (Throwable t)
-                    {
-                        throw new RuntimeException("Registering texture", t);
-                    }
-
-                    this.mapTextureObjects.put(page, texture);
-                }
-
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture.getGlTextureId());
-                
-                int var4 = this.glyphWidth[ch] >>> 4;
-                int var5 = this.glyphWidth[ch] & 15;
-                float var6 = (float)var4;
-                float var7 = (float)(var5 + 1);
-                float var8 = (float)(ch % 16 * 16) + var6;
-                float var9 = (float)((ch & 255) / 16 * 16);
-                float var10 = var7 - var6 - 0.02F;
-                GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
-                GL11.glTexCoord2f(var8 / 256.0F, var9 / 256.0F);
-                GL11.glVertex3f(this.posX, this.posY, 0.0F);
-                GL11.glTexCoord2f(var8 / 256.0F, (var9 + 15.98F) / 256.0F);
-                GL11.glVertex3f(this.posX, this.posY + 7.99F, 0.0F);
-                GL11.glTexCoord2f((var8 + var10) / 256.0F, var9 / 256.0F);
-                GL11.glVertex3f(this.posX + var10 / 2.0F, this.posY, 0.0F);
-                GL11.glTexCoord2f((var8 + var10) / 256.0F, (var9 + 15.98F) / 256.0F);
-                GL11.glVertex3f(this.posX + var10 / 2.0F, this.posY + 7.99F, 0.0F);
-                GL11.glEnd();
-                return (var7 - var6) / 2.0F + 1.0F;
-            }
+        	float var3 = (float)(ch % 16 * 8);
+            float var4 = (float)(ch / 16 * 8);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.theTexture.getGlTextureId());
+            float var6 = 7.99F;
+            GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
+            GL11.glTexCoord2f(var3 / 128.0F, var4 / 128.0F);
+            GL11.glVertex3f(this.posX, this.posY, 0.0F);
+            GL11.glTexCoord2f(var3 / 128.0F, (var4 + 7.99F) / 128.0F);
+            GL11.glVertex3f(this.posX, this.posY + 7.99F, 0.0F);
+            GL11.glTexCoord2f((var3 + var6 - 1.0F) / 128.0F, var4 / 128.0F);
+            GL11.glVertex3f(this.posX + var6 - 1.0F, this.posY, 0.0F);
+            GL11.glTexCoord2f((var3 + var6 - 1.0F) / 128.0F, (var4 + 7.99F) / 128.0F);
+            GL11.glVertex3f(this.posX + var6 - 1.0F, this.posY + 7.99F, 0.0F);
+            GL11.glEnd();
+            return 8.0F;
         }
 
         /**
@@ -359,13 +332,13 @@ public class GuiScreen
         {
             private int glTextureId;
             
-            public Texture(int page) throws IOException
+            public Texture(String location) throws IOException
             {
                 InputStream texStream = null;
 
                 try
                 {
-                    texStream = Texture.class.getResourceAsStream(String.format("/minecraft/font/unicode_page_%02x.png", new Object[] {page}));
+                    texStream = Texture.class.getResourceAsStream(location);
                     this.glTextureId = GL11.glGenTextures();
                     BufferedImage image = ImageIO.read(texStream);
                     GL11.glDeleteTextures(this.glTextureId);
