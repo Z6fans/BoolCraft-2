@@ -11,16 +11,6 @@ public class BlockRedstoneWire extends Block
     	return 0.0625F;
     }
 
-    /**
-     * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
-     * when first determining what to render.
-     */
-    public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
-    {
-    	int scale[] = {0, 136, 181, 204, 218, 227, 233, 238, 242, 245, 247, 249, 251, 253, 254, 255};
-        return 0xFF000000 | (0x101 * scale[world.getBlockMetadata(x, y, z)]);
-    }
-
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
         return world.isSolid(x, y - 1, z);
@@ -182,7 +172,6 @@ public class BlockRedstoneWire extends Block
         world.notifyBlocksOfNeighborChange(x - 1, y, z);
         world.notifyBlocksOfNeighborChange(x, y, z + 1);
         world.notifyBlocksOfNeighborChange(x, y, z - 1);
-        this.computeMetadata(world, x, y, z);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
@@ -222,35 +211,22 @@ public class BlockRedstoneWire extends Block
             }
             else
             {
-                boolean xm = shouldConnect(world, x - 1, y, z, true) || !world.isSolid(x - 1, y, z) && shouldConnect(world, x - 1, y - 1, z, false);
-                boolean xp = shouldConnect(world, x + 1, y, z, true) || !world.isSolid(x + 1, y, z) && shouldConnect(world, x + 1, y - 1, z, false);
-                boolean zm = shouldConnect(world, x, y, z - 1, true) || !world.isSolid(x, y, z - 1) && shouldConnect(world, x, y - 1, z - 1, false);
-                boolean zp = shouldConnect(world, x, y, z + 1, true) || !world.isSolid(x, y, z + 1) && shouldConnect(world, x, y - 1, z + 1, false);
+                boolean xm = world.canProvidePower(x - 1, y, z) || !world.isSolid(x - 1, y, z) && world.isWire(x - 1, y - 1, z);
+                boolean xp = world.canProvidePower(x + 1, y, z) || !world.isSolid(x + 1, y, z) && world.isWire(x + 1, y - 1, z);
+                boolean zm = world.canProvidePower(x, y, z - 1) || !world.isSolid(x, y, z - 1) && world.isWire(x, y - 1, z - 1);
+                boolean zp = world.canProvidePower(x, y, z + 1) || !world.isSolid(x, y, z + 1) && world.isWire(x, y - 1, z + 1);
 
                 if (!world.isSolid(x, y + 1, z))
                 {
-                    xm |= world.isSolid(x - 1, y, z) && shouldConnect(world, x - 1, y + 1, z, false);
-                    xp |= world.isSolid(x + 1, y, z) && shouldConnect(world, x + 1, y + 1, z, false);
-                    zm |= world.isSolid(x, y, z - 1) && shouldConnect(world, x, y + 1, z - 1, false);
-                    zp |= world.isSolid(x, y, z + 1) && shouldConnect(world, x, y + 1, z + 1, false);
+                    xm |= world.isSolid(x - 1, y, z) && world.isWire(x - 1, y + 1, z);
+                    xp |= world.isSolid(x + 1, y, z) && world.isWire(x + 1, y + 1, z);
+                    zm |= world.isSolid(x, y, z - 1) && world.isWire(x, y + 1, z - 1);
+                    zp |= world.isSolid(x, y, z + 1) && world.isWire(x, y + 1, z + 1);
                 }
 
                 return !zm && !xp && !xm && !zp && side >= 2 && side <= 5 ? meta : (side == 2 && zm && !xm && !xp ? meta : (side == 3 && zp && !xm && !xp ? meta : (side == 4 && xm && !zm && !zp ? meta : (side == 5 && xp && !zm && !zp ? meta : 0))));
             }
         }
-    }
-
-    private static boolean shouldConnect(WorldServer world, int x, int y, int z, boolean flag)
-    {
-        return world.isWire(x, y, z) || (world.getBlock(x, y, z).canProvidePower() && flag);
-    }
-
-    /**
-     * Can this block provide power. Only wire currently seems to have this change based on its state.
-     */
-    public boolean canProvidePower()
-    {
-        return !this.isCheckingForPower;
     }
 
 	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)

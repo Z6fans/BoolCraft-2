@@ -17,9 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LongHashMap;
@@ -27,7 +24,7 @@ import net.minecraft.util.MathHelper;
 
 public class WorldServer
 {
-    private final Set<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
+    private final HashSet<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
 
     /** All work to do in future ticks. */
     private final TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
@@ -36,8 +33,6 @@ public class WorldServer
     
     /** The directory in which to save world data. */
     private final File worldDirectory;
-    
-    private static final Logger logger = LogManager.getLogger();
 
     /**
      * used by unload100OldestChunks to iterate the loadedChunkHashMap for unload (underlying assumption, first in,
@@ -100,7 +95,7 @@ public class WorldServer
             }
         }
         
-        logger.info("Preparing start region ");
+        System.out.println("Preparing start region");
 
         for (int x = -12; x <= 12; x++)
         {
@@ -435,7 +430,8 @@ public class WorldServer
         		}
                 catch (Exception e)
                 {
-                    logger.error("Couldn\'t load chunk", e);
+                    System.out.println("Couldn\'t load chunk");
+                    e.printStackTrace(System.out);
                 }
             }
         	else
@@ -478,7 +474,8 @@ public class WorldServer
         }
         catch (Exception e)
         {
-        	logger.error("Couldn\'t save chunk", e);
+        	System.out.println("Couldn\'t save chunk");
+            e.printStackTrace(System.out);
         }
     }
 
@@ -701,6 +698,12 @@ public class WorldServer
     public boolean isWire(int x, int y, int z)
     {
     	return (this.getBlocMeta(x, y, z) & 0xF) == 2;
+    }
+    
+    public boolean canProvidePower(int x, int y, int z)
+    {
+    	int id = this.getBlocMeta(x, y, z) & 0xF;
+    	return id == 2 || id == 3 || id == 4;
     }
     
     public int getBlocMeta(int x, int y, int z)

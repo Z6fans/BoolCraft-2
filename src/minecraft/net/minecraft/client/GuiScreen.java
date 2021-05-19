@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +16,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-
-import com.google.common.collect.Maps;
 
 public class GuiScreen
 {
@@ -258,7 +257,7 @@ public class GuiScreen
     
     private class FontRenderer
     {
-        private final Map<Integer, Texture> mapTextureObjects = Maps.newHashMap();
+        private final Map<Integer, Texture> mapTextureObjects = new HashMap<Integer, Texture>();
 
         /**
          * Array of the start/end column (in upper/lower nibble) for every glyph in the /font directory.
@@ -275,7 +274,7 @@ public class GuiScreen
         {
             try
             {
-                FontRenderer.class.getResourceAsStream("/assets/minecraft/font/glyph_sizes.bin").read(this.glyphWidth);
+                FontRenderer.class.getResourceAsStream("/minecraft/font/glyph_sizes.bin").read(this.glyphWidth);
             }
             catch (IOException e)
             {
@@ -366,7 +365,7 @@ public class GuiScreen
 
                 try
                 {
-                    texStream = Texture.class.getResourceAsStream(String.format("/assets/minecraft/textures/font/unicode_page_%02x.png", new Object[] {page}));
+                    texStream = Texture.class.getResourceAsStream(String.format("/minecraft/font/unicode_page_%02x.png", new Object[] {page}));
                     this.glTextureId = GL11.glGenTextures();
                     BufferedImage image = ImageIO.read(texStream);
                     GL11.glDeleteTextures(this.glTextureId);

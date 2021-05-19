@@ -1,6 +1,7 @@
 package net.minecraft.block;
 
-import com.google.common.collect.HashBiMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
@@ -15,7 +16,7 @@ public abstract class Block
     private static final Block lever = new BlockLever();
     private static final Block redstone_torch = new BlockRedstoneTorch();
     
-    private static final HashBiMap<Integer, Block> registry = HashBiMap.create();
+    private static final Map<Integer, Block> registry = new HashMap<Integer, Block>();
     
     static
     {
@@ -235,18 +236,7 @@ public abstract class Block
      */
     public abstract int onBlockPlaced(WorldServer world, int x, int y, int z, int side);
 
-    /**
-     * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
-     * when first determining what to render.
-     */
-    public abstract int colorMultiplier(WorldServer world, int x, int y, int z, int said);
-
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
-
-    /**
-     * Can this block provide power. Only wire currently seems to have this change based on its state.
-     */
-    public abstract boolean canProvidePower();
 
     public abstract int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side);
 }

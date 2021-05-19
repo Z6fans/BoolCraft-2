@@ -14,8 +14,6 @@ import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.WorldServer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
@@ -28,7 +26,6 @@ import org.lwjgl.util.glu.GLU;
 
 public class Minecraft
 {
-    private static final Logger logger = LogManager.getLogger();
     public int displayWidth;
     public int displayHeight;
     public RenderGlobal renderGlobal;
@@ -145,9 +142,9 @@ public class Minecraft
         if (err != 0)
         {
             String errstring = GLU.gluErrorString(err);
-            logger.error("########## GL ERROR ##########");
-            logger.error("@ " + description);
-            logger.error(err + ": " + errstring);
+            System.out.println("########## GL ERROR ##########");
+            System.out.println("@ " + description);
+            System.out.println(err + ": " + errstring);
         }
     }
 
@@ -161,7 +158,7 @@ public class Minecraft
 
             Display.setResizable(true);
             Display.setTitle("Boolcraft");
-            logger.info("LWJGL Version: " + Sys.getVersion());
+            System.out.println("LWJGL Version: " + Sys.getVersion());
 
             try
             {
@@ -169,13 +166,14 @@ public class Minecraft
             }
             catch (LWJGLException e)
             {
-                logger.error("Couldn\'t set pixel format", e);
+            	System.out.println("Couldn\'t set pixel format");
+            	e.printStackTrace(System.out);
 
                 try
                 {
                     Thread.sleep(1000L);
                 }
-                catch (InterruptedException ee){;}
+                catch (InterruptedException ee){}
 
                 Display.create();
             }
@@ -382,14 +380,14 @@ public class Minecraft
 
                     if (deltaTime > 2000L && prevTime - this.timeOfLastWarning >= 15000L)
                     {
-                        logger.warn("Can\'t keep up! Did the system time change, or is the server overloaded? Running {}ms behind, skipping {} tick(s)", new Object[] {Long.valueOf(deltaTime), Long.valueOf(deltaTime / 50L)});
+                        System.out.println("Can\'t keep up! Did the system time change, or is the server overloaded? Running " + deltaTime + "ms behind, skipping " + deltaTime / 50L + " tick(s)");
                         deltaTime = 2000L;
                         this.timeOfLastWarning = prevTime;
                     }
 
                     if (deltaTime < 0L)
                     {
-                        logger.warn("Time ran backwards! Did the system time change?");
+                    	System.out.println("Time ran backwards! Did the system time change?");
                         deltaTime = 0L;
                     }
 
@@ -431,26 +429,27 @@ public class Minecraft
         catch (Throwable t)
         {
             this.freeMemory();
-            logger.fatal("Exception thrown!", t);
+            System.out.println("Exception thrown!");
+            t.printStackTrace(System.out);
             this.displayCrashReport(t, "Unexpected error");
         }
         finally
         {
         	try
             {
-                logger.info("Stopping!");
+        		System.out.println("Stopping!");
 
                 try
                 {
                     this.loadWorldNull();
                 }
-                catch (Throwable t){;}
+                catch (Throwable t){}
 
                 try
                 {
                     GLAllocation.deleteTexturesAndDisplayLists();
                 }
-                catch (Throwable t){;}
+                catch (Throwable t){}
             }
             finally
             {
@@ -567,10 +566,10 @@ public class Minecraft
         	int blockID = this.currentItem + 1;
         	Block block = Block.getBlockById(blockID);
         	
-        	int x = this.objectMouseOver.blockX;
-            int y = this.objectMouseOver.blockY;
-            int z = this.objectMouseOver.blockZ;
-            int side = this.objectMouseOver.sideHit;
+        	int x = this.objectMouseOver.x;
+            int y = this.objectMouseOver.y;
+            int z = this.objectMouseOver.z;
+            int side = this.objectMouseOver.side;
             
             int[] xOff = {0, 0, 0, 0, -1, 1};
         	int[] yOff = {-1, 1, 0, 0, 0, 0};
@@ -593,9 +592,9 @@ public class Minecraft
 		
 		if (this.objectMouseOver != null)
         {
-    		int x = this.objectMouseOver.blockX;
-            int y = this.objectMouseOver.blockY;
-            int z = this.objectMouseOver.blockZ;
+    		int x = this.objectMouseOver.x;
+            int y = this.objectMouseOver.y;
+            int z = this.objectMouseOver.z;
 
             if (!this.worldServer.isReplaceable(x, y, z))
             {
@@ -615,7 +614,7 @@ public class Minecraft
         try
         {
             this.serverRunning = true;
-        	logger.info("Starting integrated minecraft server version 1.7.10");
+            System.out.println("Starting integrated minecraft server version 1.7.10");
             this.worldServer = new WorldServer(this, new File(this.savesDirectory, name));
             
             prevTime = System.currentTimeMillis();
@@ -665,13 +664,8 @@ public class Minecraft
      */
     public void stopServer()
     {
-    	logger.info("Stopping server");
-
-        if (this.worldServer != null)
-        {
-            logger.info("Saving worlds");
-            this.saveAllWorlds();
-        }
+    	System.out.println("Stopping server");
+        this.saveAllWorlds();
     }
     
     /**
@@ -681,6 +675,7 @@ public class Minecraft
     {
     	if (this.worldServer != null)
         {
+        	System.out.println("Saving worlds");
             this.worldServer.saveAllChunks();
         }
     }

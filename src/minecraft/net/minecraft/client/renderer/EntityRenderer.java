@@ -126,11 +126,10 @@ public class EntityRenderer
 
             if (this.minecraft.getMouseOver() != null)
             {
-                MovingObjectPosition rayTraceHit = this.minecraft.getMouseOver();
+                MovingObjectPosition hit = this.minecraft.getMouseOver();
                 GL11.glLineWidth(2.0F);
-                double d = 0.002F;
-                int meta = this.minecraft.worldServer.getBlockMetadata(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ);
-                AxisAlignedBB aabb = this.minecraft.worldServer.getBlock(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ).generateCubicBoundingBox(rayTraceHit.blockX, rayTraceHit.blockY, rayTraceHit.blockZ, meta).expand(d).offset(-ppos.x, -ppos.y, -ppos.z);
+                int meta = this.minecraft.worldServer.getBlockMetadata(hit.x, hit.y, hit.z);
+                AxisAlignedBB aabb = this.minecraft.worldServer.getBlock(hit.x, hit.y, hit.z).generateCubicBoundingBox(hit.x, hit.y, hit.z, meta).expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
                 Tessellator tess = Tessellator.instance;
                 tess.startDrawing(3);
                 tess.setColor_I(0xFF000000);

@@ -35,9 +35,9 @@ public class RenderBlocks
     public boolean renderBlockByRenderType(int bm, int x, int y, int z)
     {
     	int block = bm & 0xF;
-    	int meta = (bm >> 4) & 0xF;
+    	int meta = bm >> 4;
     	
-        AxisAlignedBB aabb = Block.getBlockById(block).generateCubicBoundingBox(0, 0, 0, this.world.getBlockMetadata(x, y, z));
+        AxisAlignedBB aabb = Block.getBlockById(block).generateCubicBoundingBox(0, 0, 0, meta);
     	this.renderMinX = aabb.minX;
         this.renderMaxX = aabb.maxX;
         this.renderMinY = aabb.minY;

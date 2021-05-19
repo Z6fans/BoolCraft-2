@@ -191,23 +191,6 @@ public class BlockLever extends Block
         	|| (meta == 1 && side == 5) ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
 
-    /**
-     * Can this block provide power. Only wire currently seems to have this change based on its state.
-     */
-    public boolean canProvidePower()
-    {
-        return true;
-    }
-    
-    /**
-     * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
-     * when first determining what to render.
-     */
-    public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
-    {
-    	return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFEE39E4 : 0xFF701B6C;
-    }
-
 	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 
 	public void onBlockAdded(WorldServer world, int x, int y, int z){}

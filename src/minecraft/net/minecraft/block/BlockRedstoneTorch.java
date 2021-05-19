@@ -86,14 +86,6 @@ public class BlockRedstoneTorch extends Block
         return side == 0 ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
 
-    /**
-     * Can this block provide power. Only wire currently seems to have this change based on its state.
-     */
-    public boolean canProvidePower()
-    {
-        return true;
-    }
-
     public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
     {
         return world.isSolid(x - 1, y, z)
@@ -169,15 +161,6 @@ public class BlockRedstoneTorch extends Block
     {
     	int s = meta & 7;
     	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
-    }
-    
-    /**
-     * Returns a integer with hex for 0xrrggbb with this color multiplied against the blocks color. Note only called
-     * when first determining what to render.
-     */
-    public int colorMultiplier(WorldServer world, int x, int y, int z, int said)
-    {
-        return (world.getBlockMetadata(x, y, z) & 8) > 0 ? 0xFFE91A64 : 0xFF5B0A27;
     }
 
 	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
