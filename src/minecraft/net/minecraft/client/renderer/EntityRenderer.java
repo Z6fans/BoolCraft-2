@@ -108,15 +108,14 @@ public class EntityRenderer
             float var3 = (float)((viewport.get(1) + viewport.get(3)) / 2);
             GLU.gluUnProject(var2, var3, 0.0F, modelview, projection, viewport, objectCoords);
 
-            this.renderGlobal.clipRenderersByFrustum(ppos.x, ppos.y, ppos.z);
-            this.renderGlobal.updateRenderers(player);
+            this.renderGlobal.updateRenderers(player, ppos.x, ppos.y, ppos.z);
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_LIGHT0);
             GL11.glDisable(GL11.GL_LIGHT1);
             GL11.glDisable(GL11.GL_COLOR_MATERIAL);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glPushMatrix();
-            this.renderGlobal.sortAndRender(player, 0, ptt);
+            this.renderGlobal.sortAndRender(player, ptt);
             GL11.glShadeModel(GL11.GL_FLAT);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
@@ -162,17 +161,10 @@ public class EntityRenderer
 
             GL11.glEnable(GL11.GL_COLOR_MATERIAL);
             GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
-            GL11.glDepthMask(false);
-
-            this.renderGlobal.sortAndRender(player, 1, (double)ptt);
-
             GL11.glDepthMask(true);
             GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        	
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            int sWidth = this.minecraft.getScaledWidth();
-            int sHeight = this.minecraft.getScaledHeight();
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
             GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -180,6 +172,8 @@ public class EntityRenderer
             GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
+            int sWidth = this.minecraft.getScaledWidth();
+            int sHeight = this.minecraft.getScaledHeight();
             drawRect(sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
             drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
             for (int index = 0; index < 4; ++index)

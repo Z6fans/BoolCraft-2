@@ -69,9 +69,6 @@ public class RenderGlobal
      * resorted)
      */
     private double prevSortZ = -9999.0D;
-    private double prevRenderSortX = -9999.0D;
-    private double prevRenderSortY = -9999.0D;
-    private double prevRenderSortZ = -9999.0D;
     private int prevChunkSortX = -999;
     private int prevChunkSortY = -999;
     private int prevChunkSortZ = -999;
@@ -94,9 +91,6 @@ public class RenderGlobal
         this.prevSortX = -9999.0D;
         this.prevSortY = -9999.0D;
         this.prevSortZ = -9999.0D;
-        this.prevRenderSortX = -9999.0D;
-        this.prevRenderSortY = -9999.0D;
-        this.prevRenderSortZ = -9999.0D;
         this.prevChunkSortX = -9999;
         this.prevChunkSortY = -9999;
         this.prevChunkSortZ = -9999;
@@ -244,7 +238,7 @@ public class RenderGlobal
     /**
      * Sorts all renderers based on the passed in entity. Args: entityLiving, renderPass, partialTickTime
      */
-    public void sortAndRender(EntityPlayer player, int renderPass, double ptt)
+    public void sortAndRender(EntityPlayer player, double ptt)
     {
         for (int var5 = 0; var5 < 10; ++var5)
         {
@@ -272,17 +266,6 @@ public class RenderGlobal
             this.markRenderersForNewPosition(MathHelper.floor_double(player.getPosX()), MathHelper.floor_double(player.getPosY()), MathHelper.floor_double(player.getPosZ()));
         }
 
-        double var17 = player.getPosX() - this.prevRenderSortX;
-        double var19 = player.getPosY() - this.prevRenderSortY;
-        double var21 = player.getPosZ() - this.prevRenderSortZ;
-
-        if (var17 * var17 + var19 * var19 + var21 * var21 > 1.0D)
-        {
-            this.prevRenderSortX = player.getPosX();
-            this.prevRenderSortY = player.getPosY();
-            this.prevRenderSortZ = player.getPosZ();
-        }
-
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_LIGHT0);
         GL11.glDisable(GL11.GL_LIGHT1);
@@ -290,20 +273,13 @@ public class RenderGlobal
         
         this.glRenderLists.clear();
 
-        for (int i = 0; i < this.sortedWorldRenderers.length; i++)
+        for (WorldRenderer renderer : this.sortedWorldRenderers)
         {
-        	int j = i;
-        	
-        	if (renderPass == 1)
-        	{
-        		j = this.sortedWorldRenderers.length - 1 - i;
-        	}
-        	
-            if (renderPass != 1 && !this.sortedWorldRenderers[j].shouldSkip() && this.sortedWorldRenderers[j].getInFrustrum())
+        	if (!renderer.shouldSkip() && renderer.getInFrustrum())
             {
-                if (this.sortedWorldRenderers[j].getGLCallList() >= 0)
+                if (renderer.getGLCallList() >= 0)
                 {
-                    this.glRenderLists.add(this.sortedWorldRenderers[j]);
+                    this.glRenderLists.add(renderer);
                 }
             }
         }
@@ -335,7 +311,7 @@ public class RenderGlobal
                 this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppos.x, ppos.y, ppos.z);
             }
 
-            this.allRenderLists[whichList].addGLRenderList(renderPass == 1 ? -1 : renderer.getGLCallList());
+            this.allRenderLists[whichList].addGLRenderList(renderer.getGLCallList());
         }
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
@@ -347,8 +323,18 @@ public class RenderGlobal
     /**
      * Updates some of the renderers sorted by distance from the player
      */
-    public void updateRenderers(EntityPlayer player)
+    public void updateRenderers(EntityPlayer player, double x, double y, double z)
     {
+    	for (int i = 0; i < this.worldRenderers.length; ++i)
+        {
+            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].getInFrustrum() || (i + this.frustumCheckOffset & 15) == 0))
+            {
+                this.worldRenderers[i].updateInFrustum(x, y, z);
+            }
+        }
+
+        ++this.frustumCheckOffset;
+        
         RenderSorter rs = new RenderSorter(player);
         WorldRenderer rendererArray = null;
         ArrayList<WorldRenderer> rendererList = null;
@@ -475,23 +461,6 @@ public class RenderGlobal
                 }
             }
         }
-    }
-
-    /**
-     * Checks all renderers that previously weren't in the frustum and 1/16th of those that previously were in the
-     * frustum for frustum clipping Args: frustum
-     */
-    public void clipRenderersByFrustum(double x, double y, double z)
-    {
-        for (int i = 0; i < this.worldRenderers.length; ++i)
-        {
-            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].getInFrustrum() || (i + this.frustumCheckOffset & 15) == 0))
-            {
-                this.worldRenderers[i].updateInFrustum(x, y, z);
-            }
-        }
-
-        ++this.frustumCheckOffset;
     }
 
     /**
