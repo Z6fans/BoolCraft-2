@@ -25,7 +25,7 @@ public class Main
         {
             public void run()
             {
-                mc.stopServer();
+                mc.saveAllWorlds();
             }
         });
 

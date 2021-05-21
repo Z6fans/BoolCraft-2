@@ -54,8 +54,6 @@ public class GuiScreen
                 GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 128, 128, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, bbuf.asIntBuffer());
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
             }
             finally
             {
@@ -159,9 +157,6 @@ public class GuiScreen
             this.scrollPos = (float)maxScrollPos;
         }
         
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDisable(GL11.GL_FOG);
-        
         for (int id = 0; id < this.worldList.size(); ++id)
         {
             int renderY = 36 - (int)this.scrollPos + id * 36;
@@ -179,7 +174,6 @@ public class GuiScreen
             }
         }
         
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
         this.drawString(this.text, this.width / 2 - 106, this.height - 52);
     }
 
@@ -284,7 +278,9 @@ public class GuiScreen
     private void drawString(String text, int xStart, int y)
     {
         GL11.glEnable(GL11.GL_ALPHA_TEST);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
         GL11.glColor4f(1, 1, 1, 1);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
         
         for (int i = 0; i < text.length(); ++i)
         {
@@ -292,7 +288,6 @@ public class GuiScreen
         	char ch = text.charAt(i);
         	int col = (ch & 15) * 8;
             int row = (ch >> 4) * 8;
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
             GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
             GL11.glTexCoord2f(col / 128.0F, row / 128.0F);
             GL11.glVertex3f(x, y, 0.0F);

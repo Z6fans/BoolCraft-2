@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.imageio.ImageIO;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.GLAllocation;
@@ -100,7 +98,6 @@ public class Minecraft
         this.mcDataDir = mcDataDir;
         this.displayWidth = displayWidth;
         this.displayHeight = displayHeight;
-        ImageIO.setUseCache(false);
     }
 
     /**
@@ -113,22 +110,6 @@ public class Minecraft
     	System.out.println();
         cause.printStackTrace(System.out);
         System.exit(-1);
-    }
-
-    /**
-     * Sets the argument GuiScreen as the main (topmost visible) screen.
-     */
-    private void displayGuiScreen()
-    {
-    	if (this.inGameHasFocus)
-        {
-            KeyBinding.unPressAllKeys();
-            this.inGameHasFocus = false;
-            Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
-            Mouse.setGrabbed(false);
-        }
-        
-        this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
     }
 
     /**
@@ -154,7 +135,6 @@ public class Minecraft
         try
         {
         	Display.setDisplayMode(new DisplayMode(this.displayWidth, this.displayHeight));
-
             Display.setResizable(true);
             Display.setTitle("Boolcraft");
             System.out.println("LWJGL Version: " + Sys.getVersion());
@@ -167,44 +147,22 @@ public class Minecraft
             {
             	System.out.println("Couldn\'t set pixel format");
             	e.printStackTrace(System.out);
-
-                try
-                {
-                    Thread.sleep(1000L);
-                }
-                catch (InterruptedException ee){}
-
+                try {Thread.sleep(1000L);} catch (InterruptedException ee) {}
                 Display.create();
             }
 
-            File saves = new File(this.mcDataDir, "saves");
-            if (!saves.exists())
-            {
-        		saves.mkdirs();
-            }
-            this.savesDirectory = saves;
+            this.savesDirectory = new File(this.mcDataDir, "saves");
+            this.savesDirectory.mkdirs();
+            //GL11 calls begin
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
-            GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
             GL11.glFlush();
-            this.updateDisplaySize();
-            this.checkGLError("Pre startup");
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glShadeModel(GL11.GL_SMOOTH);
-            GL11.glClearDepth(1.0D);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            GL11.glCullFace(GL11.GL_BACK);
-            this.checkGLError("Startup");
             this.renderGlobal = new RenderGlobal();
             this.entityRenderer = new EntityRenderer(this, this.renderGlobal);
-            GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
-            this.checkGLError("Post startup");
-            this.displayGuiScreen();
+            this.checkGLError("Startup");
+            this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
         }
         catch (Throwable e)
         {
@@ -276,31 +234,35 @@ public class Minecraft
                         {
                             while (Mouse.next())
                             {
-                                int mouseButton = Mouse.getEventButton() - 100;
-                                KeyBinding.setKeyBindState(mouseButton, Mouse.getEventButtonState());
+                            	if (this.currentScreen == null)
+                            	{
+                            		if (!this.inGameHasFocus && Mouse.getEventButtonState())
+                            		{
+                            			this.setIngameFocus();
+                            			break;
+                            		}
+                            	}
+                            	
+                            	if (this.inGameHasFocus)
+                            	{
+                            		int mouseButton = Mouse.getEventButton() - 100;
+                                    KeyBinding.setKeyBindState(mouseButton, Mouse.getEventButtonState());
 
-                                if (Mouse.getEventButtonState())
-                                {
-                                    KeyBinding.onTick(mouseButton);
-                                }
-
-                                if (getSystemTime() - this.systemTime <= 200L)
-                                {
-                                    int mouseScroll = Mouse.getEventDWheel();
-
-                                    this.currentItem = (this.currentItem + 4 - (mouseScroll > 0 ? 1 : mouseScroll < 0 ? -1 : 0)) % 4;
-
-                                    if (this.currentScreen == null)
+                                    if (Mouse.getEventButtonState())
                                     {
-                                        if (!this.inGameHasFocus && Mouse.getEventButtonState())
-                                        {
-                                            this.setIngameFocus();
-                                        }
+                                        KeyBinding.onTick(mouseButton);
                                     }
-                                }
+
+                                    if (getSystemTime() - this.systemTime <= 200L)
+                                    {
+                                        int mouseScroll = Mouse.getEventDWheel();
+
+                                        this.currentItem = (this.currentItem + 4 - (mouseScroll > 0 ? 1 : mouseScroll < 0 ? -1 : 0)) % 4;
+                                    }
+                            	}
                             }
 
-                            while (Keyboard.next())
+                            while (Keyboard.next() && this.inGameHasFocus)
                             {
                                 KeyBinding.setKeyBindState(Keyboard.getEventKey(), Keyboard.getEventKeyState());
 
@@ -312,9 +274,21 @@ public class Minecraft
                                     {
                                         this.currentScreen.handleKeyboardInput();
                                     }
-                                    else if (Keyboard.getEventKey() == 1)
+                                    else if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
                                     {
-                                    	this.displayInGameMenu();
+                                        if (this.inGameHasFocus)
+                                        {
+                                            KeyBinding.unPressAllKeys();
+                                            this.inGameHasFocus = false;
+                                            Mouse.setCursorPosition(Display.getWidth() / 2, Display.getHeight() / 2);
+                                            Mouse.setGrabbed(false);
+                                        }
+                                        
+                                        if (Keyboard.isKeyDown(Keyboard.KEY_FUNCTION))
+                                        {
+                                        	this.loadWorldNull();
+                                            this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
+                                        }
                                     }
                                 }
                             }
@@ -368,8 +342,9 @@ public class Minecraft
                 }
                 catch (OutOfMemoryError e)
                 {
-                    this.freeMemory();
+                    this.renderGlobal.deleteAllDisplayLists();
                     System.gc();
+                    this.loadWorldNull();
                     this.shutdown();
                 }
                 
@@ -427,9 +402,6 @@ public class Minecraft
         }
         catch (Throwable t)
         {
-            this.freeMemory();
-            System.out.println("Exception thrown!");
-            t.printStackTrace(System.out);
             this.displayCrashReport(t, "Unexpected error");
         }
         finally
@@ -494,30 +466,6 @@ public class Minecraft
         }
     }
 
-    private void freeMemory()
-    {
-        try
-        {
-            this.renderGlobal.deleteAllDisplayLists();
-        }
-        catch (Throwable t){;}
-
-        try
-        {
-            System.gc();
-        }
-        catch (Throwable t){;}
-
-        try
-        {
-            System.gc();
-            this.loadWorldNull();
-        }
-        catch (Throwable t){;}
-
-        System.gc();
-    }
-
     /**
      * Called when the window is closing. Sets 'running' to false which allows the game loop to exit cleanly.
      */
@@ -542,18 +490,6 @@ public class Minecraft
     public boolean getInGameHasFocus()
     {
     	return this.inGameHasFocus;
-    }
-
-    /**
-     * Displays the ingame menu
-     */
-    public void displayInGameMenu()
-    {
-        if (this.currentScreen == null)
-        {
-            this.loadWorldNull();
-            this.displayGuiScreen();
-        }
     }
 
 	private void playerRightClick()
@@ -644,7 +580,7 @@ public class Minecraft
     private void loadWorldNull()
     {
     	this.serverRunning = false;
-        this.stopServer();
+        this.saveAllWorlds();
         this.thePlayer = null;
         System.gc();
         this.systemTime = 0L;
@@ -659,18 +595,9 @@ public class Minecraft
     }
     
     /**
-     * Saves all necessary data as preparation for stopping the server.
-     */
-    public void stopServer()
-    {
-    	System.out.println("Stopping server");
-        this.saveAllWorlds();
-    }
-    
-    /**
      * par1 indicates if a log message should be output.
      */
-    private void saveAllWorlds()
+    public void saveAllWorlds()
     {
     	if (this.worldServer != null)
         {

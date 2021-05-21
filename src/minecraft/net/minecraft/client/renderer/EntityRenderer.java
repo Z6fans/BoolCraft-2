@@ -19,9 +19,6 @@ public class EntityRenderer
 {
     /** A reference to the Minecraft object. */
     private final Minecraft minecraft;
-
-    /** Previous frame time in milliseconds */
-    private long prevFrameTime;
     private final RenderGlobal renderGlobal;
     
     /** The current GL viewport */
@@ -38,7 +35,6 @@ public class EntityRenderer
 
     public EntityRenderer(Minecraft mc, RenderGlobal rg)
     {
-        this.prevFrameTime = Minecraft.getSystemTime();
         this.minecraft = mc;
         this.renderGlobal = rg;
     }
@@ -48,20 +44,6 @@ public class EntityRenderer
      */
     public void updateCameraAndRender(EntityPlayer player, double ptt)
     {
-        boolean isDisplayActive = Display.isActive();
-
-        if (!isDisplayActive)
-        {
-            if (Minecraft.getSystemTime() - this.prevFrameTime > 500L)
-            {
-                this.minecraft.displayInGameMenu();
-            }
-        }
-        else
-        {
-            this.prevFrameTime = Minecraft.getSystemTime();
-        }
-
         int scaledWidth = this.minecraft.getScaledWidth();
         int scaledHeight = this.minecraft.getScaledHeight();
         final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
@@ -69,7 +51,7 @@ public class EntityRenderer
 
         if (player != null)
         {
-            if (this.minecraft.getInGameHasFocus() && isDisplayActive)
+            if (this.minecraft.getInGameHasFocus() && Display.isActive())
             {
                 float mouseDX = (float)Mouse.getDX();
                 float mouseDY = (float)Mouse.getDY();
@@ -164,6 +146,8 @@ public class EntityRenderer
             GL11.glDepthMask(true);
             GL11.glEnable(GL11.GL_CULL_FACE);
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
