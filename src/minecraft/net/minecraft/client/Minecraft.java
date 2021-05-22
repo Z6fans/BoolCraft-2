@@ -2,8 +2,6 @@ package net.minecraft.client;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -60,7 +58,7 @@ public class Minecraft
     //server section
     
     /** The server world instance. */
-    public WorldServer worldServer;
+    private WorldServer worldServer;
 
     /**
      * Indicates whether the server is running or not. Set to false to initiate a shutdown.
@@ -76,7 +74,7 @@ public class Minecraft
     private long timeOfLastWarning;
     private long prevTime;
     private long tickTimer;
-    public int currentItem;
+    private int currentItem;
     
     /**
      * Reference to the File object representing the directory for the world saves
@@ -162,7 +160,7 @@ public class Minecraft
             this.renderGlobal = new RenderGlobal();
             this.entityRenderer = new EntityRenderer(this, this.renderGlobal);
             this.checkGLError("Startup");
-            this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
+            this.currentScreen = new GuiScreen(this, this.displayWidth, this.displayHeight);
         }
         catch (Throwable e)
         {
@@ -221,27 +219,17 @@ public class Minecraft
 
                         if (this.currentScreen != null)
                         {
-                            try
-                            {
-                                this.currentScreen.handleInput();
-                            }
-                            catch (Throwable t)
-                            {
-                                throw new RuntimeException("Updating screen events", t);
-                            }
+                            this.currentScreen.handleInput();
                         }
                         else
                         {
                             while (Mouse.next())
                             {
-                            	if (this.currentScreen == null)
-                            	{
-                            		if (!this.inGameHasFocus && Mouse.getEventButtonState())
-                            		{
-                            			this.setIngameFocus();
-                            			break;
-                            		}
-                            	}
+                            	if (!this.inGameHasFocus && Mouse.getEventButtonState())
+                        		{
+                        			this.setIngameFocus();
+                        			break;
+                        		}
                             	
                             	if (this.inGameHasFocus)
                             	{
@@ -270,11 +258,7 @@ public class Minecraft
                                 {
                                     KeyBinding.onTick(Keyboard.getEventKey());
                                     
-                                    if (this.currentScreen != null)
-                                    {
-                                        this.currentScreen.handleKeyboardInput();
-                                    }
-                                    else if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
+                                    if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE)
                                     {
                                         if (this.inGameHasFocus)
                                         {
@@ -287,7 +271,7 @@ public class Minecraft
                                         if (Keyboard.isKeyDown(Keyboard.KEY_FUNCTION))
                                         {
                                         	this.loadWorldNull();
-                                            this.currentScreen = new GuiScreen(this, this.getScaledWidth(), this.getScaledHeight());
+                                            this.currentScreen = new GuiScreen(this, this.displayWidth, this.displayHeight);
                                         }
                                     }
                                 }
@@ -332,12 +316,30 @@ public class Minecraft
                     this.checkGLError("Pre render");
                     GL11.glPushMatrix();
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-                    GL11.glDisable(GL11.GL_TEXTURE_2D);
-                    this.entityRenderer.updateCameraAndRender(this.thePlayer, this.renderPartialTicks);
+                    
+                    if (this.currentScreen != null)
+                    {
+                    	GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
+                        GL11.glEnable(GL11.GL_TEXTURE_2D);
+                        GL11.glMatrixMode(GL11.GL_PROJECTION);
+                        GL11.glLoadIdentity();
+                        GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);
+                        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+                        GL11.glLoadIdentity();
+                        GL11.glEnable(GL11.GL_ALPHA_TEST);
+                        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+                        GL11.glColor4f(1, 1, 1, 1);
+                    	this.currentScreen.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
+                    }
+                    else if (this.thePlayer != null)
+                    {
+                        GL11.glDisable(GL11.GL_TEXTURE_2D);
+                    	this.entityRenderer.updateCameraAndRender(this.worldServer, this.thePlayer, this.currentItem, this.renderPartialTicks);
+                    }
+                    
                     GL11.glFlush();
                     GL11.glPopMatrix();
                     this.updateDisplaySize();
-                    Thread.yield();
                     this.checkGLError("Post render");
                 }
                 catch (OutOfMemoryError e)
@@ -438,30 +440,17 @@ public class Minecraft
 
         if (Display.wasResized())
         {
-            int var1 = this.displayWidth;
-            int var2 = this.displayHeight;
             this.displayWidth = Display.getWidth();
             this.displayHeight = Display.getHeight();
 
-            if (this.displayWidth != var1 || this.displayHeight != var2)
+            if (this.displayWidth <= 0)
             {
-                if (this.displayWidth <= 0)
-                {
-                    this.displayWidth = 1;
-                }
+                this.displayWidth = 1;
+            }
 
-                if (this.displayHeight <= 0)
-                {
-                    this.displayHeight = 1;
-                }
-
-                this.displayWidth = this.displayWidth <= 0 ? 1 : this.displayWidth;
-                this.displayHeight = this.displayHeight <= 0 ? 1 : this.displayHeight;
-
-                if (this.currentScreen != null)
-                {
-                    this.currentScreen.setWorldAndResolution(this.getScaledWidth(), this.getScaledHeight());
-                }
+            if (this.displayHeight <= 0)
+            {
+                this.displayHeight = 1;
             }
         }
     }
@@ -475,8 +464,7 @@ public class Minecraft
     }
 
     /**
-     * Will set the focus to ingame if the Minecraft window is the active with focus. Also clears any GUI screen
-     * currently displayed
+     * Will set the focus to ingame if the Minecraft window is the active with focus.
      */
     private void setIngameFocus()
     {
@@ -572,8 +560,8 @@ public class Minecraft
             throw new RuntimeException("Starting integrated server", t);
         }
 
-        this.currentScreen.onGuiClosed();
         this.currentScreen = null;
+        Keyboard.enableRepeatEvents(false);
         this.setIngameFocus();
     }
     
@@ -622,50 +610,8 @@ public class Minecraft
     	return this.objectMouseOver;
     }
     
-    public int getScaledWidth()
+    public String[] getSaveList()
     {
-    	int scaleFactor = 1;
-
-        while (scaleFactor < 1000 && this.displayWidth / (scaleFactor + 1) >= 320 && this.displayHeight / (scaleFactor + 1) >= 240)
-        {
-            ++scaleFactor;
-        }
-
-        if (scaleFactor % 2 != 0 && scaleFactor != 1)
-        {
-            --scaleFactor;
-        }
-        
-        return (int)Math.ceil((double)this.displayWidth / (double)scaleFactor);
-    }
-
-    public int getScaledHeight()
-    {
-    	int scaleFactor = 1;
-
-        while (scaleFactor < 1000 && this.displayWidth / (scaleFactor + 1) >= 320 && this.displayHeight / (scaleFactor + 1) >= 240)
-        {
-            ++scaleFactor;
-        }
-
-        if (scaleFactor % 2 != 0 && scaleFactor != 1)
-        {
-            --scaleFactor;
-        }
-        
-        return (int)Math.ceil((double)this.displayHeight / (double)scaleFactor);
-    }
-    
-    public List<String> getSaveList()
-    {
-        return Arrays.stream(this.savesDirectory.listFiles()).filter(File::isDirectory).map(File::getName).collect(Collectors.toList());
-    }
-    
-    /**
-     * Return whether the given world can be loaded.
-     */
-    public boolean canLoadWorld(String name)
-    {
-        return new File(this.savesDirectory, name).isDirectory();
+        return Arrays.stream(this.savesDirectory.listFiles()).filter(File::isDirectory).map(File::getName).sorted().toArray(String[]::new);
     }
 }

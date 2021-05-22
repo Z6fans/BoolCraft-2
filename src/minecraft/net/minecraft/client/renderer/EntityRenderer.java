@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.WorldServer;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -42,150 +43,108 @@ public class EntityRenderer
     /**
      * Will update any inputs that effect the camera angle (mouse) and then render the world and GUI
      */
-    public void updateCameraAndRender(EntityPlayer player, double ptt)
+    public void updateCameraAndRender(WorldServer world, EntityPlayer player, int currentItem, double ptt)
     {
-        int scaledWidth = this.minecraft.getScaledWidth();
-        int scaledHeight = this.minecraft.getScaledHeight();
-        final int mouseX = Mouse.getX() * scaledWidth / this.minecraft.displayWidth;
-        final int mouseY = scaledHeight - Mouse.getY() * scaledHeight / this.minecraft.displayHeight - 1;
-
-        if (player != null)
+    	if (this.minecraft.getInGameHasFocus() && Display.isActive())
         {
-            if (this.minecraft.getInGameHasFocus() && Display.isActive())
-            {
-                float mouseDX = (float)Mouse.getDX();
-                float mouseDY = (float)Mouse.getDY();
-
-                player.setAngles(mouseDX, mouseDY);
-            }
-            
-        	GL11.glEnable(GL11.GL_CULL_FACE);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glEnable(GL11.GL_ALPHA_TEST);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.5F);
-            this.minecraft.computeMouseOver(ptt);
-            
-            Vec3 ppos = player.pttPos(ptt);
-
-            GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
-            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-            GL11.glEnable(GL11.GL_CULL_FACE);
-            
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glLoadIdentity();
-            /**FOV*/
-            Project.gluPerspective(110, (float)this.minecraft.displayWidth / (float)this.minecraft.displayHeight, 0.05F, 512.0F);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glLoadIdentity();
-            GL11.glRotatef(0.0F, 0.0F, 0.0F, 1.0F);
-            GL11.glTranslatef(0.0F, 0.0F, -0.1F);
-            GL11.glRotatef((float)player.getPartialRotationPitch(ptt), 1.0F, 0.0F, 0.0F);
-            GL11.glRotatef((float)player.getPartialRotationYaw(ptt) + 180.0F, 0.0F, 1.0F, 0.0F);
-            GL11.glTranslatef(0.0F, 0.0F, 0.0F);
-            
-            GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
-            GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
-            GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
-            float var2 = (float)((viewport.get(0) + viewport.get(2)) / 2);
-            float var3 = (float)((viewport.get(1) + viewport.get(3)) / 2);
-            GLU.gluUnProject(var2, var3, 0.0F, modelview, projection, viewport, objectCoords);
-
-            this.renderGlobal.updateRenderers(player, ppos.x, ppos.y, ppos.z);
-            GL11.glDisable(GL11.GL_LIGHTING);
-            GL11.glDisable(GL11.GL_LIGHT0);
-            GL11.glDisable(GL11.GL_LIGHT1);
-            GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPushMatrix();
-            this.renderGlobal.sortAndRender(player, ptt);
-            GL11.glShadeModel(GL11.GL_FLAT);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPopMatrix();
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glDepthMask(false);
-
-            if (this.minecraft.getMouseOver() != null)
-            {
-                MovingObjectPosition hit = this.minecraft.getMouseOver();
-                GL11.glLineWidth(2.0F);
-                int meta = this.minecraft.worldServer.getBlockMetadata(hit.x, hit.y, hit.z);
-                AxisAlignedBB aabb = this.minecraft.worldServer.getBlock(hit.x, hit.y, hit.z).generateCubicBoundingBox(hit.x, hit.y, hit.z, meta).expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
-                Tessellator tess = Tessellator.instance;
-                tess.startDrawing(3);
-                tess.setColor_I(0xFF000000);
-                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-                tess.draw();
-                tess.startDrawing(3);
-                tess.setColor_I(0xFF000000);
-                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-                tess.draw();
-                tess.startDrawing(1);
-                tess.setColor_I(0xFF000000);
-                tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-                tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-                tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-                tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-                tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-                tess.draw();
-            }
-
-            GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-            GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
-            GL11.glDepthMask(true);
-            GL11.glEnable(GL11.GL_CULL_FACE);
-            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthFunc(GL11.GL_LEQUAL);
-            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-            GL11.glEnable(GL11.GL_TEXTURE_2D);
-            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glLoadIdentity();
-            GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glLoadIdentity();
-            int sWidth = this.minecraft.getScaledWidth();
-            int sHeight = this.minecraft.getScaledHeight();
-            drawRect(sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + this.minecraft.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
-            drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
-            for (int index = 0; index < 4; ++index)
-            {
-                int x = sWidth / 2 - 40 + index * 20 + 2;
-                int y = sHeight - 16 - 3;
-                int color = 0xFF000000;
-                switch(index){
-                case 0: color = 0xFF505050; break;
-                case 1: color = 0xFF39EEEE; break;
-                case 2: color = 0xFFEE39E4; break;
-                case 3: color = 0xFFE91A64; break;
-                default: break;
-                }
-                drawRect(x, y, x + 16, y + 16, color);
-            }
+            player.setAngles(Mouse.getDX(), Mouse.getDY());
         }
-        else
+        
+        GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        Project.gluPerspective(110, (float)this.minecraft.displayWidth / (float)this.minecraft.displayHeight, 0.05F, 512.0F); //FOV
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glLoadIdentity();
+        GL11.glRotatef((float)player.getPartialRotationPitch(ptt), 1.0F, 0.0F, 0.0F);
+        GL11.glRotatef((float)player.getPartialRotationYaw(ptt) + 180.0F, 0.0F, 1.0F, 0.0F);
+        
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelview);
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projection);
+        GL11.glGetInteger(GL11.GL_VIEWPORT, viewport);
+        GLU.gluUnProject((viewport.get(0) + viewport.get(2)) / 2,
+        		         (viewport.get(1) + viewport.get(3)) / 2,
+        		         0.0F, modelview, projection, viewport, objectCoords);
+
+        Vec3 ppos = player.pttPos(ptt);
+        this.renderGlobal.updateRenderers(player, ppos.x, ppos.y, ppos.z);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_LIGHT0);
+        GL11.glDisable(GL11.GL_LIGHT1);
+        GL11.glDisable(GL11.GL_COLOR_MATERIAL);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPushMatrix();
+        this.renderGlobal.sortAndRender(player, ptt);
+        GL11.glShadeModel(GL11.GL_FLAT);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPopMatrix();
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glDepthMask(false);
+
+        this.minecraft.computeMouseOver(ptt);
+        
+        if (this.minecraft.getMouseOver() != null)
         {
-            GL11.glViewport(0, 0, this.minecraft.displayWidth, this.minecraft.displayHeight);
-            GL11.glEnable(GL11.GL_TEXTURE_2D);
-            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glLoadIdentity();
-            GL11.glOrtho(0.0D, this.minecraft.getScaledWidth(), this.minecraft.getScaledHeight(), 0.0D, 0.0D, 1.0D);
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glLoadIdentity();
-            this.minecraft.currentScreen.drawScreen(mouseX, mouseY);
+            MovingObjectPosition hit = this.minecraft.getMouseOver();
+            GL11.glLineWidth(2.0F);
+            int meta = world.getBlockMetadata(hit.x, hit.y, hit.z);
+            AxisAlignedBB aabb = world.getBlock(hit.x, hit.y, hit.z).generateCubicBoundingBox(hit.x, hit.y, hit.z, meta).expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
+            Tessellator tess = Tessellator.instance;
+            tess.startDrawing(3);
+            tess.setColor_I(0xFF000000);
+            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+            tess.draw();
+            tess.startDrawing(3);
+            tess.setColor_I(0xFF000000);
+            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+            tess.draw();
+            tess.startDrawing(1);
+            tess.setColor_I(0xFF000000);
+            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
+            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
+            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+            tess.draw();
+        }
+
+        GL11.glEnable(GL11.GL_COLOR_MATERIAL);
+        GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
+        GL11.glDepthMask(true);
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glDepthFunc(GL11.GL_LEQUAL);
+        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GL11.glOrtho(0.0D, this.minecraft.displayWidth, this.minecraft.displayHeight, 0.0D, 0.0D, 1.0D);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glLoadIdentity();
+        int sWidth = this.minecraft.displayWidth;
+        int sHeight = this.minecraft.displayHeight;
+        drawRect(sWidth / 2 - 41 - 1 + currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + currentItem * 20 + 24, sHeight, 0x44CCCCCC);
+        drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
+        int[] colores = {0xFF505050, 0xFF39EEEE, 0xFFEE39E4, 0xFFE91A64};
+        for (int i = 0; i < 4; ++i)
+        {
+            int x = sWidth / 2 - 40 + i * 20 + 2;
+            drawRect(x, sHeight - 19, x + 16, sHeight - 3, colores[i]);
         }
     }
     
