@@ -3,6 +3,8 @@ package net.minecraft.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lwjgl.input.Mouse;
+
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
@@ -338,12 +340,12 @@ public class EntityPlayer
      * Adds par1*0.15 to the entity's yaw, and *subtracts* par2*0.15 from the pitch. Clamps pitch from -90 to 90. Both
      * arguments in degrees.
      */
-    public void setAngles(double dYaw, double dPitch)
+    public void setAngles()
     {
     	double oldPitch = this.rotationPitch;
     	double oldYaw = this.rotationYaw;
-        this.rotationYaw = (float)((double)this.rotationYaw + dYaw * 0.15D);
-        this.rotationPitch = (float)((double)this.rotationPitch - dPitch * 0.15D);
+        this.rotationYaw = (float)((double)this.rotationYaw + Mouse.getDX() * 0.15D);
+        this.rotationPitch = (float)((double)this.rotationPitch - Mouse.getDY() * 0.15D);
 
         if (this.rotationPitch < -90.0F)
         {
