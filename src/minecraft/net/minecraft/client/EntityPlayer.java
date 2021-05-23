@@ -23,14 +23,6 @@ public class EntityPlayer
     /** Entity position Z */
     private double posZ;
 	private final WorldServer worldServer;
-    
-    private double oldPosX;
-
-    /** Old Minimum Y of the bounding box */
-    private double oldMinY;
-    private double oldPosZ;
-    private double oldRotationYaw;
-    private double oldRotationPitch;
 
     /** Entity motion X */
     private double motionX;
@@ -40,12 +32,6 @@ public class EntityPlayer
 
     /** Entity motion Z */
     private double motionZ;
-
-    /**
-     * Counter used to ensure that the server sends a move packet (Packet11, 12 or 13) to the client at least once a
-     * second.
-     */
-    private int ticksSinceMovePacket;
 
     /** Axis aligned bounding box. */
     private AxisAlignedBB boundingBox;
@@ -61,13 +47,10 @@ public class EntityPlayer
 
     /** Entity rotation Pitch */
     private double rotationPitch;
-    private double prevRotationYaw;
-    private double prevRotationPitch;
 
     public EntityPlayer(WorldServer worldServ)
     {
-    	this.rotationYaw = (float)(Math.random() * Math.PI * 2.0D);
-        this.worldServer = worldServ;
+    	this.worldServer = worldServ;
         this.boundingBox = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
         this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
@@ -82,7 +65,7 @@ public class EntityPlayer
         }
         
         this.prevPosY = this.posY = topBlock + 1.6200000047683716D;
-        this.prevRotationYaw = this.rotationYaw = this.prevRotationPitch = this.rotationPitch = 0;
+        this.rotationYaw = this.rotationPitch = 0;
         
         this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
         
@@ -101,8 +84,6 @@ public class EntityPlayer
     	this.prevPosX = this.posX;
     	this.prevPosY = this.posY;
     	this.prevPosZ = this.posZ;
-    	this.prevRotationYaw = this.rotationYaw;
-    	this.prevRotationPitch = this.rotationPitch;
         
         float strafe = 0.0F;
     	float forward = 0.0F;
@@ -127,13 +108,13 @@ public class EntityPlayer
             --strafe;
         }
         
-        strafe *= 0.98F;
-        forward *= 0.98F;
+        strafe *= 0.5F;
+        forward *= 0.5F;
 
-        this.pushPlayerOutOfBlock(this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.worldServer, this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.worldServer, this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.worldServer, this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
+        this.pushPlayerOutOfBlock(this.worldServer, this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
 
         if (KeyBinding.keyBindSneak.getIsKeyPressed())
         {
@@ -159,9 +140,6 @@ public class EntityPlayer
         {
             this.motionZ = 0.0D;
         }
-    	double xMov = this.motionX;
-    	double yMov = this.motionY;
-    	double zMov = this.motionZ;
     	
     	float magnitude = strafe * strafe + forward * forward;
 
@@ -182,6 +160,10 @@ public class EntityPlayer
             this.motionX += strafe * var6 - forward * var5;
             this.motionZ += forward * var6 + strafe * var5;
         }
+        
+    	double xMov = this.motionX;
+    	double yMov = this.motionY;
+    	double zMov = this.motionZ;
 
         List<Becktor> becs = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
 
@@ -213,55 +195,8 @@ public class EntityPlayer
         this.motionX = xMov * 0.6D;
         this.motionY = yMov * 0.6D;
         this.motionZ = zMov * 0.6D;
-
-        while (this.rotationYaw - this.prevRotationYaw < -180.0F)
-        {
-            this.prevRotationYaw -= 360.0F;
-        }
-
-        while (this.rotationYaw - this.prevRotationYaw >= 180.0F)
-        {
-            this.prevRotationYaw += 360.0F;
-        }
-
-        while (this.rotationPitch - this.prevRotationPitch < -180.0F)
-        {
-            this.prevRotationPitch -= 360.0F;
-        }
-
-        while (this.rotationPitch - this.prevRotationPitch >= 180.0F)
-        {
-            this.prevRotationPitch += 360.0F;
-        }
         
-        double dx = this.posX - this.oldPosX;
-        double dy = this.boundingBox.minY - this.oldMinY;
-        double dz = this.posZ - this.oldPosZ;
-        double dyaw = (double)(this.rotationYaw - this.oldRotationYaw);
-        double dpitch = (double)(this.rotationPitch - this.oldRotationPitch);
-        boolean hasMoved = dx * dx + dy * dy + dz * dz > 9.0E-4D || this.ticksSinceMovePacket >= 20;
-        boolean hasTurned = dyaw != 0.0D || dpitch != 0.0D;
-
-        if (hasMoved)
-        {
-        	this.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
-        }
-
-        ++this.ticksSinceMovePacket;
-
-        if (hasMoved)
-        {
-            this.oldPosX = this.posX;
-            this.oldMinY = this.boundingBox.minY;
-            this.oldPosZ = this.posZ;
-            this.ticksSinceMovePacket = 0;
-        }
-
-        if (hasTurned)
-        {
-            this.oldRotationYaw = this.rotationYaw;
-            this.oldRotationPitch = this.rotationPitch;
-        }
+        this.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
 
         if (Double.isNaN(this.posX) || Double.isInfinite(this.posX))
         {
@@ -276,16 +211,6 @@ public class EntityPlayer
         if (Double.isNaN(this.posZ) || Double.isInfinite(this.posZ))
         {
         	this.posZ = this.prevPosZ;
-        }
-
-        if (Double.isNaN((double)this.rotationPitch) || Double.isInfinite((double)this.rotationPitch))
-        {
-        	this.rotationPitch = this.prevRotationPitch;
-        }
-
-        if (Double.isNaN((double)this.rotationYaw) || Double.isInfinite((double)this.rotationYaw))
-        {
-        	this.rotationYaw = this.prevRotationYaw;
         }
     }
     
@@ -311,14 +236,14 @@ public class EntityPlayer
     			        this.prevPosZ + (this.posZ - this.prevPosZ) * ptt);
     }
     
-    public double getPartialRotationYaw(double ptt)
+    public double getRotationYaw()
     {
-    	return this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
+    	return this.rotationYaw;
     }
     
-    public double getPartialRotationPitch(double ptt)
+    public double getRotationPitch()
     {
-    	return this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
+    	return this.rotationPitch;
     }
     
     public int getChunkCoordX()
@@ -336,16 +261,10 @@ public class EntityPlayer
     	return MathHelper.floor_double(this.posZ / 16.0D);
     }
 
-    /**
-     * Adds par1*0.15 to the entity's yaw, and *subtracts* par2*0.15 from the pitch. Clamps pitch from -90 to 90. Both
-     * arguments in degrees.
-     */
     public void setAngles()
     {
-    	double oldPitch = this.rotationPitch;
-    	double oldYaw = this.rotationYaw;
-        this.rotationYaw = (float)((double)this.rotationYaw + Mouse.getDX() * 0.15D);
-        this.rotationPitch = (float)((double)this.rotationPitch - Mouse.getDY() * 0.15D);
+        this.rotationYaw += Mouse.getDX() * 0.15D;
+        this.rotationPitch -= Mouse.getDY() * 0.15D;
 
         if (this.rotationPitch < -90.0F)
         {
@@ -356,17 +275,9 @@ public class EntityPlayer
         {
             this.rotationPitch = 90.0F;
         }
-
-        this.prevRotationPitch += this.rotationPitch - oldPitch;
-        this.prevRotationYaw += this.rotationYaw - oldYaw;
     }
 
-    private boolean isBlockSolid(int x, int y, int z)
-    {
-        return this.worldServer.isSolid(x, y, z);
-    }
-
-    private void pushPlayerOutOfBlock(double xpos, double ypos, double zpos)
+    private void pushPlayerOutOfBlock(WorldServer ws, double xpos, double ypos, double zpos)
     {
         int x = MathHelper.floor_double(xpos);
         int y = MathHelper.floor_double(ypos);
@@ -374,12 +285,12 @@ public class EntityPlayer
         double fracx = xpos - (double)x;
         double fracz = zpos - (double)z;
 
-        if (this.isBlockSolid(x, y, z) || this.isBlockSolid(x, y + 1, z))
+        if (ws.isSolid(x, y, z) || ws.isSolid(x, y + 1, z))
         {
-            boolean minusXClear = !this.isBlockSolid(x - 1, y, z) && !this.isBlockSolid(x - 1, y + 1, z);
-            boolean plusXClear = !this.isBlockSolid(x + 1, y, z) && !this.isBlockSolid(x + 1, y + 1, z);
-            boolean minusZClear = !this.isBlockSolid(x, y, z - 1) && !this.isBlockSolid(x, y + 1, z - 1);
-            boolean plusZClear = !this.isBlockSolid(x, y, z + 1) && !this.isBlockSolid(x, y + 1, z + 1);
+            boolean minusXClear = !ws.isSolid(x - 1, y, z) && !ws.isSolid(x - 1, y + 1, z);
+            boolean plusXClear = !ws.isSolid(x + 1, y, z) && !ws.isSolid(x + 1, y + 1, z);
+            boolean minusZClear = !ws.isSolid(x, y, z - 1) && !ws.isSolid(x, y + 1, z - 1);
+            boolean plusZClear = !ws.isSolid(x, y, z + 1) && !ws.isSolid(x, y + 1, z + 1);
             byte direction = -1;
             double smallestDistance = 9999.0D;
 
@@ -435,15 +346,13 @@ public class EntityPlayer
     public MovingObjectPosition rayTrace8(double ptt)
     {
         Vec3 playerPos = this.pttPos(ptt);
-        double pitch = this.prevRotationPitch + (this.rotationPitch - this.prevRotationPitch) * ptt;
-        double yaw = this.prevRotationYaw + (this.rotationYaw - this.prevRotationYaw) * ptt;
-        double cy = MathHelper.cos(-yaw * 0.017453292D - Math.PI);
-        double sy = MathHelper.sin(-yaw * 0.017453292D - Math.PI);
-        double cp = -MathHelper.cos(-pitch * 0.017453292D);
-        double sp = MathHelper.sin(-pitch * 0.017453292D);
+        double cy = MathHelper.cos(-this.rotationYaw * 0.017453292D - Math.PI);
+        double sy = MathHelper.sin(-this.rotationYaw * 0.017453292D - Math.PI);
+        double cp = -MathHelper.cos(-this.rotationPitch * 0.017453292D);
+        double sp = MathHelper.sin(-this.rotationPitch * 0.017453292D);
         Vec3 viewVec = playerPos.addVector(sy * cp * 8, sp * 8, cy * cp * 8);
         if (!Double.isNaN(playerPos.x) && !Double.isNaN(playerPos.y) && !Double.isNaN(playerPos.z)
-         && !Double.isNaN(  viewVec.x) && !Double.isNaN(  viewVec.y) && !Double.isNaN(viewVec.z))
+         && !Double.isNaN(  viewVec.x) && !Double.isNaN(  viewVec.y) && !Double.isNaN(  viewVec.z))
         {
         	int viewBlockX = MathHelper.floor_double(viewVec.x);
             int viewBlockY = MathHelper.floor_double(viewVec.y);

@@ -345,8 +345,8 @@ public class Minecraft
                         Project.gluPerspective(110, (float)this.displayWidth / (float)this.displayHeight, 0.05F, 512.0F); //FOV
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
-                        GL11.glRotatef((float)this.thePlayer.getPartialRotationPitch(this.renderPartialTicks), 1.0F, 0.0F, 0.0F);
-                        GL11.glRotatef((float)this.thePlayer.getPartialRotationYaw(this.renderPartialTicks) + 180.0F, 0.0F, 1.0F, 0.0F);
+                        GL11.glRotatef((float)this.thePlayer.getRotationPitch(), 1.0F, 0.0F, 0.0F);
+                        GL11.glRotatef((float)this.thePlayer.getRotationYaw() + 180.0F, 0.0F, 1.0F, 0.0F);
                         Vec3 ppos = this.thePlayer.pttPos(this.renderPartialTicks);
                         this.renderGlobal.updateRenderers(this.thePlayer, ppos.x, ppos.y, ppos.z);
                         GL11.glPushMatrix();
