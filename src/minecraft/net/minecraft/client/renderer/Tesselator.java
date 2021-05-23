@@ -6,7 +6,7 @@ import java.nio.IntBuffer;
 
 import org.lwjgl.opengl.GL11;
 
-public class Tessellator
+public class Tesselator
 {
     /** The byte buffer used for GL allocation. */
     private final ByteBuffer byteBuffer;
@@ -50,7 +50,7 @@ public class Tessellator
     private double zOffset;
 
     /** The static instance of the Tessellator. */
-    public static final Tessellator instance = new Tessellator(2097152);
+    public static final Tesselator instance = new Tesselator(2097152);
 
     /** Whether this tessellator is currently in draw mode. */
     private boolean isDrawing;
@@ -58,7 +58,7 @@ public class Tessellator
     /** The size of the buffers used (in integers). */
     private final int bufferSize;
 
-    private Tessellator(int buffSize)
+    private Tesselator(int buffSize)
     {
         this.bufferSize = buffSize;
         this.byteBuffer = GLAllocation.createDirectByteBuffer(buffSize * 4);

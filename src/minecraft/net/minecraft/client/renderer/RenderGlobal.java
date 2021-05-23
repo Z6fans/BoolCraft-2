@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.lwjgl.opengl.GL11;
-
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.world.WorldServer;
 import net.minecraft.util.MathHelper;
@@ -265,11 +263,6 @@ public class RenderGlobal
             this.prevChunkSortZ = player.getChunkCoordZ();
             this.markRenderersForNewPosition(MathHelper.floor_double(player.getPosX()), MathHelper.floor_double(player.getPosY()), MathHelper.floor_double(player.getPosZ()));
         }
-
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDisable(GL11.GL_LIGHT0);
-        GL11.glDisable(GL11.GL_LIGHT1);
-        GL11.glDisable(GL11.GL_COLOR_MATERIAL);
         
         this.glRenderLists.clear();
 

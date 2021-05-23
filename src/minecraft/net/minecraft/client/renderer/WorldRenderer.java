@@ -13,7 +13,7 @@ public class WorldRenderer
     /** Reference to the World object. */
     private WorldServer world;
     private final int glRenderList;
-    private final static Tessellator tessellator = Tessellator.instance;
+    private final static Tesselator tessellator = Tesselator.instance;
     private int posX;
     private int posY;
     private int posZ;
@@ -107,7 +107,6 @@ public class WorldRenderer
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
-            this.skipRenderPass = true;
             RenderBlocks renderBlocks = new RenderBlocks(this.world);
             GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
             GL11.glPushMatrix();
@@ -115,6 +114,7 @@ public class WorldRenderer
             tessellator.startDrawing(7);
             tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
 
+            this.skipRenderPass = true;
             for (int y = this.posY; y < this.posY + 16; ++y)
                 for (int z = this.posZ; z < this.posZ + 16; ++z)
                     for (int x = this.posX; x < this.posX + 16; ++x)

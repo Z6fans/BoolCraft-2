@@ -6,7 +6,7 @@ import java.util.Arrays;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.Tesselator;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
@@ -32,7 +32,7 @@ public class Minecraft
     private EntityPlayer thePlayer;
 
     /** The GuiScreen that's being displayed at the moment. */
-    public GuiScreen currentScreen;
+    private GuiScreen currentScreen;
 
     /** The ray trace hit that the mouse is over. */
     private MovingObjectPosition objectMouseOver;
@@ -316,11 +316,11 @@ public class Minecraft
                     
                     this.checkGLError("Pre render");
                     GL11.glPushMatrix();
+                    GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     
                     if (this.currentScreen != null)
                     {
-                    	GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                         GL11.glEnable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
@@ -339,9 +339,7 @@ public class Minecraft
                         	this.thePlayer.setAngles();
                         }
                         
-                        GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                         GL11.glDisable(GL11.GL_TEXTURE_2D);
-                        GL11.glEnable(GL11.GL_CULL_FACE);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
                         Project.gluPerspective(110, (float)this.displayWidth / (float)this.displayHeight, 0.05F, 512.0F); //FOV
@@ -349,22 +347,11 @@ public class Minecraft
                         GL11.glLoadIdentity();
                         GL11.glRotatef((float)this.thePlayer.getPartialRotationPitch(this.renderPartialTicks), 1.0F, 0.0F, 0.0F);
                         GL11.glRotatef((float)this.thePlayer.getPartialRotationYaw(this.renderPartialTicks) + 180.0F, 0.0F, 1.0F, 0.0F);
-
                         Vec3 ppos = this.thePlayer.pttPos(this.renderPartialTicks);
                         this.renderGlobal.updateRenderers(this.thePlayer, ppos.x, ppos.y, ppos.z);
-                        GL11.glDisable(GL11.GL_LIGHTING);
-                        GL11.glDisable(GL11.GL_LIGHT0);
-                        GL11.glDisable(GL11.GL_LIGHT1);
-                        GL11.glDisable(GL11.GL_COLOR_MATERIAL);
-                        GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glPushMatrix();
                         this.renderGlobal.sortAndRender(this.thePlayer, this.renderPartialTicks);
-                        GL11.glShadeModel(GL11.GL_FLAT);
-                        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-                        GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glPopMatrix();
-                        GL11.glDisable(GL11.GL_TEXTURE_2D);
-                        GL11.glDepthMask(false);
 
                         this.computeMouseOver(this.renderPartialTicks);
                         
@@ -373,10 +360,12 @@ public class Minecraft
                             MovingObjectPosition hit = this.getMouseOver();
                             GL11.glLineWidth(2.0F);
                             int meta = this.worldServer.getBlockMetadata(hit.x, hit.y, hit.z);
-                            AxisAlignedBB aabb = this.worldServer.getBlock(hit.x, hit.y, hit.z).generateCubicBoundingBox(hit.x, hit.y, hit.z, meta).expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
-                            Tessellator tess = Tessellator.instance;
-                            tess.startDrawing(3);
+                            AxisAlignedBB aabb = this.worldServer.getBlock(hit.x, hit.y, hit.z)
+                            		.generateCubicBoundingBox(hit.x, hit.y, hit.z, meta)
+                            		.expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
+                            Tesselator tess = Tesselator.instance;
                             tess.setColor_I(0xFF000000);
+                            tess.startDrawing(3);
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
@@ -384,7 +373,6 @@ public class Minecraft
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                             tess.draw();
                             tess.startDrawing(3);
-                            tess.setColor_I(0xFF000000);
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
@@ -392,7 +380,6 @@ public class Minecraft
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                             tess.draw();
                             tess.startDrawing(1);
-                            tess.setColor_I(0xFF000000);
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
@@ -403,30 +390,31 @@ public class Minecraft
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
                             tess.draw();
                         }
-                    	GL11.glEnable(GL11.GL_COLOR_MATERIAL);
-                        GL11.glColorMaterial(GL11.GL_FRONT, GL11.GL_AMBIENT);
-                        GL11.glDepthMask(true);
-                        GL11.glEnable(GL11.GL_CULL_FACE);
+                        
                         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
                         GL11.glEnable(GL11.GL_DEPTH_TEST);
-                        GL11.glDepthFunc(GL11.GL_LEQUAL);
-                        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-                        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
                         GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
+                        
+                        GL11.glEnable(GL11.GL_BLEND);
+                        GL11.glBlendFunc(770, 771);
                         int sWidth = this.displayWidth;
                         int sHeight = this.displayHeight;
-                        drawRect(sWidth / 2 - 41 - 1 + currentItem * 20, sHeight - 22 - 1, sWidth / 2 - 41 - 1 + currentItem * 20 + 24, sHeight, 0x44CCCCCC);
+                        drawRect(sWidth / 2 - 41 - 1 + this.currentItem * 20, sHeight - 22 - 1,
+                        		 sWidth / 2 - 41 - 1 + this.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
                         drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
                         int[] colores = {0xFF505050, 0xFF39EEEE, 0xFFEE39E4, 0xFFE91A64};
+                        
                         for (int i = 0; i < 4; ++i)
                         {
                             int x = sWidth / 2 - 40 + i * 20 + 2;
                             drawRect(x, sHeight - 19, x + 16, sHeight - 3, colores[i]);
                         }
+                        
+                        GL11.glDisable(GL11.GL_BLEND);
                     }
                     
                     GL11.glFlush();
@@ -448,7 +436,7 @@ public class Minecraft
 
                     if (deltaTime > 2000L && prevTime - this.timeOfLastWarning >= 15000L)
                     {
-                        System.out.println("Can\'t keep up! Did the system time change, or is the server overloaded? Running " + deltaTime + "ms behind, skipping " + deltaTime / 50L + " tick(s)");
+                        System.out.println("Running " + deltaTime + "ms behind, skipping " + deltaTime / 50L + " tick(s)");
                         deltaTime = 2000L;
                         this.timeOfLastWarning = prevTime;
                     }
@@ -531,10 +519,7 @@ public class Minecraft
      */
     private static void drawRect(int x1, int y1, int x2, int y2, int color)
     {
-        Tessellator tessellator = Tessellator.instance;
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glBlendFunc(770, 771);
+        Tesselator tessellator = Tesselator.instance;
         tessellator.startDrawing(7);
         tessellator.setColor_I(color);
         tessellator.addVertex(x1, y2, 0);
@@ -542,8 +527,6 @@ public class Minecraft
         tessellator.addVertex(x2, y1, 0);
         tessellator.addVertex(x1, y1, 0);
         tessellator.draw();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glDisable(GL11.GL_BLEND);
     }
 
     private void updateDisplaySize()
@@ -614,9 +597,11 @@ public class Minecraft
         	int yPrime = y + yOff[side];
         	int zPrime = z + zOff[side];
         	
-        	if (!this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z) && y < 256 && (y < 255 || side != 1) && this.worldServer.canPlaceEntity(block, xPrime, yPrime, zPrime))
+        	if (!this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z)
+        			&& y < 256 && (y < 255 || side != 1) && this.worldServer.canPlaceEntity(block, xPrime, yPrime, zPrime))
             {
-        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, blockID, block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
+        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, blockID,
+        				block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
             }
         }
     }
@@ -689,7 +674,7 @@ public class Minecraft
     /**
      * Gets the system time in milliseconds.
      */
-    public static long getSystemTime()
+    private static long getSystemTime()
     {
         return Sys.getTime() * 1000L / Sys.getTimerResolution();
     }
@@ -709,7 +694,7 @@ public class Minecraft
     /**
      * Finds what block or object the mouse is over at the specified partial tick time. Args: partialTickTime
      */
-    public void computeMouseOver(double partialTickTime)
+    private void computeMouseOver(double partialTickTime)
     {
         if (this.thePlayer != null)
         {

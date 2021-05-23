@@ -69,7 +69,7 @@ public class RenderBlocks
 
     private boolean renderBlockRedstoneWire(int block, int meta, int x, int y, int z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
         
         tess.setColor_I(this.getColor(block, meta, x, y, z, 0));
         
@@ -120,21 +120,21 @@ public class RenderBlocks
     {
         boolean didRender = false;
 
-    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 2));
+    	Tesselator.instance.setColor_I(this.getColor(block, meta, x, y, z, 2));
         if (!this.world.isSolid(x, y - 1, z) || this.renderMinY > 0.0D)
         {
             this.renderFaceYNeg(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 0));
+    	Tesselator.instance.setColor_I(this.getColor(block, meta, x, y, z, 0));
         if (!this.world.isSolid(x, y + 1, z) || this.renderMaxY < 1.0D)
         {
             this.renderFaceYPos(x, y, z);
             didRender = true;
         }
 
-    	Tessellator.instance.setColor_I(this.getColor(block, meta, x, y, z, 1));
+    	Tesselator.instance.setColor_I(this.getColor(block, meta, x, y, z, 1));
         if (!this.world.isSolid(x, y, z - 1) || this.renderMinZ > 0.0D)
         {
             this.renderFaceZNeg(x, y, z);
@@ -164,7 +164,7 @@ public class RenderBlocks
 
     private void renderFaceYNeg(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmin = x + this.renderMinX;
         double xmax = x + this.renderMaxX;
@@ -180,7 +180,7 @@ public class RenderBlocks
 
     private void renderFaceYPos(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmin = x + this.renderMinX;
         double xmax = x + this.renderMaxX;
@@ -196,7 +196,7 @@ public class RenderBlocks
 
     private void renderFaceZNeg(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmin = x + this.renderMinX;
         double xmax = x + this.renderMaxX;
@@ -212,7 +212,7 @@ public class RenderBlocks
 
     private void renderFaceZPos(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmin = x + this.renderMinX;
         double xmax = x + this.renderMaxX;
@@ -228,7 +228,7 @@ public class RenderBlocks
 
     private void renderFaceXNeg(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmin = x + this.renderMinX;
         double ymin = y + this.renderMinY;
@@ -244,7 +244,7 @@ public class RenderBlocks
 
     private void renderFaceXPos(double x, double y, double z)
     {
-        Tessellator tess = Tessellator.instance;
+        Tesselator tess = Tesselator.instance;
 
         double xmax = x + this.renderMaxX;
         double ymin = y + this.renderMinY;
