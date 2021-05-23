@@ -304,6 +304,7 @@ public class Minecraft
                         	try
                             {
                         		this.thePlayer.onUpdate();
+                        		this.worldServer.updateMountedMovingPlayer(this.thePlayer.getPosX(), this.thePlayer.getPosZ());
                             }
                             catch (Throwable t)
                             {
@@ -393,6 +394,7 @@ public class Minecraft
                         
                         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
                         GL11.glEnable(GL11.GL_DEPTH_TEST);
+                        GL11.glDepthFunc(GL11.GL_LEQUAL);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
                         GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);

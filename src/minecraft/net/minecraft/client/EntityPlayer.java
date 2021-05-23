@@ -1,11 +1,7 @@
 package net.minecraft.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.lwjgl.input.Mouse;
 
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -23,21 +19,6 @@ public class EntityPlayer
     /** Entity position Z */
     private double posZ;
 	private final WorldServer worldServer;
-
-    /** Entity motion X */
-    private double motionX;
-
-    /** Entity motion Y */
-    private double motionY;
-
-    /** Entity motion Z */
-    private double motionZ;
-
-    /** Axis aligned bounding box. */
-    private AxisAlignedBB boundingBox;
-
-    /** How wide this entity is considered to be */
-    private final double width = 0.6F;
     private double prevPosX;
     private double prevPosY;
     private double prevPosZ;
@@ -51,29 +32,17 @@ public class EntityPlayer
     public EntityPlayer(WorldServer worldServ)
     {
     	this.worldServer = worldServ;
-        this.boundingBox = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
-        this.motionX = this.motionY = this.motionZ = 0;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
-        int topBlock = -1;
-        
-        for (int y = 255; y > 0; --y)
-        {
-            if (this.worldServer.isSolid(0, y, 0))
-            {
-                topBlock =  y + 1;
-            }
-        }
-        
-        this.prevPosY = this.posY = topBlock + 1.6200000047683716D;
         this.rotationYaw = this.rotationPitch = 0;
         
-        this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
+        this.posY = 0.5D;
         
-        while (!this.getCollidingBoundingBoxes(this.boundingBox).isEmpty())
+        while (this.worldServer.isSolid(0, MathHelper.floor_double(this.posY), 0))
         {
             ++this.posY;
-            this.boundingBox = new AxisAlignedBB(-this.width/2.0D, this.posY - 1.62D, -this.width/2.0D, this.width/2.0D, this.posY + 0.18D, this.width/2.0D);
         }
+        
+        this.prevPosY = this.posY;
     }
     
     /**
@@ -81,136 +50,79 @@ public class EntityPlayer
      */
     public void onUpdate()
     {
-    	this.prevPosX = this.posX;
-    	this.prevPosY = this.posY;
-    	this.prevPosZ = this.posZ;
+    	double motionX = 0.0D;
+    	double motionY = 0.0D;
+    	double motionZ = 0.0D;
         
-        float strafe = 0.0F;
-    	float forward = 0.0F;
+        double s = 0.5D * MathHelper.sin(this.rotationYaw * Math.PI / 180.0D);
+        double c = 0.5D * MathHelper.cos(this.rotationYaw * Math.PI / 180.0D);
 
         if (KeyBinding.keyBindForward.getIsKeyPressed())
         {
-            ++forward;
+            motionX -= s;
+            motionZ += c;
         }
 
         if (KeyBinding.keyBindBack.getIsKeyPressed())
         {
-            --forward;
+            motionX += s;
+            motionZ -= c;
         }
 
         if (KeyBinding.keyBindLeft.getIsKeyPressed())
         {
-            ++strafe;
+            motionX += c;
+            motionZ += s;
         }
 
         if (KeyBinding.keyBindRight.getIsKeyPressed())
         {
-            --strafe;
+        	motionX -= c;
+            motionZ -= s;
         }
-        
-        strafe *= 0.5F;
-        forward *= 0.5F;
-
-        this.pushPlayerOutOfBlock(this.worldServer, this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.worldServer, this.posX - this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.worldServer, this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ - this.width * 0.35D);
-        this.pushPlayerOutOfBlock(this.worldServer, this.posX + this.width * 0.35D, this.boundingBox.minY + 0.5D, this.posZ + this.width * 0.35D);
-
+    	
         if (KeyBinding.keyBindSneak.getIsKeyPressed())
         {
-            this.motionY -= 0.15D;
+            motionY -= 0.5D;
         }
 
         if (KeyBinding.keyBindJump.getIsKeyPressed())
         {
-            this.motionY += 0.15D;
-        }
-
-        if (Math.abs(this.motionX) < 0.005D)
-        {
-            this.motionX = 0.0D;
-        }
-
-        if (Math.abs(this.motionY) < 0.005D)
-        {
-            this.motionY = 0.0D;
-        }
-
-        if (Math.abs(this.motionZ) < 0.005D)
-        {
-            this.motionZ = 0.0D;
-        }
-    	
-    	float magnitude = strafe * strafe + forward * forward;
-
-        if (magnitude >= 1.0E-4F)
-        {
-            magnitude = (float)Math.sqrt(magnitude);
-
-            if (magnitude < 1.0F)
-            {
-                magnitude = 1.0F;
-            }
-
-            magnitude = 0.41999998688697815F / magnitude;
-            strafe *= magnitude;
-            forward *= magnitude;
-            double var5 = MathHelper.sin(this.rotationYaw * (float)Math.PI / 180.0F);
-            double var6 = MathHelper.cos(this.rotationYaw * (float)Math.PI / 180.0F);
-            this.motionX += strafe * var6 - forward * var5;
-            this.motionZ += forward * var6 + strafe * var5;
+            motionY += 0.5D;
         }
         
-    	double xMov = this.motionX;
-    	double yMov = this.motionY;
-    	double zMov = this.motionZ;
-
-        List<Becktor> becs = this.getCollidingBoundingBoxes(this.boundingBox.addCoord(this.motionX, this.motionY, this.motionZ));
-
-        for (Becktor bec : becs)
-        {
-        	this.motionY = bec.calculateYOffset(this.boundingBox, this.motionY);
-        }
-
-        this.boundingBox = this.boundingBox.offset(0.0D, this.motionY, 0.0D);
-
-        for (Becktor bec : becs)
-        {
-        	this.motionX = bec.calculateXOffset(this.boundingBox, this.motionX);
-        }
-
-        this.boundingBox = this.boundingBox.offset(this.motionX, 0.0D, 0.0D);
-
-        for (Becktor bec : becs)
-        {
-        	this.motionZ = bec.calculateZOffset(this.boundingBox, this.motionZ);
-        }
-
-        this.boundingBox = this.boundingBox.offset(0.0D, 0.0D, this.motionZ);
+        this.prevPosX = this.posX;
+    	this.prevPosY = this.posY;
+    	this.prevPosZ = this.posZ;
         
-        this.posX = (this.boundingBox.minX + this.boundingBox.maxX) / 2.0D;
-        this.posY = this.boundingBox.minY + 1.62D;
-        this.posZ = (this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D;
-        
-        this.motionX = xMov * 0.6D;
-        this.motionY = yMov * 0.6D;
-        this.motionZ = zMov * 0.6D;
-        
-        this.worldServer.updateMountedMovingPlayer(this.posX, this.posZ);
-
-        if (Double.isNaN(this.posX) || Double.isInfinite(this.posX))
+        if (this.worldServer.isSolid(MathHelper.floor_double(this.posX),
+        		                     MathHelper.floor_double(this.posY),
+        		                     MathHelper.floor_double(this.posZ)) ||
+           !this.worldServer.isSolid(MathHelper.floor_double(this.posX + motionX),
+                		             MathHelper.floor_double(this.posY),
+                		             MathHelper.floor_double(this.posZ)))
         {
-        	this.posX = this.prevPosX;
+        	this.posX += motionX;
         }
-
-        if (Double.isNaN(this.posY) || Double.isInfinite(this.posY))
+        
+        if (this.worldServer.isSolid(MathHelper.floor_double(this.posX),
+                                     MathHelper.floor_double(this.posY),
+                                     MathHelper.floor_double(this.posZ)) ||
+           !this.worldServer.isSolid(MathHelper.floor_double(this.posX),
+	                                 MathHelper.floor_double(this.posY + motionY),
+	                                 MathHelper.floor_double(this.posZ)))
         {
-        	this.posY = this.prevPosY;
+        	this.posY += motionY;
         }
-
-        if (Double.isNaN(this.posZ) || Double.isInfinite(this.posZ))
+        
+        if (this.worldServer.isSolid(MathHelper.floor_double(this.posX),
+                                     MathHelper.floor_double(this.posY),
+                                     MathHelper.floor_double(this.posZ)) ||
+           !this.worldServer.isSolid(MathHelper.floor_double(this.posX),
+                                     MathHelper.floor_double(this.posY),
+                                     MathHelper.floor_double(this.posZ + motionZ)))
         {
-        	this.posZ = this.prevPosZ;
+        	this.posZ += motionZ;
         }
     }
     
@@ -274,69 +186,6 @@ public class EntityPlayer
         if (this.rotationPitch > 90.0F)
         {
             this.rotationPitch = 90.0F;
-        }
-    }
-
-    private void pushPlayerOutOfBlock(WorldServer ws, double xpos, double ypos, double zpos)
-    {
-        int x = MathHelper.floor_double(xpos);
-        int y = MathHelper.floor_double(ypos);
-        int z = MathHelper.floor_double(zpos);
-        double fracx = xpos - (double)x;
-        double fracz = zpos - (double)z;
-
-        if (ws.isSolid(x, y, z) || ws.isSolid(x, y + 1, z))
-        {
-            boolean minusXClear = !ws.isSolid(x - 1, y, z) && !ws.isSolid(x - 1, y + 1, z);
-            boolean plusXClear = !ws.isSolid(x + 1, y, z) && !ws.isSolid(x + 1, y + 1, z);
-            boolean minusZClear = !ws.isSolid(x, y, z - 1) && !ws.isSolid(x, y + 1, z - 1);
-            boolean plusZClear = !ws.isSolid(x, y, z + 1) && !ws.isSolid(x, y + 1, z + 1);
-            byte direction = -1;
-            double smallestDistance = 9999.0D;
-
-            if (minusXClear && fracx < smallestDistance)
-            {
-                smallestDistance = fracx;
-                direction = 0;
-            }
-
-            if (plusXClear && 1.0D - fracx < smallestDistance)
-            {
-                smallestDistance = 1.0D - fracx;
-                direction = 1;
-            }
-
-            if (minusZClear && fracz < smallestDistance)
-            {
-                smallestDistance = fracz;
-                direction = 4;
-            }
-
-            if (plusZClear && 1.0D - fracz < smallestDistance)
-            {
-                smallestDistance = 1.0D - fracz;
-                direction = 5;
-            }
-
-            if (direction == 0)
-            {
-                this.motionX = -0.1D;
-            }
-
-            if (direction == 1)
-            {
-                this.motionX = 0.1D;
-            }
-
-            if (direction == 4)
-            {
-                this.motionZ = -0.1D;
-            }
-
-            if (direction == 5)
-            {
-                this.motionZ = 0.1D;
-            }
         }
     }
 
@@ -532,177 +381,5 @@ public class EntityPlayer
         }
         
         return null;
-    }
-    
-    /**
-     * Pure function. Returns a list of bounding boxes that collide with aabb excluding the passed in entity's collision. Args: entity,
-     * aabb
-     */
-    private List<Becktor> getCollidingBoundingBoxes(AxisAlignedBB aabb)
-    {
-        List<Becktor> collidingBoundingBoxes = new ArrayList<Becktor>();
-        int minx = MathHelper.floor_double(aabb.minX);
-        int maxx = MathHelper.floor_double(aabb.maxX);
-        int miny = MathHelper.floor_double(aabb.minY);
-        int maxy = MathHelper.floor_double(aabb.maxY);
-        int minz = MathHelper.floor_double(aabb.minZ);
-        int maxz = MathHelper.floor_double(aabb.maxZ);
-
-        for (int x = minx; x <= maxx; ++x)
-        {
-            for (int z = minz; z <= maxz; ++z)
-            {
-            	for (int y = miny - 1; y <= maxy; ++y)
-                {
-                    if (this.worldServer.isSolid(x, y, z))
-                    {
-                        if (aabb.intersectsWith(x, y, z)) collidingBoundingBoxes.add(new Becktor(x, y, z));
-                    }
-                }
-            }
-        }
-
-        return collidingBoundingBoxes;
-    }
-    
-    private class Becktor
-    {
-    	private final int x;
-    	private final int y;
-    	private final int z;
-    	
-    	public Becktor(int xval, int yval, int zval)
-    	{
-    		this.x = xval;
-    		this.y = yval;
-    		this.z = zval;
-    	}
-    	
-
-
-        /**
-         * if instance and the argument bounding boxes overlap in the Y and Z dimensions, calculate the offset between them
-         * in the X dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
-         * calculated offset.  Otherwise return the calculated offset.
-         */
-        public double calculateXOffset(AxisAlignedBB other, double ret)
-        {
-            if (other.maxY > y && other.minY < y + 1 && other.maxZ > z && other.minZ < z + 1)
-            {
-            	if (ret > 0.0D && other.maxX <= x)
-                {
-                	double var4 = x - other.maxX;
-
-                    if (var4 < ret)
-                    {
-                        ret = var4;
-                    }
-                }
-
-                if (ret < 0.0D && other.minX >= x + 1)
-                {
-                	double var4 = x + 1 - other.minX;
-
-                    if (var4 > ret)
-                    {
-                        ret = var4;
-                    }
-                }
-            }
-            
-            return ret;
-        }
-
-        /**
-         * if instance and the argument bounding boxes overlap in the X and Z dimensions, calculate the offset between them
-         * in the Y dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
-         * calculated offset.  Otherwise return the calculated offset.
-         */
-        public double calculateYOffset(AxisAlignedBB other, double ret)
-        {
-            if (other.maxX > x && other.minX < x + 1)
-            {
-                if (other.maxZ > z && other.minZ < z + 1)
-                {
-                    double var4;
-
-                    if (ret > 0.0D && other.maxY <= y)
-                    {
-                        var4 = y - other.maxY;
-
-                        if (var4 < ret)
-                        {
-                            ret = var4;
-                        }
-                    }
-
-                    if (ret < 0.0D && other.minY >= y + 1)
-                    {
-                        var4 = y + 1 - other.minY;
-
-                        if (var4 > ret)
-                        {
-                            ret = var4;
-                        }
-                    }
-
-                    return ret;
-                }
-                else
-                {
-                    return ret;
-                }
-            }
-            else
-            {
-                return ret;
-            }
-        }
-
-        /**
-         * if instance and the argument bounding boxes overlap in the Y and X dimensions, calculate the offset between them
-         * in the Z dimension.  return var2 if the bounding boxes do not overlap or if var2 is closer to 0 then the
-         * calculated offset.  Otherwise return the calculated offset.
-         */
-        public double calculateZOffset(AxisAlignedBB other, double ret)
-        {
-            if (other.maxX > x && other.minX < x + 1)
-            {
-                if (other.maxY > y && other.minY < y + 1)
-                {
-                    double var4;
-
-                    if (ret > 0.0D && other.maxZ <= z)
-                    {
-                        var4 = z - other.maxZ;
-
-                        if (var4 < ret)
-                        {
-                            ret = var4;
-                        }
-                    }
-
-                    if (ret < 0.0D && other.minZ >= z + 1)
-                    {
-                        var4 = z + 1 - other.minZ;
-
-                        if (var4 > ret)
-                        {
-                            ret = var4;
-                        }
-                    }
-
-                    return ret;
-                }
-                else
-                {
-                    return ret;
-                }
-            }
-            else
-            {
-                return ret;
-            }
-        }
     }
 }
