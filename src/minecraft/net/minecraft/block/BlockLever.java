@@ -6,16 +6,6 @@ public class BlockLever extends Block
 {
 	private final float d = 0.1875F;
 
-    public boolean canPlaceBlockAt(WorldServer world, int xPrime, int yPrime, int zPrime)
-    {
-        return world.isSolid(xPrime - 1, yPrime, zPrime)
-        	|| world.isSolid(xPrime + 1, yPrime, zPrime)
-        	|| world.isSolid(xPrime, yPrime, zPrime - 1)
-        	|| world.isSolid(xPrime, yPrime, zPrime + 1)
-        	|| world.isSolid(xPrime, yPrime - 1, zPrime)
-        	|| world.isSolid(xPrime, yPrime + 1, zPrime);
-    }
-
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;

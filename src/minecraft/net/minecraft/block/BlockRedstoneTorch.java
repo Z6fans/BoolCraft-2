@@ -85,15 +85,6 @@ public class BlockRedstoneTorch extends Block
     {
         return side == 0 ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
-
-    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
-    {
-        return world.isSolid(x - 1, y, z)
-        	|| world.isSolid(x + 1, y, z)
-        	|| world.isSolid(x, y, z - 1)
-        	|| world.isSolid(x, y, z + 1)
-        	|| world.isSolid(x, y - 1, z);
-    }
     
     protected double minX(int meta)
     {

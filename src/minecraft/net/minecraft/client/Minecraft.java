@@ -3,7 +3,6 @@ package net.minecraft.client;
 import java.io.File;
 import java.util.Arrays;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tesselator;
@@ -33,9 +32,6 @@ public class Minecraft
 
     /** The GuiScreen that's being displayed at the moment. */
     private GuiScreen currentScreen;
-
-    /** The ray trace hit that the mouse is over. */
-    private MovingObjectPosition objectMouseOver;
 
     /** Mouse helper instance. */
     private final File mcDataDir;
@@ -216,8 +212,6 @@ public class Minecraft
                             --this.leftClickDelayTimer;
                         }
 
-                        this.computeMouseOver(1.0F);
-
                         if (this.currentScreen != null)
                         {
                             this.currentScreen.handleInput();
@@ -277,25 +271,32 @@ public class Minecraft
                                     }
                                 }
                             }
+                            
+                            MovingObjectPosition hit = null;
+                            
+                            if (this.thePlayer != null)
+                            {
+                            	hit = this.thePlayer.rayTrace8(1.0F);
+                            }
 
                             while (KeyBinding.keyBindAttack.isPressed())
                             {
-                            	this.playerLeftClick();
+                            	this.playerLeftClick(hit);
                             }
 
                             if (KeyBinding.keyBindAttack.getIsKeyPressed() && this.leftClickDelayTimer == 0)
                             {
-                                this.playerLeftClick();
+                                this.playerLeftClick(hit);
                             }
 
                             while (KeyBinding.keyBindUseItem.isPressed())
                             {
-                                this.playerRightClick();
+                                this.playerRightClick(hit);
                             }
                             
                             if (KeyBinding.keyBindUseItem.getIsKeyPressed() && this.rightClickDelayTimer == 0)
                             {
-                                this.playerRightClick();
+                                this.playerRightClick(hit);
                             }
                         }
                         
@@ -353,12 +354,11 @@ public class Minecraft
                         GL11.glPushMatrix();
                         this.renderGlobal.sortAndRender(this.thePlayer, this.renderPartialTicks);
                         GL11.glPopMatrix();
-
-                        this.computeMouseOver(this.renderPartialTicks);
                         
-                        if (this.getMouseOver() != null)
+                        MovingObjectPosition hit = this.thePlayer.rayTrace8(this.renderPartialTicks);
+                        
+                        if (hit != null)
                         {
-                            MovingObjectPosition hit = this.getMouseOver();
                             GL11.glLineWidth(2.0F);
                             int meta = this.worldServer.getBlockMetadata(hit.x, hit.y, hit.z);
                             AxisAlignedBB aabb = this.worldServer.getBlock(hit.x, hit.y, hit.z)
@@ -577,19 +577,18 @@ public class Minecraft
     	return this.inGameHasFocus;
     }
 
-	private void playerRightClick()
+	private void playerRightClick(MovingObjectPosition hit)
     {
         this.rightClickDelayTimer = 4;
 
-        if (this.objectMouseOver != null)
+        if (hit != null)
         {
         	int id = this.currentItem + 1;
-        	Block block = Block.getBlockById(id);
         	
-        	int x = this.objectMouseOver.x;
-            int y = this.objectMouseOver.y;
-            int z = this.objectMouseOver.z;
-            int side = this.objectMouseOver.side;
+        	int x = hit.x;
+            int y = hit.y;
+            int z = hit.z;
+            int side = hit.side;
             
             int[] xOff = {0, 0, 0, 0, -1, 1};
         	int[] yOff = {-1, 1, 0, 0, 0, 0};
@@ -674,15 +673,15 @@ public class Minecraft
         }
     }
 	
-	private void playerLeftClick()
+	private void playerLeftClick(MovingObjectPosition hit)
 	{
 		this.leftClickDelayTimer = 6;
 		
-		if (this.objectMouseOver != null)
+		if (hit != null)
         {
-    		int x = this.objectMouseOver.x;
-            int y = this.objectMouseOver.y;
-            int z = this.objectMouseOver.z;
+    		int x = hit.x;
+            int y = hit.y;
+            int z = hit.z;
 
             if (!this.worldServer.isReplaceable(x, y, z))
             {
@@ -757,22 +756,6 @@ public class Minecraft
         	System.out.println("Saving worlds");
             this.worldServer.saveAllChunks();
         }
-    }
-
-    /**
-     * Finds what block or object the mouse is over at the specified partial tick time. Args: partialTickTime
-     */
-    private void computeMouseOver(double partialTickTime)
-    {
-        if (this.thePlayer != null)
-        {
-        	this.objectMouseOver = this.thePlayer.rayTrace8(partialTickTime);
-        }
-    }
-    
-    public MovingObjectPosition getMouseOver()
-    {
-    	return this.objectMouseOver;
     }
     
     public String[] getSaveList()

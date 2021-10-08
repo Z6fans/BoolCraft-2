@@ -21,9 +21,4 @@ public class BlockPlain extends Block
 	public void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_){}
 
 	public void onBlockBreak(WorldServer world, int x, int y, int z, int meta){}
-
-	public boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
-	{
-		return true;
-	}
 }

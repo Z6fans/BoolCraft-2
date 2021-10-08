@@ -208,11 +208,6 @@ public abstract class Block
     }
 
     /**
-     * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
-     */
-    public abstract boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_);
-
-    /**
      * Ticks the block if it's been scheduled
      */
     public abstract void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_);

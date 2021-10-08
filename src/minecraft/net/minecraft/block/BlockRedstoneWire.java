@@ -11,11 +11,6 @@ public class BlockRedstoneWire extends Block
     	return 0.0625F;
     }
 
-    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
-    {
-        return world.isSolid(x, y - 1, z);
-    }
-
     private void computeMetadata(WorldServer world, int x, int y, int z)
     {
         int prevPower = world.getBlockMetadata(x, y, z);
@@ -176,7 +171,7 @@ public class BlockRedstoneWire extends Block
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
     {
-    	if (this.canPlaceBlockAt(world, x, y, z))
+    	if (world.isSolid(x, y - 1, z))
         {
             this.computeMetadata(world, x, y, z);
         }
