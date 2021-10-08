@@ -10,8 +10,8 @@ import net.minecraft.world.WorldServer;
 
 public abstract class Block
 {
-	private static final Block air = new BlockAir();
-    private static final Block stone = new BlockStone();
+	private static final Block air = new BlockPlain();
+    private static final Block stone = new BlockPlain();
     private static final Block redstone_wire = new BlockRedstoneWire();
     private static final Block lever = new BlockLever();
     private static final Block redstone_torch = new BlockRedstoneTorch();
@@ -67,7 +67,7 @@ public abstract class Block
         return new AxisAlignedBB(x + this.minX(meta), y + this.minY(meta), z + this.minZ(meta), x + this.maxX(meta), y + this.maxY(meta), z + this.maxZ(meta));
     }
 
-    public MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    public final MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
     	int meta = world.getBlockMetadata(x, y, z);
         playerPos = playerPos.addVector((double)(-x), (double)(-y), (double)(-z));
@@ -210,10 +210,7 @@ public abstract class Block
     /**
      * checks to see if you can place this block can be placed on that side of a block: BlockLever overrides
      */
-    public boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_)
-    {
-    	return p_149742_1_.isReplaceable(p_149742_2_, p_149742_3_, p_149742_4_);
-    }
+    public abstract boolean canPlaceBlockAt(WorldServer p_149742_1_, int p_149742_2_, int p_149742_3_, int p_149742_4_);
 
     /**
      * Ticks the block if it's been scheduled
@@ -225,16 +222,6 @@ public abstract class Block
     public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
     public abstract void onBlockBreak(WorldServer world, int x, int y, int z, int meta);
-    
-    /**
-     * Called upon block activation (right click on the block.)
-     */
-    public abstract boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_);
-
-    /**
-     * called when the block is placed, returns meta for new block
-     */
-    public abstract int onBlockPlaced(WorldServer world, int x, int y, int z, int side);
 
     public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 

@@ -545,11 +545,6 @@ public class WorldServer
         return max;
     }
 
-    public boolean canPlaceEntity(Block block, int x, int y, int z)
-    {
-        return this.isReplaceable(x, y, z) && block.canPlaceBlockAt(this, x, y, z);
-    }
-
     public long getTotalWorldTime()
     {
         return this.totalTime;

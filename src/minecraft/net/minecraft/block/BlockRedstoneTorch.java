@@ -94,38 +94,6 @@ public class BlockRedstoneTorch extends Block
         	|| world.isSolid(x, y, z + 1)
         	|| world.isSolid(x, y - 1, z);
     }
-
-    public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
-    {
-        int[] xOff = {0, 0, 0, 0, -1, 1};
-    	int[] yOff = {-1, 1, 0, 0, 0, 0};
-    	int[] zOff = {0, 0, -1, 1, 0, 0};
-        
-        if(side != 0 && world.isSolid(x - xOff[side], y - yOff[side], z - zOff[side]))
-        {
-        	return ((6 - side) % 6) | 8;
-        }
-        else if (world.isSolid(x - 1, y, z))
-        {
-            return 9;
-        }
-        else if (world.isSolid(x + 1, y, z))
-        {
-            return 10;
-        }
-        else if (world.isSolid(x, y, z - 1))
-        {
-            return 11;
-        }
-        else if (world.isSolid(x, y, z + 1))
-        {
-            return 12;
-        }
-        else
-        {
-            return 13;
-        }
-    }
     
     protected double minX(int meta)
     {
@@ -162,9 +130,4 @@ public class BlockRedstoneTorch extends Block
     	int s = meta & 7;
     	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
     }
-
-	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
-	}
 }

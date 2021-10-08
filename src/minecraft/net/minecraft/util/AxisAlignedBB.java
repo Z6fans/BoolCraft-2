@@ -20,32 +20,11 @@ public class AxisAlignedBB
     }
 
     /**
-     * Adds the coordinates to the bounding box extending it if the point lies outside the current ranges. Args: x, y, z
-     */
-    public AxisAlignedBB addCoord(double x, double y, double z)
-    {
-        return new AxisAlignedBB(x < 0.0D ? this.minX + x : this.minX,
-        		                 y < 0.0D ? this.minY + y : this.minY,
-        		                 z < 0.0D ? this.minZ + z : this.minZ,
-        		                 x > 0.0D ? this.maxX + x : this.maxX,
-        		                 y > 0.0D ? this.maxY + y : this.maxY,
-        		                 z > 0.0D ? this.maxZ + z : this.maxZ);
-    }
-
-    /**
      * Returns a bounding box expanded by the specified vector (if negative numbers are given it will shrink). Args: d
      */
     public AxisAlignedBB expand(double d)
     {
         return new AxisAlignedBB(this.minX - d, this.minY - d, this.minZ - d, this.maxX + d, this.maxY + d, this.maxZ + d);
-    }
-
-    /**
-     * Returns whether the given bounding box intersects with this one. Args: axisAlignedBB
-     */
-    public boolean intersectsWith(double x, double y, double z)
-    {
-        return x + 1 > this.minX && x < this.maxX && y + 1 > this.minY && y < this.maxY && z + 1 > this.minZ && z < this.maxZ;
     }
 
     /**

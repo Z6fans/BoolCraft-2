@@ -229,15 +229,5 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-	public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
-	{
-		return 0;
-	}
-
-	public boolean onBlockActivatedServer(WorldServer p_149727_1_, int p_149727_2_, int p_149727_3_, int p_149727_4_)
-	{
-		return false;
-	}
-
 	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 }

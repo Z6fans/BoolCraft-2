@@ -6,50 +6,14 @@ public class BlockLever extends Block
 {
 	private final float d = 0.1875F;
 
-    public boolean canPlaceBlockAt(WorldServer world, int x, int y, int z)
+    public boolean canPlaceBlockAt(WorldServer world, int xPrime, int yPrime, int zPrime)
     {
-        return world.isSolid(x - 1, y, z)
-        	|| world.isSolid(x + 1, y, z)
-        	|| world.isSolid(x, y, z - 1)
-        	|| world.isSolid(x, y, z + 1)
-        	|| world.isSolid(x, y - 1, z)
-        	|| world.isSolid(x, y + 1, z);
-    }
-
-    public int onBlockPlaced(WorldServer world, int x, int y, int z, int side)
-    {
-        int[] xOff = {0, 0, 0, 0, -1, 1};
-    	int[] yOff = {-1, 1, 0, 0, 0, 0};
-    	int[] zOff = {0, 0, -1, 1, 0, 0};
-        
-        if(world.isSolid(x - xOff[side], y - yOff[side], z - zOff[side]))
-        {
-        	return (6 - side) % 6;
-        }
-        else if (world.isSolid(x - 1, y, z))
-        {
-            return 1;
-        }
-        else if (world.isSolid(x + 1, y, z))
-        {
-            return 2;
-        }
-        else if (world.isSolid(x, y, z - 1))
-        {
-            return 3;
-        }
-        else if (world.isSolid(x, y, z + 1))
-        {
-            return 4;
-        }
-        else if (world.isSolid(x, y + 1, z))
-        {
-            return 0;
-        }
-        else
-        {
-        	return 5;
-        }
+        return world.isSolid(xPrime - 1, yPrime, zPrime)
+        	|| world.isSolid(xPrime + 1, yPrime, zPrime)
+        	|| world.isSolid(xPrime, yPrime, zPrime - 1)
+        	|| world.isSolid(xPrime, yPrime, zPrime + 1)
+        	|| world.isSolid(xPrime, yPrime - 1, zPrime)
+        	|| world.isSolid(xPrime, yPrime + 1, zPrime);
     }
 
     public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
@@ -101,44 +65,6 @@ public class BlockLever extends Block
     {
     	int s = meta & 7;
     	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
-    }
-    
-    /**
-     * Called upon block activation (right click on the block.)
-     */
-    public boolean onBlockActivatedServer(WorldServer world, int x, int y, int z)
-    {
-    	int meta = world.getBlockMetadata(x, y, z);
-        int orientation = meta & 7;
-        world.setBlockAndMeta(x, y, z, 3, meta ^ 8);
-        world.notifyBlocksOfNeighborChange(x, y, z);
-
-        if (orientation == 1)
-        {
-            world.notifyBlocksOfNeighborChange(x - 1, y, z);
-        }
-        else if (orientation == 2)
-        {
-            world.notifyBlocksOfNeighborChange(x + 1, y, z);
-        }
-        else if (orientation == 3)
-        {
-            world.notifyBlocksOfNeighborChange(x, y, z - 1);
-        }
-        else if (orientation == 4)
-        {
-            world.notifyBlocksOfNeighborChange(x, y, z + 1);
-        }
-        else if (orientation == 5)
-        {
-            world.notifyBlocksOfNeighborChange(x, y - 1, z);
-        }
-        else if (orientation == 0)
-        {
-            world.notifyBlocksOfNeighborChange(x, y + 1, z);
-        }
-        
-        return true;
     }
 
     public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)

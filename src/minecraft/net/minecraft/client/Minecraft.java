@@ -583,8 +583,8 @@ public class Minecraft
 
         if (this.objectMouseOver != null)
         {
-        	int blockID = this.currentItem + 1;
-        	Block block = Block.getBlockById(blockID);
+        	int id = this.currentItem + 1;
+        	Block block = Block.getBlockById(id);
         	
         	int x = this.objectMouseOver.x;
             int y = this.objectMouseOver.y;
@@ -599,11 +599,77 @@ public class Minecraft
         	int yPrime = y + yOff[side];
         	int zPrime = z + zOff[side];
         	
-        	if (!this.worldServer.getBlock(x, y, z).onBlockActivatedServer(this.worldServer, x, y, z)
-        			&& y < 256 && (y < 255 || side != 1) && this.worldServer.canPlaceEntity(block, xPrime, yPrime, zPrime))
+        	if ((this.worldServer.getBlocMeta(x, y, z) & 0xF) == 3)
+        	{
+        		int meta = this.worldServer.getBlockMetadata(x, y, z);
+                int orientation = meta & 7;
+                this.worldServer.setBlockAndMeta(x, y, z, 3, meta ^ 8);
+                this.worldServer.notifyBlocksOfNeighborChange(x, y, z);
+
+                if (orientation == 1)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x - 1, y, z);
+                }
+                else if (orientation == 2)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x + 1, y, z);
+                }
+                else if (orientation == 3)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x, y, z - 1);
+                }
+                else if (orientation == 4)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x, y, z + 1);
+                }
+                else if (orientation == 5)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x, y - 1, z);
+                }
+                else if (orientation == 0)
+                {
+                	this.worldServer.notifyBlocksOfNeighborChange(x, y + 1, z);
+                }
+        	}
+        	else if (y < 256 && (y < 255 || side != 1) && this.worldServer.isReplaceable(xPrime, yPrime, zPrime) && 
+        			(this.worldServer.isSolid(xPrime - 1, yPrime, zPrime)
+        		  || this.worldServer.isSolid(xPrime + 1, yPrime, zPrime)
+        		  || this.worldServer.isSolid(xPrime, yPrime, zPrime - 1)
+        		  || this.worldServer.isSolid(xPrime, yPrime, zPrime + 1)
+        		  || this.worldServer.isSolid(xPrime, yPrime - 1, zPrime)
+        		  || this.worldServer.isSolid(xPrime, yPrime + 1, zPrime)))
             {
-        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, blockID,
-        				block.onBlockPlaced(this.worldServer, xPrime, yPrime, zPrime, side));
+        		int meta = 0;
+            	
+            	if (id == 3 || id == 4)
+            	{
+            		if (this.worldServer.isSolid(x, y, z))
+                    {
+                    	meta = (6 - side) % 6;
+                    }
+                    else if (this.worldServer.isSolid(xPrime - 1, yPrime, zPrime))
+                    {
+                    	meta = 1;
+                    }
+                    else if (this.worldServer.isSolid(xPrime + 1, yPrime, zPrime))
+                    {
+                    	meta = 2;
+                    }
+                    else if (this.worldServer.isSolid(xPrime, yPrime, zPrime - 1))
+                    {
+                    	meta = 3;
+                    }
+                    else if (this.worldServer.isSolid(xPrime, yPrime, zPrime + 1))
+                    {
+                    	meta = 4;
+                    }
+                    else if (this.worldServer.isSolid(xPrime, yPrime - 1, zPrime) || id == 4)
+                    {
+                    	meta = 5;
+                    }
+            	}
+            	
+        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, id, meta | (id == 4 ? 8 : 0));
             }
         }
     }
