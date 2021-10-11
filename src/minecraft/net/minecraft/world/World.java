@@ -674,7 +674,7 @@ public class World
     	return (this.getBlocMeta(x, y, z) & 0xF) == 1;
     }
     
-    public boolean isReplaceable(int x, int y, int z)
+    public boolean isAir(int x, int y, int z)
     {
     	return (this.getBlocMeta(x, y, z) & 0xF) == 0;
     }

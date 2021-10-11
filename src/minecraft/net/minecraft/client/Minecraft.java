@@ -342,8 +342,9 @@ public class Minecraft
                             GL11.glLineWidth(2.0F);
                             int meta = this.world.getBlockMetadata(hit.x, hit.y, hit.z);
                             AxisAlignedBB aabb = this.world.getBlock(hit.x, hit.y, hit.z)
-                            		.generateCubicBoundingBox(hit.x, hit.y, hit.z, meta)
-                            		.expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
+                            		.generateCubicBoundingBox(meta)
+                            		.offset(hit.x-ppos.x, hit.y-ppos.y, hit.z-ppos.z)
+                            		.expand(0.002F);
                             Tesselator tess = Tesselator.instance;
                             tess.setColor_I(0x44CCCCCC);
                             tess.startDrawing();
@@ -597,13 +598,14 @@ public class Minecraft
                 	this.world.notifyBlocksOfNeighborChange(x, y + 1, z);
                 }
         	}
-        	else if (y < 256 && (y < 255 || side != 1) && this.world.isReplaceable(xPrime, yPrime, zPrime) && 
+        	else if (y < 256 && (y < 255 || side != 1) && this.world.isAir(xPrime, yPrime, zPrime) && 
         			(this.world.isSolid(xPrime - 1, yPrime, zPrime)
         		  || this.world.isSolid(xPrime + 1, yPrime, zPrime)
         		  || this.world.isSolid(xPrime, yPrime, zPrime - 1)
         		  || this.world.isSolid(xPrime, yPrime, zPrime + 1)
         		  || this.world.isSolid(xPrime, yPrime - 1, zPrime)
-        		  || this.world.isSolid(xPrime, yPrime + 1, zPrime)))
+        		  || this.world.isSolid(xPrime, yPrime + 1, zPrime)
+        		  || id == 1))
             {
         		int meta = 0;
             	
@@ -650,7 +652,7 @@ public class Minecraft
             int y = hit.y;
             int z = hit.z;
 
-            if (!this.world.isReplaceable(x, y, z))
+            if (!this.world.isAir(x, y, z))
             {
                 this.world.setBlockAndMeta(x, y, z, 0, 0);
             }

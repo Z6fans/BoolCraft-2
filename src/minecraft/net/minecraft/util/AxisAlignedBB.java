@@ -34,4 +34,11 @@ public class AxisAlignedBB
     {
         return new AxisAlignedBB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x, this.maxY + y, this.maxZ + z);
     }
+    
+    public boolean contains(Vec3 v)
+    {
+    	return v.x >= this.minX && v.x <= this.maxX
+    		&& v.y >= this.minY && v.y <= this.maxY
+    		&& v.z >= this.minZ && v.z <= this.maxZ;
+    }
 }

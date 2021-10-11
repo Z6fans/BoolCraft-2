@@ -70,7 +70,7 @@ public class Vec3
         else
         {
             double var10 = (xCoord - this.x) / var4;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(xCoord, this.y + var6 * var10, this.z + var8 * var10) : null;
         }
     }
 
@@ -91,7 +91,7 @@ public class Vec3
         else
         {
             double var10 = (yCoord - this.y) / var6;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, yCoord, this.z + var8 * var10) : null;
         }
     }
 
@@ -112,7 +112,7 @@ public class Vec3
         else
         {
             double var10 = (zCoord - this.z) / var8;
-            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, this.z + var8 * var10) : null;
+            return var10 >= 0.0D && var10 <= 1.0D ? new Vec3(this.x + var4 * var10, this.y + var6 * var10, zCoord) : null;
         }
     }
 }

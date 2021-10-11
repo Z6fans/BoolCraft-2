@@ -4,9 +4,7 @@ import net.minecraft.world.World;
 
 public class BlockLever extends Block
 {
-	private final float d = 0.1875F;
-
-    public void onNeighborBlockChange(World world, int x, int y, int z)
+	public void onNeighborBlockChange(World world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 

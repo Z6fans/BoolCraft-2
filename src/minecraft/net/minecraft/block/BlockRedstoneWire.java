@@ -8,7 +8,7 @@ public class BlockRedstoneWire extends Block
     
     protected double maxY(int meta)
     {
-    	return 0.0625F;
+    	return d/2f;
     }
 
     private void computeMetadata(World world, int x, int y, int z)

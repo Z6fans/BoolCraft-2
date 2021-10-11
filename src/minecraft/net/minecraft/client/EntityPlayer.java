@@ -194,7 +194,7 @@ public class EntityPlayer
      */
     public MovingObjectPosition rayTrace8()
     {
-        Vec3 playerPos = this.pttPos(1.0F);
+        Vec3 playerPos = new Vec3(this.posX, this.posY, this.posZ);
         double cy = MathHelper.cos(-this.rotationYaw * 0.017453292D - Math.PI);
         double sy = MathHelper.sin(-this.rotationYaw * 0.017453292D - Math.PI);
         double cp = -MathHelper.cos(-this.rotationPitch * 0.017453292D);
@@ -210,13 +210,13 @@ public class EntityPlayer
             int playerBlockY = MathHelper.floor_double(playerPos.y);
             int playerBlockZ = MathHelper.floor_double(playerPos.z);
 
-            if (!this.worldServer.isReplaceable(playerBlockX, playerBlockY, playerBlockZ))
+            if (!this.worldServer.isAir(playerBlockX, playerBlockY, playerBlockZ))
             {
-                MovingObjectPosition playerBlockPos = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                MovingObjectPosition hit = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
-                if (playerBlockPos != null)
+                if (hit != null)
                 {
-                    return playerBlockPos;
+                    return hit;
                 }
             }
 
@@ -368,13 +368,13 @@ public class EntityPlayer
                     ++var36.z;
                 }
 
-                if (!this.worldServer.isReplaceable(playerBlockX, playerBlockY, playerBlockZ))
+                if (!this.worldServer.isAir(playerBlockX, playerBlockY, playerBlockZ))
                 {
-                    MovingObjectPosition var39 = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                    MovingObjectPosition hit = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
 
-                    if (var39 != null)
+                    if (hit != null)
                     {
-                        return var39;
+                        return hit;
                     }
                 }
             }

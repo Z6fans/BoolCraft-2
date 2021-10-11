@@ -4,9 +4,7 @@ import net.minecraft.world.World;
 
 public class BlockRedstoneTorch extends Block
 {
-	private final float d = 0.1875F;
-	
-    public void onBlockAdded(World world, int x, int y, int z)
+	public void onBlockAdded(World world, int x, int y, int z)
     {
     	if ((world.getBlockMetadata(x, y, z) & 8) > 0)
         {
