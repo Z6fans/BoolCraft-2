@@ -6,7 +6,7 @@ import java.util.Map;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 public abstract class Block
 {
@@ -67,7 +67,7 @@ public abstract class Block
         return new AxisAlignedBB(x + this.minX(meta), y + this.minY(meta), z + this.minZ(meta), x + this.maxX(meta), y + this.maxY(meta), z + this.maxZ(meta));
     }
 
-    public final MovingObjectPosition collisionRayTrace(WorldServer world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    public final MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
     	int meta = world.getBlockMetadata(x, y, z);
         playerPos = playerPos.addVector((double)(-x), (double)(-y), (double)(-z));
@@ -210,15 +210,15 @@ public abstract class Block
     /**
      * Ticks the block if it's been scheduled
      */
-    public abstract void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_);
+    public abstract void updateTick(World p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_);
 
-    public abstract void onNeighborBlockChange(WorldServer p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_);
+    public abstract void onNeighborBlockChange(World p_149695_1_, int p_149695_2_, int p_149695_3_, int p_149695_4_);
 
-    public abstract void onBlockAdded(WorldServer p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
+    public abstract void onBlockAdded(World p_149726_1_, int p_149726_2_, int p_149726_3_, int p_149726_4_);
 
-    public abstract void onBlockBreak(WorldServer world, int x, int y, int z, int meta);
+    public abstract void onBlockBreak(World world, int x, int y, int z, int meta);
 
-    public abstract int isProvidingWeakPower(WorldServer p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
+    public abstract int isProvidingWeakPower(World p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_);
 
-    public abstract int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side);
+    public abstract int isProvidingStrongPower(World world, int x, int y, int z, int side);
 }

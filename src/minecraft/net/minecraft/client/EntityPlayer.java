@@ -6,7 +6,7 @@ import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 public class EntityPlayer
 {
@@ -18,7 +18,7 @@ public class EntityPlayer
 
     /** Entity position Z */
     private double posZ;
-	private final WorldServer worldServer;
+	private final World worldServer;
     private double prevPosX;
     private double prevPosY;
     private double prevPosZ;
@@ -29,7 +29,7 @@ public class EntityPlayer
     /** Entity rotation Pitch */
     private double rotationPitch;
 
-    public EntityPlayer(WorldServer worldServ)
+    public EntityPlayer(World worldServ)
     {
     	this.worldServer = worldServ;
         this.prevPosX = this.posX = this.prevPosZ = this.posZ = 0;
@@ -192,9 +192,9 @@ public class EntityPlayer
     /**
      * Pure function. Performs a ray trace for the distance specified and using the partial tick time. Args: distance, partialTickTime
      */
-    public MovingObjectPosition rayTrace8(double ptt)
+    public MovingObjectPosition rayTrace8()
     {
-        Vec3 playerPos = this.pttPos(ptt);
+        Vec3 playerPos = this.pttPos(1.0F);
         double cy = MathHelper.cos(-this.rotationYaw * 0.017453292D - Math.PI);
         double sy = MathHelper.sin(-this.rotationYaw * 0.017453292D - Math.PI);
         double cp = -MathHelper.cos(-this.rotationPitch * 0.017453292D);

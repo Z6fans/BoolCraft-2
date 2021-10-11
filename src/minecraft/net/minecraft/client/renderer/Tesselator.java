@@ -31,9 +31,6 @@ public class Tesselator
     /** The index into the raw buffer to be used for the next data. */
     private int rawBufferIndex;
 
-    /** The draw mode currently being used by the tessellator. */
-    private int drawMode;
-
     /**
      * An offset to be applied along the x-axis for all vertices in this draw call.
      */
@@ -91,7 +88,7 @@ public class Tesselator
                 this.floatBuffer.position(0);
                 GL11.glVertexPointer(3, 16, this.floatBuffer);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
+                GL11.glDrawArrays(GL11.GL_QUADS, 0, this.vertexCount);
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
             }
@@ -113,7 +110,7 @@ public class Tesselator
     /**
      * Resets tessellator state and prepares for drawing (with the specified draw mode).
      */
-    public void startDrawing(int mode)
+    public void startDrawing()
     {
         if (this.isDrawing)
         {
@@ -123,7 +120,6 @@ public class Tesselator
         {
             this.isDrawing = true;
             this.reset();
-            this.drawMode = mode;
         }
     }
 

@@ -1,6 +1,6 @@
 package net.minecraft.block;
 
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 public class BlockRedstoneWire extends Block
 {
@@ -11,7 +11,7 @@ public class BlockRedstoneWire extends Block
     	return 0.0625F;
     }
 
-    private void computeMetadata(WorldServer world, int x, int y, int z)
+    private void computeMetadata(World world, int x, int y, int z)
     {
         int prevPower = world.getBlockMetadata(x, y, z);
         int currentPower = this.maxRedstonePowerAt(world, x, y, z, 0);
@@ -89,7 +89,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    private int maxRedstonePowerAt(WorldServer world, int x, int y, int z, int other)
+    private int maxRedstonePowerAt(World world, int x, int y, int z, int other)
     {
         if (world.isWire(x, y, z))
         {
@@ -101,7 +101,7 @@ public class BlockRedstoneWire extends Block
         }
     }
     
-    private void notifyNeighbors(WorldServer world, int x, int y, int z)
+    private void notifyNeighbors(World world, int x, int y, int z)
     {
     	world.notifyBlocksOfNeighborChange(x, y, z);
         world.notifyBlocksOfNeighborChange(x - 1, y, z);
@@ -112,7 +112,7 @@ public class BlockRedstoneWire extends Block
         world.notifyBlocksOfNeighborChange(x, y + 1, z);
     }
 
-    public void onBlockAdded(WorldServer world, int x, int y, int z)
+    public void onBlockAdded(World world, int x, int y, int z)
     {
     	this.computeMetadata(world, x, y, z);
         world.notifyBlocksOfNeighborChange(x, y + 1, z);
@@ -159,7 +159,7 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
+    public void onBlockBreak(World world, int x, int y, int z, int meta)
     {
     	world.notifyBlocksOfNeighborChange(x, y + 1, z);
         world.notifyBlocksOfNeighborChange(x, y - 1, z);
@@ -169,7 +169,7 @@ public class BlockRedstoneWire extends Block
         world.notifyBlocksOfNeighborChange(x, y, z - 1);
     }
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
+    public void onNeighborBlockChange(World world, int x, int y, int z)
     {
     	if (world.isSolid(x, y - 1, z))
         {
@@ -181,12 +181,12 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-    public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingStrongPower(World world, int x, int y, int z, int side)
     {
         return this.isProvidingWeakPower(world, x, y, z, side);
     }
 
-    public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingWeakPower(World world, int x, int y, int z, int side)
     {
         if (this.isCheckingForPower)
         {
@@ -224,5 +224,5 @@ public class BlockRedstoneWire extends Block
         }
     }
 
-	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
+	public void updateTick(World p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 }

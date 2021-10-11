@@ -1,12 +1,12 @@
 package net.minecraft.block;
 
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 public class BlockRedstoneTorch extends Block
 {
 	private final float d = 0.1875F;
 	
-    public void onBlockAdded(WorldServer world, int x, int y, int z)
+    public void onBlockAdded(World world, int x, int y, int z)
     {
     	if ((world.getBlockMetadata(x, y, z) & 8) > 0)
         {
@@ -19,7 +19,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
+    public void onBlockBreak(World world, int x, int y, int z, int meta)
     {
         if ((meta & 8) > 0)
         {
@@ -32,7 +32,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingWeakPower(World world, int x, int y, int z, int side)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
         return (meta == 5 && side == 1)
@@ -43,7 +43,7 @@ public class BlockRedstoneTorch extends Block
         	|| (world.getBlockMetadata(x, y, z) & 8) == 0 ? 0 : 15;
     }
 
-    private boolean isGettingPower(WorldServer world, int x, int y, int z)
+    private boolean isGettingPower(World world, int x, int y, int z)
     {
         int meta = world.getBlockMetadata(x, y, z) & 7;
         return meta == 5 && world.getIndirectPowerOutput(x, y - 1, z, 0)
@@ -56,14 +56,14 @@ public class BlockRedstoneTorch extends Block
     /**
      * Ticks the block if it's been scheduled
      */
-    public void updateTick(WorldServer world, int x, int y, int z)
+    public void updateTick(World world, int x, int y, int z)
     {
     	world.setBlockAndMeta(x, y, z, 4, (world.getBlockMetadata(x, y, z) & 7) | (this.isGettingPower(world, x, y, z) ? 0 : 8));
         world.notifyBlocksOfNeighborChange(x, y, z);
         if (world.isSolid(x, y + 1, z)) world.notifyBlocksOfNeighborChange(x, y + 1, z);
     }
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
+    public void onNeighborBlockChange(World world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 
@@ -81,7 +81,7 @@ public class BlockRedstoneTorch extends Block
         }
     }
 
-    public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingStrongPower(World world, int x, int y, int z, int side)
     {
         return side == 0 ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }

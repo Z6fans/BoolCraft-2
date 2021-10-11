@@ -1,7 +1,6 @@
 package net.minecraft.client;
 
 import java.io.File;
-import java.util.Arrays;
 
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -10,10 +9,9 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 import org.lwjgl.LWJGLException;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -27,11 +25,11 @@ public class Minecraft
 {
     public int displayWidth;
     public int displayHeight;
-    public RenderGlobal renderGlobal;
-    private EntityPlayer thePlayer;
+    private RenderGlobal render;
+    private EntityPlayer player;
 
     /** The GuiScreen that's being displayed at the moment. */
-    private GuiScreen currentScreen;
+    private GuiScreen menu;
 
     /** Mouse helper instance. */
     private final File mcDataDir;
@@ -46,38 +44,20 @@ public class Minecraft
      * Does the actual gameplay have focus. If so then mouse and keys will effect the player instead of menus.
      */
     private boolean inGameHasFocus;
-    private long systemTime = getSystemTime();
 
     /**
      * Set to true to keep the game loop running. Set to false by shutdown() to allow the game loop to exit cleanly.
      */
     private volatile boolean running = true;
     
-    //server section
-    
     /** The server world instance. */
-    private WorldServer worldServer;
-
-    /**
-     * Indicates whether the server is running or not. Set to false to initiate a shutdown.
-     */
-    private boolean serverRunning = false;
+    private World world;
 
     /** Incremented every tick. */
     private int tickCounter;
-
-    /**
-     * Set when warned for "Can't keep up", which triggers again after 15 seconds.
-     */
-    private long timeOfLastWarning;
     private long prevTime;
     private long tickTimer;
     private int currentItem;
-    
-    /**
-     * Reference to the File object representing the directory for the world saves
-     */
-    private File savesDirectory;
 
     /**
      * How much time has elapsed since the last tick, in ticks (range: 0.0 - 1.0).
@@ -111,17 +91,10 @@ public class Minecraft
     /**
      * Checks for an OpenGL error. If there is one, prints the error ID and error string.
      */
-    private void checkGLError(String description)
+    private void checkGLError(String s)
     {
-        int err = GL11.glGetError();
-
-        if (err != 0)
-        {
-            String errstring = GLU.gluErrorString(err);
-            System.out.println("########## GL ERROR ##########");
-            System.out.println("@ " + description);
-            System.out.println(err + ": " + errstring);
-        }
+        int e = GL11.glGetError();
+        if (e != 0) System.out.println("GL ERROR @ " + s + "\n" + e + ": " + GLU.gluErrorString(e));
     }
 
     public void run()
@@ -133,7 +106,6 @@ public class Minecraft
         	Display.setDisplayMode(new DisplayMode(this.displayWidth, this.displayHeight));
             Display.setResizable(true);
             Display.setTitle("Boolcraft");
-            System.out.println("LWJGL Version: " + Sys.getVersion());
 
             try
             {
@@ -146,18 +118,16 @@ public class Minecraft
                 try {Thread.sleep(1000L);} catch (InterruptedException ee) {}
                 Display.create();
             }
-
-            this.savesDirectory = new File(this.mcDataDir, "saves");
-            this.savesDirectory.mkdirs();
+            
             //GL11 calls begin
             GL11.glMatrixMode(GL11.GL_PROJECTION);
             GL11.glLoadIdentity();
             GL11.glMatrixMode(GL11.GL_MODELVIEW);
             GL11.glLoadIdentity();
             GL11.glFlush();
-            this.renderGlobal = new RenderGlobal();
+            this.render = new RenderGlobal();
             this.checkGLError("Startup");
-            this.currentScreen = new GuiScreen(this, this.displayWidth, this.displayHeight);
+            this.menu = new GuiScreen(this, this.mcDataDir, this.displayWidth, this.displayHeight);
         }
         catch (Throwable e)
         {
@@ -191,7 +161,7 @@ public class Minecraft
                         diffHRClockSecs = 1.0D;
                     }
 
-                    this.renderPartialTicks = this.renderPartialTicks + diffHRClockSecs * 20;
+                    this.renderPartialTicks += diffHRClockSecs * 20;
                     int elapsedTicks = (int)this.renderPartialTicks;
                     this.renderPartialTicks -= (double)elapsedTicks;
 
@@ -212,9 +182,9 @@ public class Minecraft
                             --this.leftClickDelayTimer;
                         }
 
-                        if (this.currentScreen != null)
+                        if (this.menu != null)
                         {
-                            this.currentScreen.handleInput();
+                            this.menu.handleInput();
                         }
                         else
                         {
@@ -235,13 +205,10 @@ public class Minecraft
                                     {
                                         KeyBinding.onTick(mouseButton);
                                     }
+                                    
+                                    int mouseScroll = Mouse.getEventDWheel();
 
-                                    if (getSystemTime() - this.systemTime <= 200L)
-                                    {
-                                        int mouseScroll = Mouse.getEventDWheel();
-
-                                        this.currentItem = (this.currentItem + 4 - (mouseScroll > 0 ? 1 : mouseScroll < 0 ? -1 : 0)) % 4;
-                                    }
+                                    this.currentItem = (this.currentItem + 4 - (mouseScroll > 0 ? 1 : mouseScroll < 0 ? -1 : 0)) % 4;
                             	}
                             }
 
@@ -266,7 +233,7 @@ public class Minecraft
                                         if (Keyboard.isKeyDown(Keyboard.KEY_FUNCTION))
                                         {
                                         	this.loadWorldNull();
-                                            this.currentScreen = new GuiScreen(this, this.displayWidth, this.displayHeight);
+                                            this.menu = new GuiScreen(this, this.mcDataDir, this.displayWidth, this.displayHeight);
                                         }
                                     }
                                 }
@@ -274,9 +241,9 @@ public class Minecraft
                             
                             MovingObjectPosition hit = null;
                             
-                            if (this.thePlayer != null)
+                            if (this.player != null)
                             {
-                            	hit = this.thePlayer.rayTrace8(1.0F);
+                            	hit = this.player.rayTrace8();
                             }
 
                             while (KeyBinding.keyBindAttack.isPressed())
@@ -300,20 +267,18 @@ public class Minecraft
                             }
                         }
                         
-                        if (this.thePlayer != null)
+                        if (this.player != null)
                         {
                         	try
                             {
-                        		this.thePlayer.onUpdate();
-                        		this.worldServer.updateMountedMovingPlayer(this.thePlayer.getPosX(), this.thePlayer.getPosZ());
+                        		this.player.onUpdate();
+                        		this.world.updateMountedMovingPlayer(this.player.getPosX(), this.player.getPosZ());
                             }
                             catch (Throwable t)
                             {
                                 throw new RuntimeException("Ticking entity", t);
                             }
                         }
-                        
-                        this.systemTime = getSystemTime();
                     }
                     
                     this.checkGLError("Pre render");
@@ -321,7 +286,7 @@ public class Minecraft
                     GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     
-                    if (this.currentScreen != null)
+                    if (this.menu != null)
                     {
                         GL11.glEnable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -332,13 +297,13 @@ public class Minecraft
                         GL11.glEnable(GL11.GL_ALPHA_TEST);
                         GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
                         GL11.glColor4f(1, 1, 1, 1);
-                    	this.currentScreen.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
+                    	this.menu.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
                     }
-                    else if (this.thePlayer != null)
+                    else if (this.player != null)
                     {
-                        if (this.getInGameHasFocus() && Display.isActive())
+                        if (this.inGameHasFocus && Display.isActive())
                         {
-                        	this.thePlayer.setAngles();
+                        	this.player.setAngles();
                         }
                         
                         GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -347,48 +312,58 @@ public class Minecraft
                         Project.gluPerspective(110, (float)this.displayWidth / (float)this.displayHeight, 0.05F, 512.0F); //FOV
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
-                        GL11.glRotatef((float)this.thePlayer.getRotationPitch(), 1.0F, 0.0F, 0.0F);
-                        GL11.glRotatef((float)this.thePlayer.getRotationYaw() + 180.0F, 0.0F, 1.0F, 0.0F);
-                        Vec3 ppos = this.thePlayer.pttPos(this.renderPartialTicks);
-                        this.renderGlobal.updateRenderers(this.thePlayer, ppos.x, ppos.y, ppos.z);
+                        GL11.glRotatef((float)this.player.getRotationPitch(), 1.0F, 0.0F, 0.0F);
+                        GL11.glRotatef((float)this.player.getRotationYaw() + 180.0F, 0.0F, 1.0F, 0.0F);
+                        Vec3 ppos = this.player.pttPos(this.renderPartialTicks);
+                        this.render.updateRenderers(this.player, ppos);
                         GL11.glPushMatrix();
-                        this.renderGlobal.sortAndRender(this.thePlayer, this.renderPartialTicks);
+                        this.render.sortAndRender(this.player, ppos);
                         GL11.glPopMatrix();
                         
-                        MovingObjectPosition hit = this.thePlayer.rayTrace8(this.renderPartialTicks);
+                        GL11.glEnable(GL11.GL_BLEND);
+                        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+                        
+                        MovingObjectPosition hit = this.player.rayTrace8();
                         
                         if (hit != null)
                         {
                             GL11.glLineWidth(2.0F);
-                            int meta = this.worldServer.getBlockMetadata(hit.x, hit.y, hit.z);
-                            AxisAlignedBB aabb = this.worldServer.getBlock(hit.x, hit.y, hit.z)
+                            int meta = this.world.getBlockMetadata(hit.x, hit.y, hit.z);
+                            AxisAlignedBB aabb = this.world.getBlock(hit.x, hit.y, hit.z)
                             		.generateCubicBoundingBox(hit.x, hit.y, hit.z, meta)
                             		.expand(0.002F).offset(-ppos.x, -ppos.y, -ppos.z);
                             Tesselator tess = Tesselator.instance;
-                            tess.setColor_I(0xFF000000);
-                            tess.startDrawing(3);
+                            tess.setColor_I(0x44CCCCCC);
+                            tess.startDrawing();
+                            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
+                            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
+                            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+
+                            tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
+                            tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+                            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
                             tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
-                            tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-                            tess.draw();
-                            tess.startDrawing(3);
+
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
                             tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
-                            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-                            tess.draw();
-                            tess.startDrawing(1);
+                            
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
-                            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
-                            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
-                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
-                            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
-                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
                             tess.addVertex(aabb.minX, aabb.minY, aabb.maxZ);
                             tess.addVertex(aabb.minX, aabb.maxY, aabb.maxZ);
+                            tess.addVertex(aabb.minX, aabb.maxY, aabb.minZ);
+                            
+                            tess.addVertex(aabb.maxX, aabb.minY, aabb.minZ);
+                            tess.addVertex(aabb.maxX, aabb.minY, aabb.maxZ);
+                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.maxZ);
+                            tess.addVertex(aabb.maxX, aabb.maxY, aabb.minZ);
                             tess.draw();
                         }
                         
@@ -400,9 +375,8 @@ public class Minecraft
                         GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
                         
-                        GL11.glEnable(GL11.GL_BLEND);
-                        GL11.glBlendFunc(770, 771);
                         int sWidth = this.displayWidth;
                         int sHeight = this.displayHeight;
                         drawRect(sWidth / 2 - 41 - 1 + this.currentItem * 20, sHeight - 22 - 1,
@@ -421,33 +395,40 @@ public class Minecraft
                     
                     GL11.glFlush();
                     GL11.glPopMatrix();
-                    this.updateDisplaySize();
+                    Display.update();
+
+                    if (Display.wasResized())
+                    {
+                        this.displayWidth = Display.getWidth();
+                        this.displayHeight = Display.getHeight();
+
+                        if (this.displayWidth <= 0)
+                        {
+                            this.displayWidth = 1;
+                        }
+
+                        if (this.displayHeight <= 0)
+                        {
+                            this.displayHeight = 1;
+                        }
+                    }
+                    
                     this.checkGLError("Post render");
                 }
                 catch (OutOfMemoryError e)
                 {
-                    this.renderGlobal.deleteAllDisplayLists();
+                    this.render.deleteAllDisplayLists();
                     System.gc();
                     this.loadWorldNull();
                     this.shutdown();
                 }
                 
-                if(this.serverRunning){
+                if (this.player != null)
+                {
             		long currentTime = System.currentTimeMillis();
                     long deltaTime = currentTime - prevTime;
 
-                    if (deltaTime > 2000L && prevTime - this.timeOfLastWarning >= 15000L)
-                    {
-                        System.out.println("Running " + deltaTime + "ms behind, skipping " + deltaTime / 50L + " tick(s)");
-                        deltaTime = 2000L;
-                        this.timeOfLastWarning = prevTime;
-                    }
-
-                    if (deltaTime < 0L)
-                    {
-                    	System.out.println("Time ran backwards! Did the system time change?");
-                        deltaTime = 0L;
-                    }
+                    if (deltaTime < 0L) deltaTime = 0L;
 
                     tickTimer += deltaTime;
                     prevTime = currentTime;
@@ -460,7 +441,7 @@ public class Minecraft
 
                         try
                         {
-                        	this.worldServer.tick();
+                        	this.world.tick();
                         }
                         catch (Throwable t)
                         {
@@ -469,7 +450,7 @@ public class Minecraft
 
                         try
                         {
-                        	this.worldServer.updateEntities();
+                        	this.world.updateEntities();
                         }
                         catch (Throwable t)
                         {
@@ -522,34 +503,13 @@ public class Minecraft
     private static void drawRect(int x1, int y1, int x2, int y2, int color)
     {
         Tesselator tessellator = Tesselator.instance;
-        tessellator.startDrawing(7);
+        tessellator.startDrawing();
         tessellator.setColor_I(color);
         tessellator.addVertex(x1, y2, 0);
         tessellator.addVertex(x2, y2, 0);
         tessellator.addVertex(x2, y1, 0);
         tessellator.addVertex(x1, y1, 0);
         tessellator.draw();
-    }
-
-    private void updateDisplaySize()
-    {
-        Display.update();
-
-        if (Display.wasResized())
-        {
-            this.displayWidth = Display.getWidth();
-            this.displayHeight = Display.getHeight();
-
-            if (this.displayWidth <= 0)
-            {
-                this.displayWidth = 1;
-            }
-
-            if (this.displayHeight <= 0)
-            {
-                this.displayHeight = 1;
-            }
-        }
     }
 
     /**
@@ -570,11 +530,6 @@ public class Minecraft
             this.inGameHasFocus = true;
             Mouse.setGrabbed(true);
         }
-    }
-    
-    public boolean getInGameHasFocus()
-    {
-    	return this.inGameHasFocus;
     }
 
 	private void playerRightClick(MovingObjectPosition hit)
@@ -598,77 +553,77 @@ public class Minecraft
         	int yPrime = y + yOff[side];
         	int zPrime = z + zOff[side];
         	
-        	if ((this.worldServer.getBlocMeta(x, y, z) & 0xF) == 3)
+        	if ((this.world.getBlocMeta(x, y, z) & 0xF) == 3)
         	{
-        		int meta = this.worldServer.getBlockMetadata(x, y, z);
+        		int meta = this.world.getBlockMetadata(x, y, z);
                 int orientation = meta & 7;
-                this.worldServer.setBlockAndMeta(x, y, z, 3, meta ^ 8);
-                this.worldServer.notifyBlocksOfNeighborChange(x, y, z);
+                this.world.setBlockAndMeta(x, y, z, 3, meta ^ 8);
+                this.world.notifyBlocksOfNeighborChange(x, y, z);
 
                 if (orientation == 1)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x - 1, y, z);
+                	this.world.notifyBlocksOfNeighborChange(x - 1, y, z);
                 }
                 else if (orientation == 2)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x + 1, y, z);
+                	this.world.notifyBlocksOfNeighborChange(x + 1, y, z);
                 }
                 else if (orientation == 3)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x, y, z - 1);
+                	this.world.notifyBlocksOfNeighborChange(x, y, z - 1);
                 }
                 else if (orientation == 4)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x, y, z + 1);
+                	this.world.notifyBlocksOfNeighborChange(x, y, z + 1);
                 }
                 else if (orientation == 5)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x, y - 1, z);
+                	this.world.notifyBlocksOfNeighborChange(x, y - 1, z);
                 }
                 else if (orientation == 0)
                 {
-                	this.worldServer.notifyBlocksOfNeighborChange(x, y + 1, z);
+                	this.world.notifyBlocksOfNeighborChange(x, y + 1, z);
                 }
         	}
-        	else if (y < 256 && (y < 255 || side != 1) && this.worldServer.isReplaceable(xPrime, yPrime, zPrime) && 
-        			(this.worldServer.isSolid(xPrime - 1, yPrime, zPrime)
-        		  || this.worldServer.isSolid(xPrime + 1, yPrime, zPrime)
-        		  || this.worldServer.isSolid(xPrime, yPrime, zPrime - 1)
-        		  || this.worldServer.isSolid(xPrime, yPrime, zPrime + 1)
-        		  || this.worldServer.isSolid(xPrime, yPrime - 1, zPrime)
-        		  || this.worldServer.isSolid(xPrime, yPrime + 1, zPrime)))
+        	else if (y < 256 && (y < 255 || side != 1) && this.world.isReplaceable(xPrime, yPrime, zPrime) && 
+        			(this.world.isSolid(xPrime - 1, yPrime, zPrime)
+        		  || this.world.isSolid(xPrime + 1, yPrime, zPrime)
+        		  || this.world.isSolid(xPrime, yPrime, zPrime - 1)
+        		  || this.world.isSolid(xPrime, yPrime, zPrime + 1)
+        		  || this.world.isSolid(xPrime, yPrime - 1, zPrime)
+        		  || this.world.isSolid(xPrime, yPrime + 1, zPrime)))
             {
         		int meta = 0;
             	
             	if (id == 3 || id == 4)
             	{
-            		if (this.worldServer.isSolid(x, y, z))
+            		if (this.world.isSolid(x, y, z))
                     {
                     	meta = (6 - side) % 6;
                     }
-                    else if (this.worldServer.isSolid(xPrime - 1, yPrime, zPrime))
+                    else if (this.world.isSolid(xPrime - 1, yPrime, zPrime))
                     {
                     	meta = 1;
                     }
-                    else if (this.worldServer.isSolid(xPrime + 1, yPrime, zPrime))
+                    else if (this.world.isSolid(xPrime + 1, yPrime, zPrime))
                     {
                     	meta = 2;
                     }
-                    else if (this.worldServer.isSolid(xPrime, yPrime, zPrime - 1))
+                    else if (this.world.isSolid(xPrime, yPrime, zPrime - 1))
                     {
                     	meta = 3;
                     }
-                    else if (this.worldServer.isSolid(xPrime, yPrime, zPrime + 1))
+                    else if (this.world.isSolid(xPrime, yPrime, zPrime + 1))
                     {
                     	meta = 4;
                     }
-                    else if (this.worldServer.isSolid(xPrime, yPrime - 1, zPrime) || id == 4)
+                    else if (this.world.isSolid(xPrime, yPrime - 1, zPrime) || id == 4)
                     {
                     	meta = 5;
                     }
             	}
             	
-        		this.worldServer.setBlockAndMeta(xPrime, yPrime, zPrime, id, meta | (id == 4 ? 8 : 0));
+        		this.world.setBlockAndMeta(xPrime, yPrime, zPrime, id, meta | (id == 4 ? 8 : 0));
             }
         }
     }
@@ -683,9 +638,9 @@ public class Minecraft
             int y = hit.y;
             int z = hit.z;
 
-            if (!this.worldServer.isReplaceable(x, y, z))
+            if (!this.world.isReplaceable(x, y, z))
             {
-                this.worldServer.setBlockAndMeta(x, y, z, 0, 0);
+                this.world.setBlockAndMeta(x, y, z, 0, 0);
             }
         }
 	}
@@ -693,57 +648,45 @@ public class Minecraft
     /**
      * Arguments: World name
      */
-    public void launchIntegratedServer(String name)
+    public void launchIntegratedServer(File dir)
     {
         this.loadWorldNull();
         System.gc();
 
         try
         {
-            this.serverRunning = true;
             System.out.println("Starting integrated minecraft server version 1.7.10");
-            this.worldServer = new WorldServer(this, new File(this.savesDirectory, name));
+            this.world = new World(this.render, dir);
             
             prevTime = System.currentTimeMillis();
             tickTimer = 0L;
 
-            if (this.renderGlobal != null)
+            if (this.render != null)
             {
-                this.renderGlobal.setWorldAndLoadRenderers(this.worldServer);
+                this.render.setWorldAndLoadRenderers(this.world);
             }
 
-            this.thePlayer = new EntityPlayer(this.worldServer);
+            this.player = new EntityPlayer(this.world);
 
             System.gc();
-            this.systemTime = 0L;
             
-            this.worldServer.spawnPlayerInWorld(this);
+            this.world.spawnPlayerInWorld(this);
         }
         catch (Throwable t)
         {
             throw new RuntimeException("Starting integrated server", t);
         }
 
-        this.currentScreen = null;
+        this.menu = null;
         Keyboard.enableRepeatEvents(false);
         this.setIngameFocus();
     }
     
     private void loadWorldNull()
     {
-    	this.serverRunning = false;
         this.saveAllWorlds();
-        this.thePlayer = null;
+        this.player = null;
         System.gc();
-        this.systemTime = 0L;
-    }
-
-    /**
-     * Gets the system time in milliseconds.
-     */
-    private static long getSystemTime()
-    {
-        return Sys.getTime() * 1000L / Sys.getTimerResolution();
     }
     
     /**
@@ -751,15 +694,10 @@ public class Minecraft
      */
     public void saveAllWorlds()
     {
-    	if (this.worldServer != null)
+    	if (this.world != null)
         {
         	System.out.println("Saving worlds");
-            this.worldServer.saveAllChunks();
+            this.world.saveAllChunks();
         }
-    }
-    
-    public String[] getSaveList()
-    {
-        return Arrays.stream(this.savesDirectory.listFiles()).filter(File::isDirectory).map(File::getName).sorted().toArray(String[]::new);
     }
 }

@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer;
 
 import net.minecraft.client.EntityPlayer;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 import net.minecraft.util.AxisAlignedBB;
 
 import java.nio.FloatBuffer;
@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL11;
 public class WorldRenderer
 {
     /** Reference to the World object. */
-    private WorldServer world;
+    private World world;
     private final int glRenderList;
     private final static Tesselator tessellator = Tesselator.instance;
     private int posX;
@@ -65,7 +65,7 @@ public class WorldRenderer
     private final FloatBuffer projBuffer = GLAllocation.createDirectFloatBuffer(16);
     private final FloatBuffer modelBuffer = GLAllocation.createDirectFloatBuffer(16);
 
-    public WorldRenderer(WorldServer world, int x, int y, int z, int renderList)
+    public WorldRenderer(World world, int x, int y, int z, int renderList)
     {
         this.world = world;
         this.glRenderList = renderList;
@@ -111,7 +111,7 @@ public class WorldRenderer
             GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
             GL11.glPushMatrix();
             GL11.glTranslatef((float)this.posXClip, (float)this.posYClip, (float)this.posZClip);
-            tessellator.startDrawing(7);
+            tessellator.startDrawing();
             tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
 
             this.skipRenderPass = true;

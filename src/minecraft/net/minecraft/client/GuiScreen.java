@@ -1,8 +1,10 @@
 package net.minecraft.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -17,10 +19,13 @@ public class GuiScreen
     private final String[] worldList;
     private String text = "";
     private int scrollPos;
+    private final File saves;
     
-    public GuiScreen(Minecraft minecraft, int screenWidth, int screenHeight)
+    public GuiScreen(Minecraft minecraft, File data, int screenWidth, int screenHeight)
     {
     	this.mc = minecraft;
+    	this.saves = new File(data, "saves");
+    	this.saves.mkdirs();
     	
         try
         {
@@ -40,7 +45,7 @@ public class GuiScreen
         	throw new RuntimeException(e);
         }
         
-        this.worldList = this.mc.getSaveList();
+        this.worldList = Arrays.stream(this.saves.listFiles()).filter(File::isDirectory).map(File::getName).sorted().toArray(String[]::new);;
         Keyboard.enableRepeatEvents(true);
     }
 
@@ -59,7 +64,7 @@ public class GuiScreen
 
     			if (off >= 0 && off < cells && off < this.worldList.length - this.scrollPos)
     			{
-    				this.mc.launchIntegratedServer(this.worldList[off + this.scrollPos]);
+    				this.mc.launchIntegratedServer(new File(this.saves, this.worldList[off + this.scrollPos]));
     			}
             }
             else
@@ -102,9 +107,10 @@ public class GuiScreen
                 case 28:
                 case 156:
                 	if (this.text.length() > 0)
-                		this.mc.launchIntegratedServer(this.text.trim()
+                		this.mc.launchIntegratedServer(new File(this.saves,
+                				this.text.trim()
                 				.replaceAll("[/\n\r\t\u0000\f`?*\\<>|\":.]", "_")
-                				.replaceAll("^$", "World"));
+                				.replaceAll("^$", "World")));
                 	
                 case 203:
                 case 205:

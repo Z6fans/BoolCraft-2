@@ -21,9 +21,10 @@ import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.MathHelper;
 
-public class WorldServer
+public class World
 {
     private final HashSet<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
 
@@ -68,7 +69,7 @@ public class WorldServer
     /** time what is using to check if InhabitedTime should be calculated */
     private long previousTotalWorldTime;
     
-	private final Minecraft minecraft;
+	private final RenderGlobal render;
 
     /** LinkedList that holds the loaded chunks. */
     private final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
@@ -77,9 +78,9 @@ public class WorldServer
 	
 	private final byte[] blankChunkStorage;
 
-    public WorldServer(Minecraft mc, File wd)
+    public World(RenderGlobal rg, File wd)
     {
-    	this.minecraft = mc;
+    	this.render = rg;
     	this.worldDirectory = wd;
         this.worldDirectory.mkdirs();
         
@@ -261,7 +262,7 @@ public class WorldServer
                             {
                                 if (this.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos))
                                 {
-                                    this.minecraft.renderGlobal.markChunksForUpdate(chunkCoords.chunkXPos - 1, 0, chunkCoords.chunkZPos - 1, chunkCoords.chunkXPos + 1, 16, chunkCoords.chunkZPos + 1);
+                                    this.render.markChunksForUpdate(chunkCoords.chunkXPos - 1, 0, chunkCoords.chunkZPos - 1, chunkCoords.chunkXPos + 1, 16, chunkCoords.chunkZPos + 1);
                                     chunkIterator.remove();
                                 }
                             }
@@ -594,7 +595,7 @@ public class WorldServer
 
     private void markBlockForUpdate(int x, int y, int z)
     {
-    	this.minecraft.renderGlobal.markChunksForUpdate((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4, (x + 1) >> 4, (y + 1) >> 4, (z + 1) >> 4);
+    	this.render.markChunksForUpdate((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4, (x + 1) >> 4, (y + 1) >> 4, (z + 1) >> 4);
     }
 
     /**

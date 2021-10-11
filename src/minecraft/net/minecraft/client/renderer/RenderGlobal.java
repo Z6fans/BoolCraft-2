@@ -6,13 +6,13 @@ import java.util.Comparator;
 import java.util.List;
 
 import net.minecraft.client.EntityPlayer;
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
 public class RenderGlobal
 {
-    private WorldServer theWorld;
+    private World theWorld;
     private final List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
     private WorldRenderer[] sortedWorldRenderers;
     private WorldRenderer[] worldRenderers;
@@ -84,7 +84,7 @@ public class RenderGlobal
     /**
      * set null to clear
      */
-    public void setWorldAndLoadRenderers(WorldServer world)
+    public void setWorldAndLoadRenderers(World world)
     {
         this.prevSortX = -9999.0D;
         this.prevSortY = -9999.0D;
@@ -234,9 +234,9 @@ public class RenderGlobal
     }
 
     /**
-     * Sorts all renderers based on the passed in entity. Args: entityLiving, renderPass, partialTickTime
+     * Sorts all renderers based on the passed in entity. Args: entityLiving, ppos
      */
-    public void sortAndRender(EntityPlayer player, double ptt)
+    public void sortAndRender(EntityPlayer player, Vec3 ppos)
     {
         for (int var5 = 0; var5 < 10; ++var5)
         {
@@ -276,8 +276,7 @@ public class RenderGlobal
                 }
             }
         }
-
-        Vec3 ppos = player.pttPos(ptt);
+        
         int nextList = 0;
 
         for (int i = 0; i < this.allRenderLists.length; ++i)
@@ -316,13 +315,13 @@ public class RenderGlobal
     /**
      * Updates some of the renderers sorted by distance from the player
      */
-    public void updateRenderers(EntityPlayer player, double x, double y, double z)
+    public void updateRenderers(EntityPlayer player, Vec3 ppos)
     {
     	for (int i = 0; i < this.worldRenderers.length; ++i)
         {
             if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].getInFrustrum() || (i + this.frustumCheckOffset & 15) == 0))
             {
-                this.worldRenderers[i].updateInFrustum(x, y, z);
+                this.worldRenderers[i].updateInFrustum(ppos.x, ppos.y, ppos.z);
             }
         }
 

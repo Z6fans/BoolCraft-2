@@ -1,12 +1,12 @@
 package net.minecraft.block;
 
-import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 public class BlockLever extends Block
 {
 	private final float d = 0.1875F;
 
-    public void onNeighborBlockChange(WorldServer world, int x, int y, int z)
+    public void onNeighborBlockChange(World world, int x, int y, int z)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
 
@@ -57,7 +57,7 @@ public class BlockLever extends Block
     	return s == 3 ? d : s == 4 ? 1.0F : 0.5F + d;
     }
 
-    public void onBlockBreak(WorldServer world, int x, int y, int z, int meta)
+    public void onBlockBreak(World world, int x, int y, int z, int meta)
     {
         if ((meta & 8) > 0)
         {
@@ -91,12 +91,12 @@ public class BlockLever extends Block
         }
     }
 
-    public int isProvidingWeakPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingWeakPower(World world, int x, int y, int z, int side)
     {
         return (world.getBlockMetadata(x, y, z) & 8) == 0 ? 0 : 15;
     }
 
-    public int isProvidingStrongPower(WorldServer world, int x, int y, int z, int side)
+    public int isProvidingStrongPower(World world, int x, int y, int z, int side)
     {
     	int meta = world.getBlockMetadata(x, y, z) & 7;
         return (meta == 0 && side == 0)
@@ -107,7 +107,7 @@ public class BlockLever extends Block
         	|| (meta == 1 && side == 5) ? this.isProvidingWeakPower(world, x, y, z, side) : 0;
     }
 
-	public void updateTick(WorldServer p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
+	public void updateTick(World p_149674_1_, int p_149674_2_, int p_149674_3_, int p_149674_4_){}
 
-	public void onBlockAdded(WorldServer world, int x, int y, int z){}
+	public void onBlockAdded(World world, int x, int y, int z){}
 }
