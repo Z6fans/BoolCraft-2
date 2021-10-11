@@ -27,15 +27,10 @@ import org.lwjgl.util.glu.Project;
 
 public class Minecraft
 {
-    public int displayWidth;
-    public int displayHeight;
+    public int displayWidth = 854;
+    public int displayHeight = 480;
     private RenderGlobal render;
     private EntityPlayer player;
-
-    /** The GuiScreen that's being displayed at the moment. */
-    private final GuiScreen menu;
-    private boolean isInMenu = true;
-    private int fontTextureID;
 
     /**
      * When you place a block, it's set to 6, decremented once per tick, when it's 0, you can place another block.
@@ -72,13 +67,6 @@ public class Minecraft
      */
     private double lastHRTime;
 
-    public Minecraft(int displayWidth, int displayHeight, File savesDir)
-    {
-    	this.menu = new GuiScreen(this, savesDir);
-        this.displayWidth = displayWidth;
-        this.displayHeight = displayHeight;
-    }
-
     /**
      * Wrapper around displayCrashReportInternal
      */
@@ -100,9 +88,12 @@ public class Minecraft
         if (e != 0) System.out.println("GL ERROR @ " + s + "\n" + e + ": " + GLU.gluErrorString(e));
     }
 
-    public void run()
+    public void run(File savesDir)
     {
         this.running = true;
+        savesDir.mkdirs();
+        GuiScreen menu = new GuiScreen(this, savesDir);
+        int fontTextureID = -1;
 
         try
         {
@@ -130,14 +121,15 @@ public class Minecraft
             GL11.glFlush();
             this.render = new RenderGlobal();
             this.checkGLError("Startup");
+            
             try
             {
                 byte[] input = new byte[0x10000];
             	InputStream texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.bin");
                 texStream.read(input);
                 texStream.close();
-                this.fontTextureID = GL11.glGenTextures();
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.fontTextureID);
+                fontTextureID = GL11.glGenTextures();
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, fontTextureID);
                 GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 128, 128, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
                 		((ByteBuffer)ByteBuffer.allocateDirect(0x10000).put(input).flip()).asIntBuffer());
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -201,9 +193,9 @@ public class Minecraft
                             --this.leftClickDelayTimer;
                         }
 
-                        if (this.isInMenu)
+                        if (this.player == null)
                         {
-                            this.menu.handleInput();
+                            menu.handleInput();
                         }
                         else
                         {
@@ -252,8 +244,7 @@ public class Minecraft
                                         if (Keyboard.isKeyDown(Keyboard.KEY_FUNCTION))
                                         {
                                         	this.loadWorldNull();
-                                        	this.isInMenu = true;
-                                            this.menu.reset();
+                                            menu.reset();
                                         }
                                     }
                                 }
@@ -289,7 +280,7 @@ public class Minecraft
                         
                         if (this.player != null)
                         {
-                        	try
+                            try
                             {
                         		this.player.onUpdate();
                         		this.world.updateMountedMovingPlayer(this.player.getPosX(), this.player.getPosZ());
@@ -306,7 +297,7 @@ public class Minecraft
                     GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     
-                    if (this.isInMenu)
+                    if (this.player == null)
                     {
                         GL11.glEnable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -317,10 +308,10 @@ public class Minecraft
                         GL11.glEnable(GL11.GL_ALPHA_TEST);
                         GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
                         GL11.glColor4f(1, 1, 1, 1);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.fontTextureID);
-                    	this.menu.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, fontTextureID);
+                    	menu.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
                     }
-                    else if (this.player != null)
+                    else
                     {
                         if (this.inGameHasFocus && Display.isActive())
                         {
@@ -697,7 +688,6 @@ public class Minecraft
             throw new RuntimeException("Starting integrated server", t);
         }
 
-        this.isInMenu = false;
         Keyboard.enableRepeatEvents(false);
         this.setIngameFocus();
     }
