@@ -11,14 +11,9 @@ public class Tesselator
     /** The byte buffer used for GL allocation. */
     private final ByteBuffer byteBuffer;
 
-    /** The same memory as byteBuffer, but referenced as an integer buffer. */
-    private final IntBuffer intBuffer;
-
-    /** The same memory as byteBuffer, but referenced as an float buffer. */
-    private final FloatBuffer floatBuffer;
-
     /** Raw integer array. */
-    private final int[] rawBuffer;
+    private static final int BUFSIZE = 2097152;
+    private final int[] rawBuffer = new int[BUFSIZE];
 
     /**
      * The number of vertices to be drawn in the next draw call. Reset to 0 between draw calls.
@@ -47,21 +42,14 @@ public class Tesselator
     private double zOffset;
 
     /** The static instance of the Tessellator. */
-    public static final Tesselator instance = new Tesselator(2097152);
+    public static final Tesselator instance = new Tesselator();
 
     /** Whether this tessellator is currently in draw mode. */
     private boolean isDrawing;
 
-    /** The size of the buffers used (in integers). */
-    private final int bufferSize;
-
-    private Tesselator(int buffSize)
+    private Tesselator()
     {
-        this.bufferSize = buffSize;
-        this.byteBuffer = GLAllocation.createDirectByteBuffer(buffSize * 4);
-        this.intBuffer = this.byteBuffer.asIntBuffer();
-        this.floatBuffer = this.byteBuffer.asFloatBuffer();
-        this.rawBuffer = new int[buffSize];
+        this.byteBuffer = GLAllocation.createDirectByteBuffer(BUFSIZE * 4);
     }
 
     /**
@@ -79,32 +67,26 @@ public class Tesselator
 
             if (this.vertexCount > 0)
             {
-                this.intBuffer.clear();
-                this.intBuffer.put(this.rawBuffer, 0, this.rawBufferIndex);
+            	IntBuffer intBuffer = this.byteBuffer.asIntBuffer();
+            	FloatBuffer floatBuffer = this.byteBuffer.asFloatBuffer();
+                intBuffer.clear();
+                intBuffer.put(this.rawBuffer, 0, this.rawBufferIndex);
                 this.byteBuffer.limit(this.rawBufferIndex * 4);
                 this.byteBuffer.position(12);
                 GL11.glColorPointer(4, true, 16, this.byteBuffer);
                 GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-                this.floatBuffer.position(0);
-                GL11.glVertexPointer(3, 16, this.floatBuffer);
+                floatBuffer.position(0);
+                GL11.glVertexPointer(3, 16, floatBuffer);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDrawArrays(GL11.GL_QUADS, 0, this.vertexCount);
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
             }
 
-            this.reset();
+            this.vertexCount = 0;
+            this.byteBuffer.clear();
+            this.rawBufferIndex = 0;
         }
-    }
-
-    /**
-     * Clears the tessellator state in preparation for new drawing.
-     */
-    private void reset()
-    {
-        this.vertexCount = 0;
-        this.byteBuffer.clear();
-        this.rawBufferIndex = 0;
     }
 
     /**
@@ -119,7 +101,9 @@ public class Tesselator
         else
         {
             this.isDrawing = true;
-            this.reset();
+            this.vertexCount = 0;
+            this.byteBuffer.clear();
+            this.rawBufferIndex = 0;
         }
     }
 
@@ -136,7 +120,7 @@ public class Tesselator
         this.rawBufferIndex += 4;
         ++this.vertexCount;
 
-        if (this.vertexCount % 4 == 0 && this.rawBufferIndex >= this.bufferSize - 32)
+        if (this.vertexCount % 4 == 0 && this.rawBufferIndex >= BUFSIZE - 32)
         {
             this.draw();
             this.isDrawing = true;

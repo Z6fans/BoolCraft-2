@@ -1,6 +1,9 @@
 package net.minecraft.client;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -17,6 +20,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.glu.Project;
@@ -29,10 +33,9 @@ public class Minecraft
     private EntityPlayer player;
 
     /** The GuiScreen that's being displayed at the moment. */
-    private GuiScreen menu;
-
-    /** Mouse helper instance. */
-    private final File mcDataDir;
+    private final GuiScreen menu;
+    private boolean isInMenu = true;
+    private int fontTextureID;
 
     /**
      * When you place a block, it's set to 6, decremented once per tick, when it's 0, you can place another block.
@@ -69,9 +72,9 @@ public class Minecraft
      */
     private double lastHRTime;
 
-    public Minecraft(int displayWidth, int displayHeight, File mcDataDir)
+    public Minecraft(int displayWidth, int displayHeight, File savesDir)
     {
-        this.mcDataDir = mcDataDir;
+    	this.menu = new GuiScreen(this, savesDir);
         this.displayWidth = displayWidth;
         this.displayHeight = displayHeight;
     }
@@ -127,7 +130,23 @@ public class Minecraft
             GL11.glFlush();
             this.render = new RenderGlobal();
             this.checkGLError("Startup");
-            this.menu = new GuiScreen(this, this.mcDataDir, this.displayWidth, this.displayHeight);
+            try
+            {
+                byte[] input = new byte[0x10000];
+            	InputStream texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.bin");
+                texStream.read(input);
+                texStream.close();
+                this.fontTextureID = GL11.glGenTextures();
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.fontTextureID);
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 128, 128, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
+                		((ByteBuffer)ByteBuffer.allocateDirect(0x10000).put(input).flip()).asIntBuffer());
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            }
+            catch (IOException e)
+            {
+            	throw new RuntimeException(e);
+            }
         }
         catch (Throwable e)
         {
@@ -182,7 +201,7 @@ public class Minecraft
                             --this.leftClickDelayTimer;
                         }
 
-                        if (this.menu != null)
+                        if (this.isInMenu)
                         {
                             this.menu.handleInput();
                         }
@@ -233,7 +252,8 @@ public class Minecraft
                                         if (Keyboard.isKeyDown(Keyboard.KEY_FUNCTION))
                                         {
                                         	this.loadWorldNull();
-                                            this.menu = new GuiScreen(this, this.mcDataDir, this.displayWidth, this.displayHeight);
+                                        	this.isInMenu = true;
+                                            this.menu.reset();
                                         }
                                     }
                                 }
@@ -286,7 +306,7 @@ public class Minecraft
                     GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     
-                    if (this.menu != null)
+                    if (this.isInMenu)
                     {
                         GL11.glEnable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -297,6 +317,7 @@ public class Minecraft
                         GL11.glEnable(GL11.GL_ALPHA_TEST);
                         GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
                         GL11.glColor4f(1, 1, 1, 1);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.fontTextureID);
                     	this.menu.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
                     }
                     else if (this.player != null)
@@ -651,7 +672,6 @@ public class Minecraft
     public void launchIntegratedServer(File dir)
     {
         this.loadWorldNull();
-        System.gc();
 
         try
         {
@@ -677,7 +697,7 @@ public class Minecraft
             throw new RuntimeException("Starting integrated server", t);
         }
 
-        this.menu = null;
+        this.isInMenu = false;
         Keyboard.enableRepeatEvents(false);
         this.setIngameFocus();
     }

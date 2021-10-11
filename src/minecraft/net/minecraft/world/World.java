@@ -30,7 +30,6 @@ public class World
 
     /** All work to do in future ticks. */
     private final TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
-    private int updateEntityTick;
     private final List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
     
     /** The directory in which to save world data. */
@@ -228,18 +227,6 @@ public class World
      */
     public void updateEntities()
     {
-        if (!this.isSpawned)
-        {
-            if (this.updateEntityTick++ >= 1200)
-            {
-                return;
-            }
-        }
-        else
-        {
-        	this.updateEntityTick = 0;
-        }
-
         if (this.isSpawned)
         {
         	try

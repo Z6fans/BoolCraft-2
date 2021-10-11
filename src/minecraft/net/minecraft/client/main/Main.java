@@ -18,8 +18,9 @@ public class Main
         OptionSet optionSet = parser.parse(args);
         int width = optionSet.valueOf(argWidth).intValue();
         int height = optionSet.valueOf(argHeight).intValue();
-        File gameDir = optionSet.valueOf(argGameDir);
-        Minecraft mc = new Minecraft(width, height, gameDir);
+        File savesDir = new File(optionSet.valueOf(argGameDir), "saves");
+        savesDir.mkdirs();
+        Minecraft mc = new Minecraft(width, height, savesDir);
 
         Runtime.getRuntime().addShutdownHook(new Thread("Client Shutdown Thread")
         {

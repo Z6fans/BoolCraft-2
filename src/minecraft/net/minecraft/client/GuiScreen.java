@@ -1,52 +1,33 @@
 package net.minecraft.client;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 public class GuiScreen
 {
     /** Reference to the Minecraft object. */
     private final Minecraft mc;
-    private final int glTextureId;
-    private final String[] worldList;
-    private String text = "";
+    private String[] worldList;
+    private String text;
     private int scrollPos;
     private final File saves;
     
-    public GuiScreen(Minecraft minecraft, File data, int screenWidth, int screenHeight)
+    public GuiScreen(Minecraft minecraft, File saves)
     {
     	this.mc = minecraft;
-    	this.saves = new File(data, "saves");
-    	this.saves.mkdirs();
-    	
-        try
-        {
-            byte[] input = new byte[0x10000];
-        	InputStream texStream = GuiScreen.class.getResourceAsStream("/minecraft/font/asky.bin");
-            texStream.read(input);
-            texStream.close();
-            this.glTextureId = GL11.glGenTextures();
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
-            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, 128, 128, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV,
-            		((ByteBuffer)ByteBuffer.allocateDirect(0x10000).put(input).flip()).asIntBuffer());
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        }
-        catch (IOException e)
-        {
-        	throw new RuntimeException(e);
-        }
-        
-        this.worldList = Arrays.stream(this.saves.listFiles()).filter(File::isDirectory).map(File::getName).sorted().toArray(String[]::new);;
+    	this.saves = saves;
+    	this.reset();
+    }
+    
+    public void reset()
+    {
         Keyboard.enableRepeatEvents(true);
+    	this.text = "";
+    	this.worldList = Arrays.stream(this.saves.listFiles()).filter(File::isDirectory).map(File::getName).sorted().toArray(String[]::new);
     }
 
     /**
@@ -76,8 +57,6 @@ public class GuiScreen
                 }
             }
         }
-    	
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.glTextureId);
         
         for (int off = 0; off < this.worldList.length - this.scrollPos && off < cells; off++)
         	this.drawString(this.worldList[off + this.scrollPos], 32, (off << 5) + 8);
