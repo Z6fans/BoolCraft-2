@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
 public class Block
@@ -67,60 +65,6 @@ public class Block
     public final AxisAlignedBB generateCubicBoundingBox(int meta)
     {
         return new AxisAlignedBB(this.minX(meta), this.minY(meta), this.minZ(meta), this.maxX(meta), this.maxY(meta), this.maxZ(meta));
-    }
-
-    public final MovingObjectPosition collisionRayTrace(World world, int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
-    {
-    	AxisAlignedBB aabb = this.generateCubicBoundingBox(world.getBlockMetadata(x, y, z));
-        playerPos = playerPos.addVector(-x, -y, -z);
-        playerLook = playerLook.addVector(-x, -y, -z);
-        Vec3 nx = playerPos.getIntermediateWithXValue(playerLook, aabb.minX);
-        Vec3 xx = playerPos.getIntermediateWithXValue(playerLook, aabb.maxX);
-        Vec3 ny = playerPos.getIntermediateWithYValue(playerLook, aabb.minY);
-        Vec3 xy = playerPos.getIntermediateWithYValue(playerLook, aabb.maxY);
-        Vec3 nz = playerPos.getIntermediateWithZValue(playerLook, aabb.minZ);
-        Vec3 xz = playerPos.getIntermediateWithZValue(playerLook, aabb.maxZ);
-
-        Vec3 closest = null;
-        byte side = -1;
-
-        if (nx != null && aabb.contains(nx) && (closest == null || playerPos.quadranceTo(nx) < playerPos.quadranceTo(closest)))
-        {
-            closest = nx;
-            side = 4;
-        }
-
-        if (xx != null && aabb.contains(xx) && (closest == null || playerPos.quadranceTo(xx) < playerPos.quadranceTo(closest)))
-        {
-            closest = xx;
-            side = 5;
-        }
-
-        if (ny != null && aabb.contains(ny) && (closest == null || playerPos.quadranceTo(ny) < playerPos.quadranceTo(closest)))
-        {
-            closest = ny;
-            side = 0;
-        }
-
-        if (xy != null && aabb.contains(xy) && (closest == null || playerPos.quadranceTo(xy) < playerPos.quadranceTo(closest)))
-        {
-            closest = xy;
-            side = 1;
-        }
-
-        if (nz != null && aabb.contains(nz) && (closest == null || playerPos.quadranceTo(nz) < playerPos.quadranceTo(closest)))
-        {
-            closest = nz;
-            side = 2;
-        }
-
-        if (xz != null && aabb.contains(xz) && (closest == null || playerPos.quadranceTo(xz) < playerPos.quadranceTo(closest)))
-        {
-            closest = xz;
-            side = 3;
-        }
-
-        return side == -1 ? null : new MovingObjectPosition(x, y, z, side);
     }
 
     public int isProvidingWeakPower(World p_149709_1_, int p_149709_2_, int p_149709_3_, int p_149709_4_, int p_149709_5_)

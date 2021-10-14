@@ -2,6 +2,7 @@ package net.minecraft.client;
 
 import org.lwjgl.input.Mouse;
 
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.KeyBinding;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -206,13 +207,13 @@ public class EntityPlayer
         	int viewBlockX = MathHelper.floor_double(viewVec.x);
             int viewBlockY = MathHelper.floor_double(viewVec.y);
             int viewBlockZ = MathHelper.floor_double(viewVec.z);
-            int playerBlockX = MathHelper.floor_double(playerPos.x);
-            int playerBlockY = MathHelper.floor_double(playerPos.y);
-            int playerBlockZ = MathHelper.floor_double(playerPos.z);
+            int currentBlockX = MathHelper.floor_double(playerPos.x);
+            int currentBlockY = MathHelper.floor_double(playerPos.y);
+            int currentBlockZ = MathHelper.floor_double(playerPos.z);
 
-            if (!this.worldServer.isAir(playerBlockX, playerBlockY, playerBlockZ))
+            if (!this.worldServer.isAir(currentBlockX, currentBlockY, currentBlockZ))
             {
-                MovingObjectPosition hit = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                MovingObjectPosition hit = this.collisionRayTrace(currentBlockX, currentBlockY, currentBlockZ, playerPos, viewVec);
 
                 if (hit != null)
                 {
@@ -222,7 +223,7 @@ public class EntityPlayer
 
             for (int i = 0; i <= 200; i++)
             {
-                if (Double.isNaN(playerPos.x) || Double.isNaN(playerPos.y) || Double.isNaN(playerPos.z) || (playerBlockX == viewBlockX && playerBlockY == viewBlockY && playerBlockZ == viewBlockZ))
+                if (Double.isNaN(playerPos.x) || Double.isNaN(playerPos.y) || Double.isNaN(playerPos.z) || (currentBlockX == viewBlockX && currentBlockY == viewBlockY && currentBlockZ == viewBlockZ))
                 {
                     return null;
                 }
@@ -234,39 +235,39 @@ public class EntityPlayer
                 double var19 = 999.0D;
                 double var21 = 999.0D;
 
-                if (viewBlockX > playerBlockX)
+                if (viewBlockX > currentBlockX)
                 {
-                    var17 = (double)playerBlockX + 1.0D;
+                    var17 = (double)currentBlockX + 1.0D;
                 }
-                else if (viewBlockX < playerBlockX)
+                else if (viewBlockX < currentBlockX)
                 {
-                    var17 = (double)playerBlockX + 0.0D;
+                    var17 = (double)currentBlockX + 0.0D;
                 }
                 else
                 {
                     var41 = false;
                 }
 
-                if (viewBlockY > playerBlockY)
+                if (viewBlockY > currentBlockY)
                 {
-                    var19 = (double)playerBlockY + 1.0D;
+                    var19 = (double)currentBlockY + 1.0D;
                 }
-                else if (viewBlockY < playerBlockY)
+                else if (viewBlockY < currentBlockY)
                 {
-                    var19 = (double)playerBlockY + 0.0D;
+                    var19 = (double)currentBlockY + 0.0D;
                 }
                 else
                 {
                     var15 = false;
                 }
 
-                if (viewBlockZ > playerBlockZ)
+                if (viewBlockZ > currentBlockZ)
                 {
-                    var21 = (double)playerBlockZ + 1.0D;
+                    var21 = (double)currentBlockZ + 1.0D;
                 }
-                else if (viewBlockZ < playerBlockZ)
+                else if (viewBlockZ < currentBlockZ)
                 {
-                    var21 = (double)playerBlockZ + 0.0D;
+                    var21 = (double)currentBlockZ + 0.0D;
                 }
                 else
                 {
@@ -299,7 +300,7 @@ public class EntityPlayer
 
                 if (var23 < var25 && var23 < var27)
                 {
-                    if (viewBlockX > playerBlockX)
+                    if (viewBlockX > currentBlockX)
                     {
                         var42 = 4;
                     }
@@ -314,7 +315,7 @@ public class EntityPlayer
                 }
                 else if (var25 < var27)
                 {
-                    if (viewBlockY > playerBlockY)
+                    if (viewBlockY > currentBlockY)
                     {
                         var42 = 0;
                     }
@@ -329,7 +330,7 @@ public class EntityPlayer
                 }
                 else
                 {
-                    if (viewBlockZ > playerBlockZ)
+                    if (viewBlockZ > currentBlockZ)
                     {
                         var42 = 2;
                     }
@@ -344,33 +345,33 @@ public class EntityPlayer
                 }
 
                 Vec3 var36 = new Vec3(playerPos.x, playerPos.y, playerPos.z);
-                playerBlockX = (int)(var36.x = (double)MathHelper.floor_double(playerPos.x));
+                currentBlockX = (int)(var36.x = (double)MathHelper.floor_double(playerPos.x));
 
                 if (var42 == 5)
                 {
-                    --playerBlockX;
+                    --currentBlockX;
                     ++var36.x;
                 }
 
-                playerBlockY = (int)(var36.y = (double)MathHelper.floor_double(playerPos.y));
+                currentBlockY = (int)(var36.y = (double)MathHelper.floor_double(playerPos.y));
 
                 if (var42 == 1)
                 {
-                    --playerBlockY;
+                    --currentBlockY;
                     ++var36.y;
                 }
 
-                playerBlockZ = (int)(var36.z = (double)MathHelper.floor_double(playerPos.z));
+                currentBlockZ = (int)(var36.z = (double)MathHelper.floor_double(playerPos.z));
 
                 if (var42 == 3)
                 {
-                    --playerBlockZ;
+                    --currentBlockZ;
                     ++var36.z;
                 }
 
-                if (!this.worldServer.isAir(playerBlockX, playerBlockY, playerBlockZ))
+                if (!this.worldServer.isAir(currentBlockX, currentBlockY, currentBlockZ))
                 {
-                    MovingObjectPosition hit = this.worldServer.getBlock(playerBlockX, playerBlockY, playerBlockZ).collisionRayTrace(this.worldServer, playerBlockX, playerBlockY, playerBlockZ, playerPos, viewVec);
+                    MovingObjectPosition hit = this.collisionRayTrace(currentBlockX, currentBlockY, currentBlockZ, playerPos, viewVec);
 
                     if (hit != null)
                     {
@@ -381,5 +382,59 @@ public class EntityPlayer
         }
         
         return null;
+    }
+    
+    public final MovingObjectPosition collisionRayTrace(int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    {
+    	AxisAlignedBB aabb = this.worldServer.getBlock(x, y, z).generateCubicBoundingBox(this.worldServer.getBlockMetadata(x, y, z));
+        playerPos = playerPos.addVector(-x, -y, -z);
+        playerLook = playerLook.addVector(-x, -y, -z);
+        Vec3 nx = playerPos.getIntermediateWithXValue(playerLook, aabb.minX);
+        Vec3 xx = playerPos.getIntermediateWithXValue(playerLook, aabb.maxX);
+        Vec3 ny = playerPos.getIntermediateWithYValue(playerLook, aabb.minY);
+        Vec3 xy = playerPos.getIntermediateWithYValue(playerLook, aabb.maxY);
+        Vec3 nz = playerPos.getIntermediateWithZValue(playerLook, aabb.minZ);
+        Vec3 xz = playerPos.getIntermediateWithZValue(playerLook, aabb.maxZ);
+
+        Vec3 closest = null;
+        byte side = -1;
+
+        if (nx != null && aabb.contains(nx) && (closest == null || playerPos.quadranceTo(nx) < playerPos.quadranceTo(closest)))
+        {
+            closest = nx;
+            side = 4;
+        }
+
+        if (xx != null && aabb.contains(xx) && (closest == null || playerPos.quadranceTo(xx) < playerPos.quadranceTo(closest)))
+        {
+            closest = xx;
+            side = 5;
+        }
+
+        if (ny != null && aabb.contains(ny) && (closest == null || playerPos.quadranceTo(ny) < playerPos.quadranceTo(closest)))
+        {
+            closest = ny;
+            side = 0;
+        }
+
+        if (xy != null && aabb.contains(xy) && (closest == null || playerPos.quadranceTo(xy) < playerPos.quadranceTo(closest)))
+        {
+            closest = xy;
+            side = 1;
+        }
+
+        if (nz != null && aabb.contains(nz) && (closest == null || playerPos.quadranceTo(nz) < playerPos.quadranceTo(closest)))
+        {
+            closest = nz;
+            side = 2;
+        }
+
+        if (xz != null && aabb.contains(xz) && (closest == null || playerPos.quadranceTo(xz) < playerPos.quadranceTo(closest)))
+        {
+            closest = xz;
+            side = 3;
+        }
+
+        return side == -1 ? null : new MovingObjectPosition(x, y, z, side);
     }
 }
