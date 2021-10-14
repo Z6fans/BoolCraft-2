@@ -51,9 +51,6 @@ public class World {
 	 */
 	private final int viewRadius = 16;
 
-	/** time what is using to check if InhabitedTime should be calculated */
-	private long previousTotalWorldTime;
-
 	private final RenderGlobal render;
 
 	private final byte[] blankChunkStorage;
@@ -152,10 +149,6 @@ public class World {
 				this.loadChunk(xOff + chunkX, zOff + chunkZ);
 			}
 		}
-
-		if (this.totalTime - this.previousTotalWorldTime > 8000L) {
-			this.previousTotalWorldTime = this.totalTime;
-		}
 	}
 
 	/**
@@ -193,18 +186,6 @@ public class World {
 		} else {
 			return false;
 		}
-	}
-
-	private List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk) {
-		int xmin = (chunk.xPosition << 4) - 2;
-		int xmax = xmin + 16 + 2;
-		int zmin = (chunk.zPosition << 4) - 2;
-		int zmax = zmin + 16 + 2;
-
-		return Stream.concat(this.pendingTickListEntriesTreeSet.stream(), this.pendingTickListEntriesThisTick.stream())
-				.filter(entry -> entry.xCoord >= xmin && entry.xCoord < xmax && entry.zCoord >= zmin
-						&& entry.zCoord < zmax)
-				.collect(Collectors.toList());
 	}
 
 	public void saveAllChunks() {
@@ -309,7 +290,16 @@ public class World {
 			stream.writeInt(byteArray.length);
 			stream.write(byteArray);
 
-			List<NextTickListEntry> tickTags = this.getPendingBlockUpdates(chunk);
+			int xmin = (chunk.xPosition << 4) - 2;
+			int xmax = xmin + 16 + 2;
+			int zmin = (chunk.zPosition << 4) - 2;
+			int zmax = zmin + 16 + 2;
+
+			List<NextTickListEntry> tickTags = Stream
+					.concat(this.pendingTickListEntriesTreeSet.stream(), this.pendingTickListEntriesThisTick.stream())
+					.filter(entry -> entry.xCoord >= xmin && entry.xCoord < xmax && entry.zCoord >= zmin
+							&& entry.zCoord < zmax)
+					.collect(Collectors.toList());
 
 			stream.writeInt(tickTags.size());
 
@@ -317,7 +307,7 @@ public class World {
 				stream.writeInt(entry.xCoord);
 				stream.writeInt(entry.yCoord);
 				stream.writeInt(entry.zCoord);
-				stream.writeLong(entry.scheduledTime - this.getTotalWorldTime());
+				stream.writeLong(entry.scheduledTime - this.totalTime);
 			}
 
 			stream.close();
@@ -387,10 +377,6 @@ public class World {
 		return max;
 	}
 
-	public long getTotalWorldTime() {
-		return this.totalTime;
-	}
-
 	/**
 	 * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block
 	 * ID, new metadata, flags. Flag 1 will cause a block update. Flag 2 will send
@@ -435,10 +421,7 @@ public class World {
 				(z + 1) >> 4);
 	}
 
-	/**
-	 * update chunks around a player being moved by server logic (e.g. cart, boat)
-	 */
-	public void updateMountedMovingPlayer(double x, double z) {
+	public void updatePlayerPos(double x, double z) {
 		this.playerPosX = x;
 		this.playerPosZ = z;
 	}

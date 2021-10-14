@@ -102,7 +102,7 @@ public class WorldRenderer
     /**
      * Will update this chunk renderer
      */
-    public void updateRenderer(EntityPlayer player)
+    public void updateRenderer()
     {
         if (this.needsUpdate)
         {

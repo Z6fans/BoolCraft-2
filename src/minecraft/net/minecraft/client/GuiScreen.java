@@ -31,9 +31,9 @@ public class GuiScreen
     }
 
     /**
-     * Draws the screen and all the components in it.
+     * Delegates mouse and keyboard input.
      */
-    public void drawScreen(int mouseX, int mouseY)
+    public void handleInput(int mouseX, int mouseY)
     {
     	int cells = (this.mc.displayHeight >> 5) - 1;
     	
@@ -57,18 +57,7 @@ public class GuiScreen
                 }
             }
         }
-        
-        for (int off = 0; off < this.worldList.length - this.scrollPos && off < cells; off++)
-        	this.drawString(this.worldList[off + this.scrollPos], 32, (off << 5) + 8);
-        
-        this.drawString(this.text, 32, (cells << 5) + 8);
-    }
-
-    /**
-     * Delegates mouse and keyboard input.
-     */
-    public void handleInput()
-    {
+    	
         while (Keyboard.next())
         {
         	if (Keyboard.getEventKeyState())
@@ -101,6 +90,19 @@ public class GuiScreen
                 }
             }
         }
+    }
+
+    /**
+     * Draws the screen and all the components in it.
+     */
+    public void drawScreen()
+    {
+    	int cells = (this.mc.displayHeight >> 5) - 1;
+    	
+    	for (int off = 0; off < this.worldList.length - this.scrollPos && off < cells; off++)
+        	this.drawString(this.worldList[off + this.scrollPos], 32, (off << 5) + 8);
+        
+        this.drawString(this.text, 32, (cells << 5) + 8);
     }
     
     /**

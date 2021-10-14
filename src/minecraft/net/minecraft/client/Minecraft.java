@@ -195,7 +195,7 @@ public class Minecraft
 
                         if (this.player == null)
                         {
-                            menu.handleInput();
+                            menu.handleInput(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
                         }
                         else
                         {
@@ -283,7 +283,7 @@ public class Minecraft
                             try
                             {
                         		this.player.onUpdate();
-                        		this.world.updateMountedMovingPlayer(this.player.getPosX(), this.player.getPosZ());
+                        		this.world.updatePlayerPos(this.player.getPosX(), this.player.getPosZ());
                             }
                             catch (Throwable t)
                             {
@@ -309,7 +309,7 @@ public class Minecraft
                         GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
                         GL11.glColor4f(1, 1, 1, 1);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, fontTextureID);
-                    	menu.drawScreen(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
+                    	menu.drawScreen();
                     }
                     else
                     {

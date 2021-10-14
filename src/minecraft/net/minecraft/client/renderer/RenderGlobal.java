@@ -365,7 +365,7 @@ public class RenderGlobal
             for (int i = rendererList.size() - 1; i >= 0; --i)
             {
             	WorldRenderer wr = rendererList.get(i);
-                wr.updateRenderer(player);
+                wr.updateRenderer();
                 wr.needsUpdate = false;
             }
         }
@@ -376,7 +376,7 @@ public class RenderGlobal
         }
     	else
     	{
-    		rendererArray.updateRenderer(player);
+    		rendererArray.updateRenderer();
             rendererArray.needsUpdate = false;
     	}
         
