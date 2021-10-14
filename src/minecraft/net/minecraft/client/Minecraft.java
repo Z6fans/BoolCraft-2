@@ -461,15 +461,6 @@ public class Minecraft
                             throw new RuntimeException("Exception ticking world", t);
                         }
 
-                        try
-                        {
-                        	this.world.updateEntities();
-                        }
-                        catch (Throwable t)
-                        {
-                            throw new RuntimeException("Exception ticking world entities", t);
-                        }
-
                         if (this.tickCounter % 900 == 0)
                         {
                             this.saveAllWorlds();

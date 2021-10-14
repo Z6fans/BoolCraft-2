@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,9 +67,6 @@ public class World {
 	private long previousTotalWorldTime;
 
 	private final RenderGlobal render;
-
-	/** LinkedList that holds the loaded chunks. */
-	private final List<ChunkCoordIntPair> playerLoadedChunks = new LinkedList<ChunkCoordIntPair>();
 
 	private boolean isSpawned = false;
 
@@ -191,39 +187,6 @@ public class World {
 	}
 
 	/**
-	 * Updates (and cleans up) entities and tile entities
-	 */
-	public void updateEntities() {
-		if (this.isSpawned) {
-			try {
-				int playerX = MathHelper.floor_double(this.playerPosX);
-				int playerZ = MathHelper.floor_double(this.playerPosZ);
-				int r = 32;
-
-				if (this.checkChunksExist(playerX - r, 0, playerZ - r, playerX + r, 0, playerZ + r)) {
-					if (!this.playerLoadedChunks.isEmpty()) {
-						Iterator<ChunkCoordIntPair> chunkIterator = this.playerLoadedChunks.iterator();
-
-						while (chunkIterator.hasNext()) {
-							ChunkCoordIntPair chunkCoords = chunkIterator.next();
-
-							if (chunkCoords != null) {
-								if (this.chunkExists(chunkCoords.chunkXPos, chunkCoords.chunkZPos)) {
-									chunkIterator.remove();
-								}
-							} else {
-								chunkIterator.remove();
-							}
-						}
-					}
-				}
-			} catch (Throwable t) {
-				throw new RuntimeException("Ticking entity", t);
-			}
-		}
-	}
-
-	/**
 	 * Checks between a min and max all the chunks inbetween actually exist. Args:
 	 * minX, minY, minZ, maxX, maxY, maxZ
 	 */
@@ -292,12 +255,6 @@ public class World {
 		this.isSpawned = true;
 		this.prevPosX = 0;
 		this.prevPosZ = 0;
-
-		for (int x = -this.playerViewRadius; x <= this.playerViewRadius; x++) {
-			for (int z = -this.playerViewRadius; z <= this.playerViewRadius; z++) {
-				this.playerLoadedChunks.add(new ChunkCoordIntPair(x, z));
-			}
-		}
 
 		this.filterChunkLoadQueue();
 		this.loadChunk(0, 0);
@@ -507,10 +464,8 @@ public class World {
 	 * viewing range of the player.
 	 */
 	private void filterChunkLoadQueue() {
-		ArrayList<ChunkCoordIntPair> oldPlayerLoadedChunks = new ArrayList<ChunkCoordIntPair>(this.playerLoadedChunks);
 		int chunkX = (int) this.playerPosX >> 4;
 		int chunkZ = (int) this.playerPosZ >> 4;
-		this.playerLoadedChunks.clear();
 
 		for (int x = chunkX - this.playerViewRadius; x <= chunkX + this.playerViewRadius; x++) {
 			for (int z = chunkZ - this.playerViewRadius; z <= chunkZ + this.playerViewRadius; z++) {
@@ -520,24 +475,8 @@ public class World {
 					this.loadChunk(x, z);
 					this.playerInstances.add(key);
 				}
-
-				ChunkCoordIntPair coord = new ChunkCoordIntPair(x, z);
-
-				if (oldPlayerLoadedChunks.contains(coord)) {
-					this.playerLoadedChunks.add(coord);
-				}
 			}
 		}
-	}
-
-	/**
-	 * Determine if two rectangles centered at the given points overlap for the
-	 * provided radius. Arguments: x1, z1, x2, z2, radius.
-	 */
-	private boolean overlaps(int x1, int z1, int x2, int z2, int r) {
-		int deltaX = x1 - x2;
-		int deltaZ = z1 - z2;
-		return (deltaX >= -r && deltaX <= r) && (deltaZ >= -r && deltaZ <= r);
 	}
 
 	/**
@@ -555,19 +494,10 @@ public class World {
 		if (playerDeltaX * playerDeltaX + playerDeltaZ * playerDeltaZ >= 64.0D) {
 			int managedChunkX = (int) this.prevPosX >> 4;
 			int managedChunkZ = (int) this.prevPosZ >> 4;
-			int r = this.playerViewRadius;
 			int chunkDeltaX = playerChunkX - managedChunkX;
 			int chunkDeltaZ = playerChunkZ - managedChunkZ;
 
 			if (chunkDeltaX != 0 || chunkDeltaZ != 0) {
-				for (int chunkX = playerChunkX - r; chunkX <= playerChunkX + r; ++chunkX) {
-					for (int chunkZ = playerChunkZ - r; chunkZ <= playerChunkZ + r; ++chunkZ) {
-						if (!this.overlaps(chunkX, chunkZ, managedChunkX, managedChunkZ, r)) {
-							this.playerLoadedChunks.add(new ChunkCoordIntPair(chunkX, chunkZ));
-						}
-					}
-				}
-
 				this.filterChunkLoadQueue();
 				this.prevPosX = this.playerPosX;
 				this.prevPosZ = this.playerPosZ;
