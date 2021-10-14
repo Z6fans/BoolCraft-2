@@ -384,7 +384,7 @@ public class EntityPlayer
         return null;
     }
     
-    public final MovingObjectPosition collisionRayTrace(int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
+    private MovingObjectPosition collisionRayTrace(int x, int y, int z, Vec3 playerPos, Vec3 playerLook)
     {
     	AxisAlignedBB aabb = this.worldServer.getBlock(x, y, z).generateCubicBoundingBox(this.worldServer.getBlockMetadata(x, y, z));
         playerPos = playerPos.addVector(-x, -y, -z);

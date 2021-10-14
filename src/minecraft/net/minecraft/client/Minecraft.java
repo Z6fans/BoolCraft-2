@@ -673,8 +673,6 @@ public class Minecraft
             this.player = new EntityPlayer(this.world);
 
             System.gc();
-            
-            this.world.spawnPlayerInWorld(this);
         }
         catch (Throwable t)
         {

@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.MathHelper;
 
@@ -46,29 +45,16 @@ public class World {
 	private double playerPosX;
 	private double playerPosZ;
 
-	/** player X position as seen by PlayerManager */
-	private double prevPosX;
-
-	/** player Z position as seen by PlayerManager */
-	private double prevPosZ;
-
-	/**
-	 * A map of chunk position (two ints concatenated into a long) to PlayerInstance
-	 */
-	private final Set<Long> playerInstances = new HashSet<Long>();
-
 	/**
 	 * Number of chunks the server sends to the client. Valid 3<=x<=15. In
 	 * server.properties.
 	 */
-	private final int playerViewRadius = 10;
+	private final int viewRadius = 16;
 
 	/** time what is using to check if InhabitedTime should be calculated */
 	private long previousTotalWorldTime;
 
 	private final RenderGlobal render;
-
-	private boolean isSpawned = false;
 
 	private final byte[] blankChunkStorage;
 
@@ -158,14 +144,12 @@ public class World {
 			this.pendingTickListEntriesThisTick.clear();
 		}
 
-		if (this.isSpawned) {
-			int chunkX = MathHelper.floor_double(this.playerPosX / 16.0D);
-			int chunkZ = MathHelper.floor_double(this.playerPosZ / 16.0D);
+		int chunkX = MathHelper.floor_double(this.playerPosX / 16.0D);
+		int chunkZ = MathHelper.floor_double(this.playerPosZ / 16.0D);
 
-			for (int xOff = -16; xOff <= 16; ++xOff) {
-				for (int zOff = -16; zOff <= 16; ++zOff) {
-					this.loadChunk(xOff + chunkX, zOff + chunkZ);
-				}
+		for (int xOff = -this.viewRadius; xOff <= this.viewRadius; ++xOff) {
+			for (int zOff = -this.viewRadius; zOff <= this.viewRadius; ++zOff) {
+				this.loadChunk(xOff + chunkX, zOff + chunkZ);
 			}
 		}
 
@@ -229,15 +213,16 @@ public class World {
 				this.safeSaveChunk(chunk);
 				chunk.isModified = false;
 			}
+			
+			int chunkX = (int) this.playerPosX >> 4;
+			int chunkZ = (int) this.playerPosZ >> 4;
 
-			if (!this.playerInstances
-					.contains((long) chunk.xPosition + 2147483647L | (long) chunk.zPosition + 2147483647L << 32)) {
-				if (chunk.xPosition < -8 || chunk.xPosition > 8 || chunk.zPosition < -8 || chunk.zPosition > 8) // keep
-																												// spawn
-																												// loaded
+			if (chunk.xPosition - chunkX < -this.viewRadius || chunk.xPosition - chunkX > this.viewRadius
+			 || chunk.zPosition - chunkZ < -this.viewRadius || chunk.zPosition - chunkZ > this.viewRadius) {
+				if (chunk.xPosition < -8 || chunk.xPosition > 8 || chunk.zPosition < -8 || chunk.zPosition > 8) // keep spawn loaded
 				{
 					this.chunksToUnload
-							.add(Long.valueOf(ChunkCoordIntPair.chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
+							.add(Long.valueOf(chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
 				}
 			}
 		}
@@ -249,15 +234,6 @@ public class World {
 		} catch (Throwable t) {
 			throw new RuntimeException("Exception while updating neighbors", t);
 		}
-	}
-
-	public void spawnPlayerInWorld(Minecraft mc) {
-		this.isSpawned = true;
-		this.prevPosX = 0;
-		this.prevPosZ = 0;
-
-		this.filterChunkLoadQueue();
-		this.loadChunk(0, 0);
 	}
 
 	public void notifyBlocksOfNeighborChange(int x, int y, int z) {
@@ -273,14 +249,14 @@ public class World {
 	 * Checks to see if a chunk exists at x, y
 	 */
 	private boolean chunkExists(int p_73149_1_, int p_73149_2_) {
-		return this.loadedChunkHashMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(p_73149_1_, p_73149_2_));
+		return this.loadedChunkHashMap.containsKey(chunkXZ2Int(p_73149_1_, p_73149_2_));
 	}
 
 	/**
 	 * loads or generates the chunk at the chunk location specified
 	 */
 	private Chunk loadChunk(int x, int z) {
-		long posHash = ChunkCoordIntPair.chunkXZ2Int(x, z);
+		long posHash = chunkXZ2Int(x, z);
 		this.chunksToUnload.remove(Long.valueOf(posHash));
 		Chunk chunk = this.loadedChunkHashMap.get(posHash);
 
@@ -460,49 +436,11 @@ public class World {
 	}
 
 	/**
-	 * Removes all chunks from the given player's chunk load queue that are not in
-	 * viewing range of the player.
-	 */
-	private void filterChunkLoadQueue() {
-		int chunkX = (int) this.playerPosX >> 4;
-		int chunkZ = (int) this.playerPosZ >> 4;
-
-		for (int x = chunkX - this.playerViewRadius; x <= chunkX + this.playerViewRadius; x++) {
-			for (int z = chunkZ - this.playerViewRadius; z <= chunkZ + this.playerViewRadius; z++) {
-				long key = (long) x + 2147483647L | (long) z + 2147483647L << 32;
-
-				if (!this.playerInstances.contains(key)) {
-					this.loadChunk(x, z);
-					this.playerInstances.add(key);
-				}
-			}
-		}
-	}
-
-	/**
 	 * update chunks around a player being moved by server logic (e.g. cart, boat)
 	 */
 	public void updateMountedMovingPlayer(double x, double z) {
 		this.playerPosX = x;
 		this.playerPosZ = z;
-
-		int playerChunkX = (int) this.playerPosX >> 4;
-		int playerChunkZ = (int) this.playerPosZ >> 4;
-		double playerDeltaX = this.prevPosX - this.playerPosX;
-		double playerDeltaZ = this.prevPosZ - this.playerPosZ;
-
-		if (playerDeltaX * playerDeltaX + playerDeltaZ * playerDeltaZ >= 64.0D) {
-			int managedChunkX = (int) this.prevPosX >> 4;
-			int managedChunkZ = (int) this.prevPosZ >> 4;
-			int chunkDeltaX = playerChunkX - managedChunkX;
-			int chunkDeltaZ = playerChunkZ - managedChunkZ;
-
-			if (chunkDeltaX != 0 || chunkDeltaZ != 0) {
-				this.filterChunkLoadQueue();
-				this.prevPosX = this.playerPosX;
-				this.prevPosZ = this.playerPosZ;
-			}
-		}
 	}
 
 	public boolean isSolid(int x, int y, int z) {
@@ -525,4 +463,9 @@ public class World {
 	public int getBlocMeta(int x, int y, int z) {
 		return this.loadChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y & 255, z & 15);
 	}
+	
+	private static long chunkXZ2Int(int p_77272_0_, int p_77272_1_)
+    {
+        return (long)p_77272_0_ & 4294967295L | ((long)p_77272_1_ & 4294967295L) << 32;
+    }
 }
