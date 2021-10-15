@@ -35,9 +35,9 @@ public class GuiScreen
      */
     public void handleInput(int mouseX, int mouseY)
     {
-    	int cells = (this.mc.displayHeight >> 5) - 1;
+    	int cells = (this.mc.h >> 5) - 1;
     	
-    	if (mouseX > 0 && mouseX < this.mc.displayWidth && mouseY > 0 && mouseY < this.mc.displayHeight)
+    	if (mouseX > 0 && mouseX < this.mc.w && mouseY > 0 && mouseY < this.mc.h)
         {
             if (Mouse.isButtonDown(0))
             {
@@ -97,7 +97,7 @@ public class GuiScreen
      */
     public void drawScreen()
     {
-    	int cells = (this.mc.displayHeight >> 5) - 1;
+    	int cells = (this.mc.h >> 5) - 1;
     	
     	for (int off = 0; off < this.worldList.length - this.scrollPos && off < cells; off++)
         	this.drawString(this.worldList[off + this.scrollPos], 32, (off << 5) + 8);

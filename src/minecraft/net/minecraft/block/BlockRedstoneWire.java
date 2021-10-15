@@ -16,7 +16,26 @@ public class BlockRedstoneWire extends Block
         int prevPower = world.getBlockMetadata(x, y, z);
         int currentPower = this.maxRedstonePowerAt(world, x, y, z, 0);
         this.isCheckingForPower = true;
-        int indirectPower = world.getStrongestIndirectPower(x, y, z);
+        
+        int indirectPower = 0;
+
+		int[] xOff = { 0, 0, 0, 0, -1, 1 };
+		int[] yOff = { -1, 1, 0, 0, 0, 0 };
+		int[] zOff = { 0, 0, -1, 1, 0, 0 };
+
+		for (int side = 0; side < 6; ++side) {
+			int power = world.getIndirectPowerLevelTo(x + xOff[side], y + yOff[side], z + zOff[side], side);
+
+			if (power >= 15) {
+				indirectPower = 15;
+				break;
+			}
+
+			if (power > indirectPower) {
+				indirectPower = power;
+			}
+		}
+		
         this.isCheckingForPower = false;
 
         int directPower = 0;

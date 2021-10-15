@@ -27,8 +27,8 @@ import org.lwjgl.util.glu.Project;
 
 public class Minecraft
 {
-    public int displayWidth = 854;
-    public int displayHeight = 480;
+    public int w = 854;
+    public int h = 480;
     private RenderGlobal render;
     private EntityPlayer player;
 
@@ -53,8 +53,6 @@ public class Minecraft
 
     /** Incremented every tick. */
     private int tickCounter;
-    private long prevTime;
-    private long tickTimer;
     private int currentItem;
 
     /**
@@ -66,6 +64,9 @@ public class Minecraft
      * The time reported by the high-resolution clock at the last call of updateTimer(), in seconds
      */
     private double lastHRTime;
+    
+    private int playerChunkX;
+	private int playerChunkZ;
 
     /**
      * Wrapper around displayCrashReportInternal
@@ -97,7 +98,7 @@ public class Minecraft
 
         try
         {
-        	Display.setDisplayMode(new DisplayMode(this.displayWidth, this.displayHeight));
+        	Display.setDisplayMode(new DisplayMode(this.w, this.h));
             Display.setResizable(true);
             Display.setTitle("Boolcraft");
 
@@ -195,7 +196,7 @@ public class Minecraft
 
                         if (this.player == null)
                         {
-                            menu.handleInput(Mouse.getX(), this.displayHeight - Mouse.getY() - 1);
+                            menu.handleInput(Mouse.getX(), this.h - Mouse.getY() - 1);
                         }
                         else
                         {
@@ -283,18 +284,35 @@ public class Minecraft
                             try
                             {
                         		this.player.onUpdate();
-                        		this.world.updatePlayerPos(this.player.getPosX(), this.player.getPosZ());
+                        		this.playerChunkX = (int) this.player.getPosX() >> 4;
+                        		this.playerChunkZ = (int) this.player.getPosZ() >> 4;
                             }
                             catch (Throwable t)
                             {
                                 throw new RuntimeException("Ticking entity", t);
+                            }
+                            
+                            ++this.tickCounter;
+
+                            try
+                            {
+                            	this.world.tick(this.playerChunkX, this.playerChunkZ);
+                            }
+                            catch (Throwable t)
+                            {
+                                throw new RuntimeException("Exception ticking world", t);
+                            }
+
+                            if (this.tickCounter % 900 == 0)
+                            {
+                                this.saveAllWorlds();
                             }
                         }
                     }
                     
                     this.checkGLError("Pre render");
                     GL11.glPushMatrix();
-                    GL11.glViewport(0, 0, this.displayWidth, this.displayHeight);
+                    GL11.glViewport(0, 0, this.w, this.h);
                     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     
                     if (this.player == null)
@@ -302,7 +320,7 @@ public class Minecraft
                         GL11.glEnable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
-                        GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);
+                        GL11.glOrtho(0.0D, this.w, this.h, 0.0D, 0.0D, 1.0D);
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
                         GL11.glEnable(GL11.GL_ALPHA_TEST);
@@ -321,7 +339,7 @@ public class Minecraft
                         GL11.glDisable(GL11.GL_TEXTURE_2D);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
-                        Project.gluPerspective(110, (float)this.displayWidth / (float)this.displayHeight, 0.05F, 512.0F); //FOV
+                        Project.gluPerspective(110, (float)this.w / (float)this.h, 0.05F, 512.0F); //FOV
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
                         GL11.glRotatef((float)this.player.getRotationPitch(), 1.0F, 0.0F, 0.0F);
@@ -337,6 +355,8 @@ public class Minecraft
                         
                         MovingObjectPosition hit = this.player.rayTrace8();
                         
+                        Tesselator tess = Tesselator.instance;
+                        
                         if (hit != null)
                         {
                             GL11.glLineWidth(2.0F);
@@ -345,7 +365,6 @@ public class Minecraft
                             		.generateCubicBoundingBox(meta)
                             		.offset(hit.x-ppos.x, hit.y-ppos.y, hit.z-ppos.z)
                             		.expand(0.002F);
-                            Tesselator tess = Tesselator.instance;
                             tess.setColor_I(0x44CCCCCC);
                             tess.startDrawing();
                             tess.addVertex(aabb.minX, aabb.minY, aabb.minZ);
@@ -385,24 +404,32 @@ public class Minecraft
                         GL11.glDepthFunc(GL11.GL_LEQUAL);
                         GL11.glMatrixMode(GL11.GL_PROJECTION);
                         GL11.glLoadIdentity();
-                        GL11.glOrtho(0.0D, this.displayWidth, this.displayHeight, 0.0D, 0.0D, 1.0D);
+                        GL11.glOrtho(0.0D, this.w, this.h, 0.0D, 0.0D, 1.0D);
                         GL11.glMatrixMode(GL11.GL_MODELVIEW);
                         GL11.glLoadIdentity();
                         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
                         
-                        int sWidth = this.displayWidth;
-                        int sHeight = this.displayHeight;
-                        drawRect(sWidth / 2 - 41 - 1 + this.currentItem * 20, sHeight - 22 - 1,
-                        		 sWidth / 2 - 41 - 1 + this.currentItem * 20 + 24, sHeight, 0x44CCCCCC);
-                        drawRect(sWidth / 2 - 4, sHeight / 2 - 4, sWidth / 2 + 6, sHeight / 2 + 6, 0x44CCCCCC);
+                        tess.startDrawing();
+                        tess.setColor_I(0x44CCCCCC);
+                        tess.addVertex(this.w / 2 - 4, this.h / 2 + 6, 0);
+                        tess.addVertex(this.w / 2 + 6, this.h / 2 + 6, 0);
+                        tess.addVertex(this.w / 2 + 6, this.h / 2 - 4, 0);
+                        tess.addVertex(this.w / 2 - 4, this.h / 2 - 4, 0);
+                        
                         int[] colores = {0xFF505050, 0xFF39EEEE, 0xFFEE39E4, 0xFFE91A64};
                         
                         for (int i = 0; i < 4; ++i)
                         {
-                            int x = sWidth / 2 - 40 + i * 20 + 2;
-                            drawRect(x, sHeight - 19, x + 16, sHeight - 3, colores[i]);
+                        	int d = i == this.currentItem ? 2 : 0;
+                            int x = this.w / 2 - 40 + i * 20 + 2;
+                            tess.setColor_I(colores[i]);
+                            tess.addVertex(x      - d, this.h -  3 + d, 0);
+                            tess.addVertex(x + 16 + d, this.h -  3 + d, 0);
+                            tess.addVertex(x + 16 + d, this.h - 19 - d, 0);
+                            tess.addVertex(x      - d, this.h - 19 - d, 0);
                         }
                         
+                        tess.draw();
                         GL11.glDisable(GL11.GL_BLEND);
                     }
                     
@@ -412,17 +439,17 @@ public class Minecraft
 
                     if (Display.wasResized())
                     {
-                        this.displayWidth = Display.getWidth();
-                        this.displayHeight = Display.getHeight();
+                        this.w = Display.getWidth();
+                        this.h = Display.getHeight();
 
-                        if (this.displayWidth <= 0)
+                        if (this.w <= 0)
                         {
-                            this.displayWidth = 1;
+                            this.w = 1;
                         }
 
-                        if (this.displayHeight <= 0)
+                        if (this.h <= 0)
                         {
-                            this.displayHeight = 1;
+                            this.h = 1;
                         }
                     }
                     
@@ -435,38 +462,6 @@ public class Minecraft
                     this.loadWorldNull();
                     this.shutdown();
                 }
-                
-                if (this.player != null)
-                {
-            		long currentTime = System.currentTimeMillis();
-                    long deltaTime = currentTime - prevTime;
-
-                    if (deltaTime < 0L) deltaTime = 0L;
-
-                    tickTimer += deltaTime;
-                    prevTime = currentTime;
-
-                    while (tickTimer > 50L)
-                    {
-                        tickTimer -= 50L;
-
-                        ++this.tickCounter;
-
-                        try
-                        {
-                        	this.world.tick();
-                        }
-                        catch (Throwable t)
-                        {
-                            throw new RuntimeException("Exception ticking world", t);
-                        }
-
-                        if (this.tickCounter % 900 == 0)
-                        {
-                            this.saveAllWorlds();
-                        }
-                    }
-            	}
             }
         }
         catch (Throwable t)
@@ -499,21 +494,6 @@ public class Minecraft
 
             System.gc();
         }
-    }
-    
-    /**
-     * Draws a solid color rectangle with the specified coordinates and color. Args: x1, y1, x2, y2, color
-     */
-    private static void drawRect(int x1, int y1, int x2, int y2, int color)
-    {
-        Tesselator tessellator = Tesselator.instance;
-        tessellator.startDrawing();
-        tessellator.setColor_I(color);
-        tessellator.addVertex(x1, y2, 0);
-        tessellator.addVertex(x2, y2, 0);
-        tessellator.addVertex(x2, y1, 0);
-        tessellator.addVertex(x1, y1, 0);
-        tessellator.draw();
     }
 
     /**
@@ -661,9 +641,6 @@ public class Minecraft
         {
             System.out.println("Starting integrated minecraft server version 1.7.10");
             this.world = new World(this.render, dir);
-            
-            prevTime = System.currentTimeMillis();
-            tickTimer = 0L;
 
             if (this.render != null)
             {
@@ -698,7 +675,7 @@ public class Minecraft
     	if (this.world != null)
         {
         	System.out.println("Saving worlds");
-            this.world.saveAllChunks();
+            this.world.saveAllChunks(this.playerChunkX, this.playerChunkZ);
         }
     }
 }

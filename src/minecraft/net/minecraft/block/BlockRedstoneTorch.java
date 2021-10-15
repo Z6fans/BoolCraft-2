@@ -44,11 +44,11 @@ public class BlockRedstoneTorch extends Block
     private boolean isGettingPower(World world, int x, int y, int z)
     {
         int meta = world.getBlockMetadata(x, y, z) & 7;
-        return meta == 5 && world.getIndirectPowerOutput(x, y - 1, z, 0)
-        	|| meta == 3 && world.getIndirectPowerOutput(x, y, z - 1, 2)
-        	|| meta == 4 && world.getIndirectPowerOutput(x, y, z + 1, 3)
-        	|| meta == 1 && world.getIndirectPowerOutput(x - 1, y, z, 4)
-        	|| meta == 2 && world.getIndirectPowerOutput(x + 1, y, z, 5);
+        return meta == 5 && world.getIndirectPowerLevelTo(x, y - 1, z, 0) > 0
+        	|| meta == 3 && world.getIndirectPowerLevelTo(x, y, z - 1, 2) > 0
+        	|| meta == 4 && world.getIndirectPowerLevelTo(x, y, z + 1, 3) > 0
+        	|| meta == 1 && world.getIndirectPowerLevelTo(x - 1, y, z, 4) > 0
+        	|| meta == 2 && world.getIndirectPowerLevelTo(x + 1, y, z, 5) > 0;
     }
 
     /**

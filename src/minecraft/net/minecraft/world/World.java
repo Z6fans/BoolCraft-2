@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.util.MathHelper;
 
 public class World {
 	private final HashSet<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
@@ -41,9 +40,6 @@ public class World {
 
 	/** Total time for this world. */
 	private long totalTime = 0;
-
-	private double playerPosX;
-	private double playerPosZ;
 
 	/**
 	 * Number of chunks the server sends to the client. Valid 3<=x<=15. In
@@ -82,7 +78,7 @@ public class World {
 	/**
 	 * Runs a single tick for the world
 	 */
-	public void tick() {
+	public void tick(int chunkX, int chunkZ) {
 		for (Long hash : this.chunksToUnload) {
 			Chunk chunk = this.loadedChunkHashMap.get(hash);
 
@@ -141,9 +137,6 @@ public class World {
 			this.pendingTickListEntriesThisTick.clear();
 		}
 
-		int chunkX = MathHelper.floor_double(this.playerPosX / 16.0D);
-		int chunkZ = MathHelper.floor_double(this.playerPosZ / 16.0D);
-
 		for (int xOff = -this.viewRadius; xOff <= this.viewRadius; ++xOff) {
 			for (int zOff = -this.viewRadius; zOff <= this.viewRadius; ++zOff) {
 				this.loadChunk(xOff + chunkX, zOff + chunkZ);
@@ -188,22 +181,18 @@ public class World {
 		}
 	}
 
-	public void saveAllChunks() {
+	public void saveAllChunks(int chunkX, int chunkZ) {
 		for (Chunk chunk : this.loadedChunkHashMap.values()) {
 			if (chunk.isModified) {
 				this.safeSaveChunk(chunk);
 				chunk.isModified = false;
 			}
-			
-			int chunkX = (int) this.playerPosX >> 4;
-			int chunkZ = (int) this.playerPosZ >> 4;
 
 			if (chunk.xPosition - chunkX < -this.viewRadius || chunk.xPosition - chunkX > this.viewRadius
 			 || chunk.zPosition - chunkZ < -this.viewRadius || chunk.zPosition - chunkZ > this.viewRadius) {
 				if (chunk.xPosition < -8 || chunk.xPosition > 8 || chunk.zPosition < -8 || chunk.zPosition > 8) // keep spawn loaded
 				{
-					this.chunksToUnload
-							.add(Long.valueOf(chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
+					this.chunksToUnload.add(Long.valueOf(chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
 				}
 			}
 		}
@@ -318,71 +307,28 @@ public class World {
 	}
 
 	/**
-	 * Is this block powering in the specified direction Args: x, y, z, direction
-	 */
-	private int isBlockProvidingPowerTo(int x, int y, int z, int side) {
-		return this.getBlock(x, y, z).isProvidingStrongPower(this, x, y, z, side);
-	}
-
-	/**
-	 * Returns the highest redstone signal strength powering the given block. Args:
-	 * X, Y, Z.
-	 */
-	private int getBlockPowerInput(int x, int y, int z) {
-		int power = Math.max(0, this.isBlockProvidingPowerTo(x, y - 1, z, 0));
-		power = Math.max(power, this.isBlockProvidingPowerTo(x, y + 1, z, 1));
-		power = Math.max(power, this.isBlockProvidingPowerTo(x, y, z - 1, 2));
-		power = Math.max(power, this.isBlockProvidingPowerTo(x, y, z + 1, 3));
-		power = Math.max(power, this.isBlockProvidingPowerTo(x - 1, y, z, 4));
-		power = Math.max(power, this.isBlockProvidingPowerTo(x + 1, y, z, 5));
-		return power;
-	}
-
-	/**
-	 * Returns the indirect signal strength being outputted by the given block in
-	 * the *opposite* of the given direction. Args: X, Y, Z, direction
-	 */
-	public boolean getIndirectPowerOutput(int x, int y, int z, int side) {
-		return this.getIndirectPowerLevelTo(x, y, z, side) > 0;
-	}
-
-	/**
 	 * Gets the power level from a certain block face. Args: x, y, z, direction
 	 */
-	private int getIndirectPowerLevelTo(int x, int y, int z, int side) {
-		return this.isSolid(x, y, z) ? this.getBlockPowerInput(x, y, z)
-				: this.getBlock(x, y, z).isProvidingWeakPower(this, x, y, z, side);
-	}
-
-	public int getStrongestIndirectPower(int x, int y, int z) {
-		int max = 0;
-
-		int[] offsetsXForSide = new int[] { 0, 0, 0, 0, -1, 1 };
-		int[] offsetsYForSide = new int[] { -1, 1, 0, 0, 0, 0 };
-		int[] offsetsZForSide = new int[] { 0, 0, -1, 1, 0, 0 };
-
-		for (int side = 0; side < 6; ++side) {
-			int power = this.getIndirectPowerLevelTo(x + offsetsXForSide[side], y + offsetsYForSide[side],
-					z + offsetsZForSide[side], side);
-
-			if (power >= 15) {
-				return 15;
+	public int getIndirectPowerLevelTo(int x, int y, int z, int side) {
+		if (this.isSolid(x, y, z)) {
+			int power = 0;
+			int[] xOff = {0, 0, 0, 0, -1, 1};
+			int[] yOff = {-1, 1, 0, 0, 0, 0};
+			int[] zOff = {0, 0, -1, 1, 0, 0};
+			for (int i = 0; i < 6; i++) {
+				power = Math.max(power,
+						this.getBlock(x + xOff[i], y + yOff[i], z + zOff[i])
+						    .isProvidingStrongPower(this, x + xOff[i], y + yOff[i], z + zOff[i], i));
 			}
-
-			if (power > max) {
-				max = power;
-			}
+			return power;
+		} else {
+			return this.getBlock(x, y, z).isProvidingWeakPower(this, x, y, z, side);
 		}
-
-		return max;
 	}
 
 	/**
 	 * Sets the block ID and metadata at a given location. Args: X, Y, Z, new block
-	 * ID, new metadata, flags. Flag 1 will cause a block update. Flag 2 will send
-	 * the change to clients (you almost always want this). Flag 4 prevents the
-	 * block from being re-rendered, if this is a client world. Flags can be added
-	 * together.
+	 * ID, new metadata.
 	 */
 	public boolean setBlockAndMeta(int x, int y, int z, int newBlockID, int newMeta) {
 		int oldbm = this.getBlocMeta(x, y, z);
@@ -419,11 +365,6 @@ public class World {
 	private void markBlockForUpdate(int x, int y, int z) {
 		this.render.markChunksForUpdate((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4, (x + 1) >> 4, (y + 1) >> 4,
 				(z + 1) >> 4);
-	}
-
-	public void updatePlayerPos(double x, double z) {
-		this.playerPosX = x;
-		this.playerPosZ = z;
 	}
 
 	public boolean isSolid(int x, int y, int z) {
