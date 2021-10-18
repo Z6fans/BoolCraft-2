@@ -1,8 +1,6 @@
 package net.minecraft.client.renderer;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import net.minecraft.client.EntityPlayer;
@@ -33,11 +31,6 @@ public class RenderGlobal
     private int prevChunkSortX = -999;
     private int prevChunkSortY = -999;
     private int prevChunkSortZ = -999;
-
-    /**
-     * The offset used to determine if a renderer is one of the sixteenth that are being updated this frame
-     */
-    private int frustumCheckOffset;
 
     public RenderGlobal()
     {
@@ -149,12 +142,9 @@ public class RenderGlobal
 
         for (WorldRenderer renderer : this.worldRenderers)
         {
-        	if (!renderer.shouldSkip() && renderer.getInFrustrum())
+        	if (renderer.getGLCallList() >= 0)
             {
-                if (renderer.getGLCallList() >= 0)
-                {
-                    this.glRenderLists.add(renderer);
-                }
+                this.glRenderLists.add(renderer);
             }
         }
         
@@ -200,15 +190,9 @@ public class RenderGlobal
     {
     	for (int i = 0; i < this.worldRenderers.length; ++i)
         {
-            if (!this.worldRenderers[i].skipAllRenderPasses() && (!this.worldRenderers[i].getInFrustrum() || (i + this.frustumCheckOffset & 15) == 0))
-            {
-                this.worldRenderers[i].updateInFrustum(ppos.x, ppos.y, ppos.z);
-            }
+            this.worldRenderers[i].setInFrustum();
         }
-
-        ++this.frustumCheckOffset;
-        
-        RenderSorter rs = new RenderSorter(player);
+    	
         WorldRenderer rendererArray = null;
         ArrayList<WorldRenderer> rendererList = null;
         int initialSize = this.worldRenderersToUpdate.size();
@@ -221,7 +205,7 @@ public class RenderGlobal
             {
             	if (wr.quadranceToPlayer(player) > 272.0F)
                 {
-            		if (rendererArray == null || rs.compare(rendererArray, wr) <= 0)
+            		if (rendererArray == null || this.rscompare(rendererArray, wr, player))
                     	rendererArray = wr;
                     continue;
                 }
@@ -238,11 +222,6 @@ public class RenderGlobal
 
         if (rendererList != null)
         {
-            if (rendererList.size() > 1)
-            {
-                Collections.sort(rendererList, rs);
-            }
-
             for (int i = rendererList.size() - 1; i >= 0; --i)
             {
             	WorldRenderer wr = rendererList.get(i);
@@ -266,19 +245,13 @@ public class RenderGlobal
 
         for (int var12 = this.worldRenderersToUpdate.size(); i != var12; ++i)
         {
-            WorldRenderer wr = (WorldRenderer)this.worldRenderersToUpdate.get(i);
+            WorldRenderer wr = this.worldRenderersToUpdate.get(i);
 
-            if (wr != null)
+            if (wr != null && wr != rendererArray)
             {
-                if (!(wr == null || wr == rendererArray))
-                {
-                    if (var11 != i)
-                    {
-                        this.worldRenderersToUpdate.set(var11, wr);
-                    }
+            	this.worldRenderersToUpdate.set(var11, wr);
 
-                    ++var11;
-                }
+                ++var11;
             }
         }
         
@@ -289,6 +262,14 @@ public class RenderGlobal
         	this.worldRenderersToUpdate.remove(i);
         	--i;
         }
+    }
+    
+    private boolean rscompare(WorldRenderer renderArray, WorldRenderer wr, EntityPlayer player)
+    {
+        float quad1 = renderArray.quadranceToPlayer(player);
+        float quad2 = wr.quadranceToPlayer(player);
+        
+        return (!renderArray.getInFrustrum() || wr.getInFrustrum()) && ((wr.getInFrustrum() && !renderArray.getInFrustrum()) || quad1 > quad2 || (quad1 == quad2 && renderArray.chunkIndex >= wr.chunkIndex));
     }
 
     /**
@@ -342,34 +323,5 @@ public class RenderGlobal
     public void deleteAllDisplayLists()
     {
         GLAllocation.deleteDisplayLists(this.glRenderListBase);
-    }
-    
-    private class RenderSorter implements Comparator<WorldRenderer>
-    {
-        /** The entity (usually the player) that the camera is inside. */
-        private final EntityPlayer baseEntity;
-
-        private RenderSorter(EntityPlayer entity)
-        {
-            this.baseEntity = entity;
-        }
-
-        public int compare(WorldRenderer wr1, WorldRenderer wr2)
-        {
-            if (wr1.getInFrustrum() && !wr2.getInFrustrum())
-            {
-                return 1;
-            }
-            else if (wr2.getInFrustrum() && !wr1.getInFrustrum())
-            {
-                return -1;
-            }
-            else
-            {
-                double quad1 = (double)wr1.quadranceToPlayer(this.baseEntity);
-                double quad2 = (double)wr2.quadranceToPlayer(this.baseEntity);
-                return quad1 < quad2 ? 1 : (quad1 > quad2 ? -1 : (wr1.chunkIndex < wr2.chunkIndex ? 1 : -1));
-            }
-        }
     }
 }

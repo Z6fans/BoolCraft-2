@@ -5,8 +5,6 @@ import net.minecraft.client.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraft.util.AxisAlignedBB;
 
-import java.nio.FloatBuffer;
-
 import org.lwjgl.opengl.GL11;
 
 public class WorldRenderer
@@ -24,7 +22,7 @@ public class WorldRenderer
 
     /** Pos Z minus */
     public int posZMinus;
-    private boolean inFrustum;
+    private boolean inFrustum = true;
 
     /** Should this renderer skip this render pass */
     private boolean skipRenderPass = true;
@@ -34,13 +32,6 @@ public class WorldRenderer
 
     /** Chunk index */
     public int chunkIndex;
-    private boolean isInitialized;
-    
-    private final double[][] frustum = new double[16][16];
-    private final float[] proj = new float[16];
-    private final float[] model = new float[16];
-    private final FloatBuffer projBuffer = GLAllocation.createDirectFloatBuffer(16);
-    private final FloatBuffer modelBuffer = GLAllocation.createDirectFloatBuffer(16);
 
     public WorldRenderer(World world, int cx, int cy, int cz, int renderList, int ci)
     {
@@ -49,7 +40,6 @@ public class WorldRenderer
         this.posX = -999;
         this.setPosition(cx * 16, cy * 16, cz * 16);
         this.needsUpdate = false;
-    	this.inFrustum = true;
     	this.chunkIndex = ci;
     }
 
@@ -206,8 +196,6 @@ public class WorldRenderer
             GL11.glPopMatrix();
             GL11.glEndList();
             tessellator.setTranslation(0.0D, 0.0D, 0.0D);
-            
-            this.isInitialized = true;
         }
     }
     
@@ -244,7 +232,6 @@ public class WorldRenderer
     {
         this.skipRenderPass = true;
         this.inFrustum = false;
-        this.isInitialized = false;
     }
     
     public int getGLCallList()
@@ -252,60 +239,9 @@ public class WorldRenderer
     	return this.inFrustum && !this.skipRenderPass ? this.glRenderList : -1;
     }
 
-    public void updateInFrustum(double x, double y, double z)
+    public void setInFrustum()
     {
-    	this.projBuffer.clear();
-        this.modelBuffer.clear();
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, this.projBuffer);
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, this.modelBuffer);
-        this.projBuffer.flip().limit(16);
-        this.projBuffer.get(this.proj);
-        this.modelBuffer.flip().limit(16);
-        this.modelBuffer.get(this.model);
-        
-        double[] clip = new double[16];
-        
-        for (int i = 0; i < 16; i++) for (int j = 0; j < 4; j++)
-        	clip[i] += this.model[(i & 12) + j] * this.proj[(i & 3) + (j << 2)]; //matrix mult
-        
-        for (int i = 0; i < 6; i++)
-        {
-        	for (int j = 0; j < 4; j++)
-        		this.frustum[i][j] = clip[3 + (j << 2)] + clip[(j << 2) + (i >> 1)] * ((i & 1) == 0 ? -1 : 1);
-        	
-        	double norm = Math.sqrt(this.frustum[i][0] * this.frustum[i][0]
-		                          + this.frustum[i][1] * this.frustum[i][1]
-		                          + this.frustum[i][2] * this.frustum[i][2]);
-        	
-        	for (int j = 0; j < 4; j++) this.frustum[i][j] /= norm;
-        }
-        
-        double[] xs = {this.posX - 6 - x, this.posX + 22 - x};
-        double[] ys = {this.posY - 6 - y, this.posY + 22 - y};
-        double[] zs = {this.posZ - 6 - z, this.posZ + 22 - z};
-        
-        this.inFrustum = true;
-    	
-        for (int i = 0; i < 6; i++)
-        {
-        	boolean t = false;
-        	
-        	for (int j = 0; j < 8; j++)
-            	t |= this.frustum[i][0] * xs[j & 1]
-            	   + this.frustum[i][1] * ys[(j >> 1) & 1]
-            	   + this.frustum[i][2] * zs[(j >> 2) & 1]
-            	   + this.frustum[i][3] > 0.0D;
-            	   
-            this.inFrustum &= t;
-        }
-    }
-
-    /**
-     * Checks if all render passes are to be skipped. Returns false if the renderer is not initialized
-     */
-    public boolean skipAllRenderPasses()
-    {
-        return this.isInitialized && this.skipRenderPass;
+    	this.inFrustum = true;
     }
 
     /**
@@ -319,10 +255,5 @@ public class WorldRenderer
     public boolean getInFrustrum()
     {
     	return this.inFrustum;
-    }
-    
-    public boolean shouldSkip()
-    {
-    	return this.skipRenderPass;
     }
 }
