@@ -9,7 +9,6 @@ public class RenderList
      * The location of the 16x16x16 render chunk rendered by this RenderList.
      */
     private int renderChunkX;
-    private int renderChunkY;
     private int renderChunkZ;
 
     /**
@@ -30,21 +29,20 @@ public class RenderList
     /** Has glLists been flipped to make it ready for reading yet? */
     private boolean bufferFlipped;
 
-    public void setupRenderList(int chunkX, int chunkY, int chunkZ, double camX, double camY, double camZ)
+    public void setupRenderList(int chunkX, int chunkZ, double camX, double camY, double camZ)
     {
         this.valid = true;
         this.glLists.clear();
         this.renderChunkX = chunkX;
-        this.renderChunkY = chunkY;
         this.renderChunkZ = chunkZ;
         this.cameraX = camX;
         this.cameraY = camY;
         this.cameraZ = camZ;
     }
 
-    public boolean rendersChunk(int x, int y, int z)
+    public boolean rendersChunk(int x, int z)
     {
-        return this.valid && x == this.renderChunkX && y == this.renderChunkY && z == this.renderChunkZ;
+        return this.valid && x == this.renderChunkX && z == this.renderChunkZ;
     }
 
     public void addGLRenderList(int i)
@@ -70,7 +68,7 @@ public class RenderList
             if (this.glLists.remaining() > 0)
             {
                 GL11.glPushMatrix();
-                GL11.glTranslatef((float)((double)this.renderChunkX - this.cameraX), (float)((double)this.renderChunkY - this.cameraY), (float)((double)this.renderChunkZ - this.cameraZ));
+                GL11.glTranslatef((float)((double)this.renderChunkX - this.cameraX), (float)(-this.cameraY), (float)((double)this.renderChunkZ - this.cameraZ));
                 GL11.glCallLists(this.glLists);
                 GL11.glPopMatrix();
             }

@@ -12,34 +12,14 @@ import net.minecraft.util.Vec3;
 
 public class RenderGlobal
 {
-    private World theWorld;
     private final List<WorldRenderer> worldRenderersToUpdate = new ArrayList<WorldRenderer>();
-    private WorldRenderer[] sortedWorldRenderers;
     private WorldRenderer[] worldRenderers;
-    private int renderChunksWide;
-    private int renderChunksTall;
-    private int renderChunksDeep;
+    private final int rrad = 16;
+    private final int renderChunksXZ = this.rrad * 2 + 1;
+    private final int renderChunksTall = 16;
 
     /** OpenGL render lists base */
     private final int glRenderListBase;
-
-    /** Minimum block X */
-    private int minBlockX;
-
-    /** Minimum block Y */
-    private int minBlockY;
-
-    /** Minimum block Z */
-    private int minBlockZ;
-
-    /** Maximum block X */
-    private int maxBlockX;
-
-    /** Maximum block Y */
-    private int maxBlockY;
-
-    /** Maximum block Z */
-    private int maxBlockZ;
 
     /** World renderers check index */
     private int worldRenderersCheckIndex;
@@ -50,23 +30,6 @@ public class RenderGlobal
     /** All render lists (fixed length 4) */
     private final RenderList[] allRenderLists = new RenderList[] {new RenderList(), new RenderList(), new RenderList(), new RenderList()};
 
-    /**
-     * Previous x position when the renderers were sorted. (Once the distance moves more than 4 units they will be
-     * resorted)
-     */
-    private double prevSortX = -9999.0D;
-
-    /**
-     * Previous y position when the renderers were sorted. (Once the distance moves more than 4 units they will be
-     * resorted)
-     */
-    private double prevSortY = -9999.0D;
-
-    /**
-     * Previous Z position when the renderers were sorted. (Once the distance moves more than 4 units they will be
-     * resorted)
-     */
-    private double prevSortZ = -9999.0D;
     private int prevChunkSortX = -999;
     private int prevChunkSortY = -999;
     private int prevChunkSortZ = -999;
@@ -86,33 +49,19 @@ public class RenderGlobal
      */
     public void setWorldAndLoadRenderers(World world)
     {
-        this.prevSortX = -9999.0D;
-        this.prevSortY = -9999.0D;
-        this.prevSortZ = -9999.0D;
         this.prevChunkSortX = -9999;
         this.prevChunkSortY = -9999;
         this.prevChunkSortZ = -9999;
-        this.theWorld = world;
         
         if (this.worldRenderers != null)
         {
             for (int i = 0; i < this.worldRenderers.length; ++i)
             {
-                this.worldRenderers[i].stopRendering();
+                this.worldRenderers[i].setDontDraw();
             }
         }
-
-        this.renderChunksWide = 33;
-        this.renderChunksTall = 16;
-        this.renderChunksDeep = 33;
-        this.worldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
-        this.sortedWorldRenderers = new WorldRenderer[this.renderChunksWide * this.renderChunksTall * this.renderChunksDeep];
-        this.minBlockX = 0;
-        this.minBlockY = 0;
-        this.minBlockZ = 0;
-        this.maxBlockX = this.renderChunksWide;
-        this.maxBlockY = this.renderChunksTall;
-        this.maxBlockZ = this.renderChunksDeep;
+        
+        this.worldRenderers = new WorldRenderer[this.renderChunksXZ * this.renderChunksTall * this.renderChunksXZ];
 
         for (int i = 0; i < this.worldRenderersToUpdate.size(); ++i)
         {
@@ -122,112 +71,18 @@ public class RenderGlobal
         this.worldRenderersToUpdate.clear();
         
         int var2 = 0;
-        int var3 = 0;
+        int chunkIndex = 0;
 
-        for (int x = 0; x < this.renderChunksWide; ++x)
+        for (int x = 0; x < this.renderChunksXZ; ++x)
         {
             for (int y = 0; y < this.renderChunksTall; ++y)
             {
-                for (int z = 0; z < this.renderChunksDeep; ++z)
+                for (int z = 0; z < this.renderChunksXZ; ++z)
                 {
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x] = new WorldRenderer(this.theWorld, x * 16, y * 16, z * 16, this.glRenderListBase + var2);
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].setInFrustrum();
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].chunkIndex = var3++;
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x].markDirty();
-                    this.sortedWorldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x] = this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x];
-                    this.worldRenderersToUpdate.add(this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksWide + x]);
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x] = new WorldRenderer(world, x, y, z, this.glRenderListBase + var2, chunkIndex++);
+                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x].markDirty();
+                    this.worldRenderersToUpdate.add(this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x]);
                     var2 += 3;
-                }
-            }
-        }
-    }
-
-    /**
-     * Goes through all the renderers setting new positions on them and those that have their position changed are
-     * adding to be updated
-     */
-    private void markRenderersForNewPosition(int p_72722_1_, int p_72722_2_, int p_72722_3_)
-    {
-        p_72722_1_ -= 8;
-        p_72722_2_ -= 8;
-        p_72722_3_ -= 8;
-        this.minBlockX = Integer.MAX_VALUE;
-        this.minBlockY = Integer.MAX_VALUE;
-        this.minBlockZ = Integer.MAX_VALUE;
-        this.maxBlockX = Integer.MIN_VALUE;
-        this.maxBlockY = Integer.MIN_VALUE;
-        this.maxBlockZ = Integer.MIN_VALUE;
-        int var4 = this.renderChunksWide * 16;
-        int var5 = var4 / 2;
-
-        for (int var6 = 0; var6 < this.renderChunksWide; ++var6)
-        {
-            int var7 = var6 * 16;
-            int var8 = var7 + var5 - p_72722_1_;
-
-            if (var8 < 0)
-            {
-                var8 -= var4 - 1;
-            }
-
-            var8 /= var4;
-            var7 -= var8 * var4;
-
-            if (var7 < this.minBlockX)
-            {
-                this.minBlockX = var7;
-            }
-
-            if (var7 > this.maxBlockX)
-            {
-                this.maxBlockX = var7;
-            }
-
-            for (int var9 = 0; var9 < this.renderChunksDeep; ++var9)
-            {
-                int var10 = var9 * 16;
-                int var11 = var10 + var5 - p_72722_3_;
-
-                if (var11 < 0)
-                {
-                    var11 -= var4 - 1;
-                }
-
-                var11 /= var4;
-                var10 -= var11 * var4;
-
-                if (var10 < this.minBlockZ)
-                {
-                    this.minBlockZ = var10;
-                }
-
-                if (var10 > this.maxBlockZ)
-                {
-                    this.maxBlockZ = var10;
-                }
-
-                for (int var12 = 0; var12 < this.renderChunksTall; ++var12)
-                {
-                    int var13 = var12 * 16;
-
-                    if (var13 < this.minBlockY)
-                    {
-                        this.minBlockY = var13;
-                    }
-
-                    if (var13 > this.maxBlockY)
-                    {
-                        this.maxBlockY = var13;
-                    }
-
-                    WorldRenderer var14 = this.worldRenderers[(var9 * this.renderChunksTall + var12) * this.renderChunksWide + var6];
-                    boolean var15 = var14.needsUpdate;
-                    var14.setPosition(var7, var13, var10);
-
-                    if (!var15 && var14.needsUpdate)
-                    {
-                        this.worldRenderersToUpdate.add(var14);
-                    }
                 }
             }
         }
@@ -238,35 +93,61 @@ public class RenderGlobal
      */
     public void sortAndRender(EntityPlayer player, Vec3 ppos)
     {
-        for (int var5 = 0; var5 < 10; ++var5)
+        for (int i = 0; i < 10; ++i)
         {
             this.worldRenderersCheckIndex = (this.worldRenderersCheckIndex + 1) % this.worldRenderers.length;
-            WorldRenderer var6 = this.worldRenderers[this.worldRenderersCheckIndex];
+            WorldRenderer wr = this.worldRenderers[this.worldRenderersCheckIndex];
 
-            if (var6.needsUpdate && !this.worldRenderersToUpdate.contains(var6))
+            if (wr.needsUpdate && !this.worldRenderersToUpdate.contains(wr))
             {
-                this.worldRenderersToUpdate.add(var6);
+                this.worldRenderersToUpdate.add(wr);
             }
         }
-        
-        double var11 = player.getPosX() - this.prevSortX;
-        double var13 = player.getPosY() - this.prevSortY;
-        double var15 = player.getPosZ() - this.prevSortZ;
 
-        if (this.prevChunkSortX != player.getChunkCoordX() || this.prevChunkSortY != player.getChunkCoordY() || this.prevChunkSortZ != player.getChunkCoordZ() || var11 * var11 + var13 * var13 + var15 * var15 > 16.0D)
+        if (this.prevChunkSortX != player.getChunkCoordX() || this.prevChunkSortY != player.getChunkCoordY() || this.prevChunkSortZ != player.getChunkCoordZ())
         {
-            this.prevSortX = player.getPosX();
-            this.prevSortY = player.getPosY();
-            this.prevSortZ = player.getPosZ();
             this.prevChunkSortX = player.getChunkCoordX();
             this.prevChunkSortY = player.getChunkCoordY();
             this.prevChunkSortZ = player.getChunkCoordZ();
-            this.markRenderersForNewPosition(MathHelper.floor_double(player.getPosX()), MathHelper.floor_double(player.getPosY()), MathHelper.floor_double(player.getPosZ()));
+
+            for (int cx = 0; cx < this.renderChunksXZ; ++cx)
+            {
+                for (int cz = 0; cz < this.renderChunksXZ; ++cz)
+                {
+                    for (int cy = 0; cy < this.renderChunksTall; ++cy)
+                    {
+                        int dx = (cx * 16) + ((this.renderChunksXZ + 1) * 8) - MathHelper.floor_double(player.getPosX());
+                        int dz = (cz * 16) + ((this.renderChunksXZ + 1) * 8) - MathHelper.floor_double(player.getPosZ());
+
+                        if (dx < 0)
+                        {
+                            dx -= (this.renderChunksXZ * 16) - 1;
+                        }
+                        
+                        if (dz < 0)
+                        {
+                            dz -= (this.renderChunksXZ * 16) - 1;
+                        }
+                        
+                        int bx = cx * 16 - (dx / (this.renderChunksXZ * 16)) * this.renderChunksXZ * 16;
+                        int bz = cz * 16 - (dz / (this.renderChunksXZ * 16)) * this.renderChunksXZ * 16;
+                        
+                        WorldRenderer var14 = this.worldRenderers[(cz * this.renderChunksTall + cy) * this.renderChunksXZ + cx];
+                        boolean var15 = var14.needsUpdate;
+                        var14.setPosition(bx, cy * 16, bz);
+
+                        if (!var15 && var14.needsUpdate)
+                        {
+                            this.worldRenderersToUpdate.add(var14);
+                        }
+                    }
+                }
+            }
         }
         
         this.glRenderLists.clear();
 
-        for (WorldRenderer renderer : this.sortedWorldRenderers)
+        for (WorldRenderer renderer : this.worldRenderers)
         {
         	if (!renderer.shouldSkip() && renderer.getInFrustrum())
             {
@@ -286,12 +167,12 @@ public class RenderGlobal
 
         for (int i = 0; i < this.glRenderLists.size(); ++i)
         {
-            WorldRenderer renderer = (WorldRenderer)this.glRenderLists.get(i);
+            WorldRenderer renderer = this.glRenderLists.get(i);
             int whichList = -1;
 
             for (int j = 0; j < nextList; ++j)
             {
-                if (this.allRenderLists[j].rendersChunk(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus))
+                if (this.allRenderLists[j].rendersChunk(renderer.posXMinus, renderer.posZMinus))
                 {
                     whichList = j;
                 }
@@ -300,7 +181,7 @@ public class RenderGlobal
             if (whichList < 0)
             {
                 whichList = nextList++;
-                this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posYMinus, renderer.posZMinus, ppos.x, ppos.y, ppos.z);
+                this.allRenderLists[whichList].setupRenderList(renderer.posXMinus, renderer.posZMinus, ppos.x, ppos.y, ppos.z);
             }
 
             this.allRenderLists[whichList].addGLRenderList(renderer.getGLCallList());
@@ -417,11 +298,11 @@ public class RenderGlobal
     {
         for (int x = x1; x <= x2; ++x)
         {
-            int var14 = x % this.renderChunksWide;
+            int var14 = x % this.renderChunksXZ;
 
             if (var14 < 0)
             {
-                var14 += this.renderChunksWide;
+                var14 += this.renderChunksXZ;
             }
 
             for (int y = y1; y <= y2; ++y)
@@ -435,14 +316,14 @@ public class RenderGlobal
 
                 for (int z = z1; z <= z2; ++z)
                 {
-                    int var18 = z % this.renderChunksDeep;
+                    int var18 = z % this.renderChunksXZ;
 
                     if (var18 < 0)
                     {
-                        var18 += this.renderChunksDeep;
+                        var18 += this.renderChunksXZ;
                     }
 
-                    int var19 = (var18 * this.renderChunksTall + var16) * this.renderChunksWide + var14;
+                    int var19 = (var18 * this.renderChunksTall + var16) * this.renderChunksXZ + var14;
                     WorldRenderer renderer = this.worldRenderers[var19];
 
                     if (renderer != null && !renderer.needsUpdate)

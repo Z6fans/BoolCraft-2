@@ -368,11 +368,11 @@ public class World {
 	}
 
 	public boolean isSolid(int x, int y, int z) {
-		return (this.getBlocMeta(x, y, z) & 0xF) == 1;
+		return y >= 0 && y <= 255 && (this.getBlocMeta(x, y, z) & 0xF) == 1;
 	}
 
 	public boolean isAir(int x, int y, int z) {
-		return (this.getBlocMeta(x, y, z) & 0xF) == 0;
+		return y < 0 || y > 255 || (this.getBlocMeta(x, y, z) & 0xF) == 0;
 	}
 
 	public boolean isWire(int x, int y, int z) {
@@ -385,6 +385,7 @@ public class World {
 	}
 
 	public int getBlocMeta(int x, int y, int z) {
+		if (y < 0 || y > 255) throw new RuntimeException("big poop " + y);
 		return this.loadChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y & 255, z & 15);
 	}
 	
