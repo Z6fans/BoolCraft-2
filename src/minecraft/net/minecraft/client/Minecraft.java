@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tesselator;
 import net.minecraft.util.AxisAlignedBB;
@@ -345,7 +344,7 @@ public class Minecraft
                         GL11.glRotatef((float)this.player.getRotationPitch(), 1.0F, 0.0F, 0.0F);
                         GL11.glRotatef((float)this.player.getRotationYaw() + 180.0F, 0.0F, 1.0F, 0.0F);
                         Vec3 ppos = this.player.pttPos(this.renderPartialTicks);
-                        this.render.updateRenderers(this.player, ppos);
+                        this.render.updateRenderers(this.world, this.player, ppos);
                         GL11.glPushMatrix();
                         this.render.sortAndRender(this.player, ppos);
                         GL11.glPopMatrix();
@@ -482,7 +481,7 @@ public class Minecraft
 
                 try
                 {
-                    GLAllocation.deleteTexturesAndDisplayLists();
+                	this.render.deleteAllDisplayLists();
                 }
                 catch (Throwable t){}
             }
@@ -644,7 +643,7 @@ public class Minecraft
 
             if (this.render != null)
             {
-                this.render.setWorldAndLoadRenderers(this.world);
+                this.render.setWorldAndLoadRenderers();
             }
 
             this.player = new EntityPlayer(this.world);

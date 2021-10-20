@@ -9,19 +9,11 @@ import org.lwjgl.opengl.GL11;
 
 public class WorldRenderer
 {
-    /** Reference to the World object. */
-    private World world;
     private final int glRenderList;
     private final static Tesselator tessellator = Tesselator.instance;
     private int posX;
     private int posY;
     private int posZ;
-
-    /** Pos X minus */
-    public int posXMinus;
-
-    /** Pos Z minus */
-    public int posZMinus;
     private boolean inFrustum = true;
 
     /** Should this renderer skip this render pass */
@@ -31,14 +23,13 @@ public class WorldRenderer
     public boolean needsUpdate;
 
     /** Chunk index */
-    public int chunkIndex;
+    public final int chunkIndex;
 
-    public WorldRenderer(World world, int cx, int cy, int cz, int renderList, int ci)
+    public WorldRenderer(int cx, int cy, int cz, int renderList, int ci)
     {
-        this.world = world;
         this.glRenderList = renderList;
         this.posX = -999;
-        this.setPosition(cx * 16, cy * 16, cz * 16);
+        this.setPosition(cx, cy, cz);
         this.needsUpdate = false;
     	this.chunkIndex = ci;
     }
@@ -46,16 +37,18 @@ public class WorldRenderer
     /**
      * Sets a new position for the renderer and setting it up so it can be reloaded with the new data for that position
      */
-    public void setPosition(int x, int y, int z)
+    public void setPosition(int cx, int cy, int cz)
     {
-        if (x != this.posX || y != this.posY || z != this.posZ)
+    	int x = cx * 16;
+    	int y = cy * 16;
+    	int z = cz * 16;
+    	
+        if (cx * 16 != this.posX || y != this.posY || z != this.posZ)
         {
             this.setDontDraw();
             this.posX = x;
             this.posY = y;
             this.posZ = z;
-            this.posXMinus = x - (x & 1023);
-            this.posZMinus = z - (z & 1023);
             this.markDirty();
         }
     }
@@ -63,21 +56,21 @@ public class WorldRenderer
     /**
      * Will update this chunk renderer
      */
-    public void updateRenderer()
+    public void updateRenderer(World world)
     {
         if (this.needsUpdate)
         {
             this.needsUpdate = false;
             GL11.glNewList(this.glRenderList, GL11.GL_COMPILE);
             GL11.glPushMatrix();
-            GL11.glTranslatef((float)(this.posX & 1023), (float)this.posY, (float)(this.posZ & 1023));
+            GL11.glTranslatef(this.posX, this.posY, this.posZ);
             tessellator.startDrawing();
             tessellator.setTranslation(-this.posX, -this.posY, -this.posZ);
 
             for (int y = this.posY; y < this.posY + 16; ++y) {
                 for (int z = this.posZ; z < this.posZ + 16; ++z) {
                     for (int x = this.posX; x < this.posX + 16; ++x) {
-                    	int bm = this.world.getBlocMeta(x, y, z);
+                    	int bm = world.getBlocMeta(x, y, z);
                     	int block = bm & 0xF;
                     	int meta = bm >> 4;
                     	
@@ -93,9 +86,9 @@ public class WorldRenderer
                             tess.addVertex(x + 0, y + 0.01, z + 0);
                             tess.addVertex(x + 0, y + 0.01, z + 1);
 
-                            if (!this.world.isSolid(x, y + 1, z))
+                            if (!world.isSolid(x, y + 1, z))
                             {
-                                if (this.world.isWire(x - 1, y + 1, z))
+                                if (world.isWire(x - 1, y + 1, z))
                                 {
                                     tess.addVertex(x + 0.01, y + 1, z + 1);
                                     tess.addVertex(x + 0.01, y + 0, z + 1);
@@ -103,7 +96,7 @@ public class WorldRenderer
                                     tess.addVertex(x + 0.01, y + 1, z + 0);
                                 }
 
-                                if (this.world.isWire(x + 1, y + 1, z))
+                                if (world.isWire(x + 1, y + 1, z))
                                 {
                                     tess.addVertex(x + 0.99, y + 0, z + 1);
                                     tess.addVertex(x + 0.99, y + 1, z + 1);
@@ -111,7 +104,7 @@ public class WorldRenderer
                                     tess.addVertex(x + 0.99, y + 0, z + 0);
                                 }
 
-                                if (this.world.isWire(x, y + 1, z - 1))
+                                if (world.isWire(x, y + 1, z - 1))
                                 {
                                     tess.addVertex(x + 1, y + 0, z + 0.01);
                                     tess.addVertex(x + 1, y + 1, z + 0.01);
@@ -119,7 +112,7 @@ public class WorldRenderer
                                     tess.addVertex(x + 0, y + 0, z + 0.01);
                                 }
 
-                                if (this.world.isWire(x, y + 1, z + 1))
+                                if (world.isWire(x, y + 1, z + 1))
                                 {
                                     tess.addVertex(x + 1, y + 1, z + 0.99);
                                     tess.addVertex(x + 1, y + 0, z + 0.99);
@@ -136,7 +129,7 @@ public class WorldRenderer
                             double zmax = z + aabb.maxZ;
 
                             tess.setColor_I(getColor(block, meta, x, y, z, 2));
-                            if (!this.world.isSolid(x, y - 1, z) || aabb.minY > 0.0D)
+                            if (!world.isSolid(x, y - 1, z) || aabb.minY > 0.0D)
                             {
                             	tess.addVertex(xmin, ymin, zmax);
                                 tess.addVertex(xmin, ymin, zmin);
@@ -145,7 +138,7 @@ public class WorldRenderer
                             }
 
                             tess.setColor_I(getColor(block, meta, x, y, z, 0));
-                            if (!this.world.isSolid(x, y + 1, z) || aabb.maxY < 1.0D)
+                            if (!world.isSolid(x, y + 1, z) || aabb.maxY < 1.0D)
                             {
                             	tess.addVertex(xmax, ymax, zmax);
                                 tess.addVertex(xmax, ymax, zmin);
@@ -154,7 +147,7 @@ public class WorldRenderer
                             }
 
                             tess.setColor_I(getColor(block, meta, x, y, z, 1));
-                            if (!this.world.isSolid(x, y, z - 1) || aabb.minZ > 0.0D)
+                            if (!world.isSolid(x, y, z - 1) || aabb.minZ > 0.0D)
                             {
                             	tess.addVertex(xmin, ymax, zmin);
                                 tess.addVertex(xmax, ymax, zmin);
@@ -162,7 +155,7 @@ public class WorldRenderer
                                 tess.addVertex(xmin, ymin, zmin);
                             }
 
-                            if (!this.world.isSolid(x, y, z + 1) || aabb.maxZ < 1.0D)
+                            if (!world.isSolid(x, y, z + 1) || aabb.maxZ < 1.0D)
                             {
                             	tess.addVertex(xmin, ymax, zmax);
                                 tess.addVertex(xmin, ymin, zmax);
@@ -170,7 +163,7 @@ public class WorldRenderer
                                 tess.addVertex(xmax, ymax, zmax);
                             }
 
-                            if (!this.world.isSolid(x - 1, y, z) || aabb.minX > 0.0D)
+                            if (!world.isSolid(x - 1, y, z) || aabb.minX > 0.0D)
                             {
                             	tess.addVertex(xmin, ymax, zmax);
                                 tess.addVertex(xmin, ymax, zmin);
@@ -178,7 +171,7 @@ public class WorldRenderer
                                 tess.addVertex(xmin, ymin, zmax);
                             }
 
-                            if (!this.world.isSolid(x + 1, y, z) || aabb.maxX < 1.0D)
+                            if (!world.isSolid(x + 1, y, z) || aabb.maxX < 1.0D)
                             {
                             	tess.addVertex(xmax, ymin, zmax);
                                 tess.addVertex(xmax, ymin, zmin);
@@ -236,7 +229,12 @@ public class WorldRenderer
     
     public int getGLCallList()
     {
-    	return this.inFrustum && !this.skipRenderPass ? this.glRenderList : -1;
+    	return this.glRenderList;
+    }
+    
+    public boolean shouldRender()
+    {
+    	return this.inFrustum && !this.skipRenderPass;
     }
 
     public void setInFrustum()
@@ -252,8 +250,8 @@ public class WorldRenderer
         this.needsUpdate = true;
     }
     
-    public boolean getInFrustrum()
+    public int hashCode()
     {
-    	return this.inFrustum;
+    	return this.chunkIndex;
     }
 }

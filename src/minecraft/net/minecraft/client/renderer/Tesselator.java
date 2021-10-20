@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -49,7 +50,7 @@ public class Tesselator
 
     private Tesselator()
     {
-        this.byteBuffer = GLAllocation.createDirectByteBuffer(BUFSIZE * 4);
+        this.byteBuffer = ByteBuffer.allocateDirect(BUFSIZE * 4).order(ByteOrder.nativeOrder());
     }
 
     /**
