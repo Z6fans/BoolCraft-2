@@ -3,30 +3,30 @@ package net.minecraft.world;
 public class NextTickListEntry implements Comparable<NextTickListEntry>
 {
     /** The id number for the next tick entry */
-    private static long nextTickEntryID;
+    private static long nextID;
 
     /** X position this tick is occuring at */
-    public final int xCoord;
+    public final int x;
 
     /** Y position this tick is occuring at */
-    public final int yCoord;
+    public final int y;
 
     /** Z position this tick is occuring at */
-    public final int zCoord;
+    public final int z;
 
     /** Time this tick is scheduled to occur at */
-    public final long scheduledTime;
+    public final long t;
 
     /** The id of the tick entry */
-    private final long tickEntryID;
+    private final long id;
 
     public NextTickListEntry(int x, int y, int z, long time)
     {
-        this.tickEntryID = (long)(nextTickEntryID++);
-        this.xCoord = x;
-        this.yCoord = y;
-        this.zCoord = z;
-        this.scheduledTime = time;
+        this.id = (long)(nextID++);
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.t = time;
     }
 
     public boolean equals(Object other)
@@ -38,17 +38,17 @@ public class NextTickListEntry implements Comparable<NextTickListEntry>
         else
         {
             NextTickListEntry otherEntry = (NextTickListEntry)other;
-            return this.xCoord == otherEntry.xCoord && this.yCoord == otherEntry.yCoord && this.zCoord == otherEntry.zCoord;
+            return this.x == otherEntry.x && this.y == otherEntry.y && this.z == otherEntry.z;
         }
     }
 
     public int hashCode()
     {
-        return (this.xCoord * 1024 * 1024 + this.zCoord * 1024 + this.yCoord) * 256;
+        return (this.x * 1024 * 1024 + this.z * 1024 + this.y) * 256;
     }
 
     public int compareTo(NextTickListEntry other)
     {
-        return this.scheduledTime < other.scheduledTime ? -1 : (this.scheduledTime > other.scheduledTime ? 1 : (this.tickEntryID < other.tickEntryID ? -1 : (this.tickEntryID > other.tickEntryID ? 1 : 0)));
+        return this.t < other.t ? -1 : (this.t > other.t ? 1 : (this.id < other.id ? -1 : (this.id > other.id ? 1 : 0)));
     }
 }

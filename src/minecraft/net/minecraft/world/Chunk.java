@@ -9,10 +9,10 @@ public class Chunk
     private byte[] storageArray;
 
     /** The x coordinate of the chunk. */
-    public final int xPosition;
+    public final int x;
 
     /** The z coordinate of the chunk. */
-    public final int zPosition;
+    public final int z;
 
     /**
      * Set to true if the chunk has been modified and needs to be updated internally.
@@ -22,8 +22,8 @@ public class Chunk
     public Chunk(int x, int z)
     {
         this.storageArray = new byte[0x10000];
-        this.xPosition = x;
-        this.zPosition = z;
+        this.x = x;
+        this.z = z;
     }
 
     /**

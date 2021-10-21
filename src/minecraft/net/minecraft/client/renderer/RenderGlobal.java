@@ -3,35 +3,29 @@ package net.minecraft.client.renderer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.EntityPlayer;
 import net.minecraft.world.World;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
 public class RenderGlobal
 {
-    private final Set<WorldRenderer> worldRenderersToUpdate = new HashSet<WorldRenderer>();
-    private WorldRenderer[] worldRenderers;
-    private final int renderChunksXZ = 33;
-    private final int renderChunksTall = 16;
+    private final Set<ChunkRenderer> crUpdate = new HashSet<ChunkRenderer>();
+    private ChunkRenderer[][][] crs;
+    private final int r = 16;
+    private final int w = this.r * 2 + 1;
+    private final int h = 16;
 
     /** OpenGL render lists base */
     private final int glRenderListBase;
-
-    /** World renderers check index */
-    private int worldRenderersCheckIndex;
-
-    private int prevChunkSortX = -999;
-    private int prevChunkSortY = -999;
-    private int prevChunkSortZ = -999;
     
-    private final int numLists = 34 * 34 * 16 * 3;
+    private final int numLists = this.w * this.w * this.h;
 
     public RenderGlobal()
     {
@@ -41,42 +35,22 @@ public class RenderGlobal
     /**
      * set null to clear
      */
-    public void setWorldAndLoadRenderers()
+    public void loadRenderers()
     {
-        this.prevChunkSortX = -9999;
-        this.prevChunkSortY = -9999;
-        this.prevChunkSortZ = -9999;
+        this.crs = new ChunkRenderer[this.w][this.h][this.w];
+
+        this.crUpdate.clear();
         
-        if (this.worldRenderers != null)
+        int listOff = 0;
+
+        for (int x = 0; x < this.w; x++)
         {
-            for (int i = 0; i < this.worldRenderers.length; ++i)
+            for (int y = 0; y < this.h; y++)
             {
-                this.worldRenderers[i].setDontDraw();
-            }
-        }
-        
-        this.worldRenderers = new WorldRenderer[this.renderChunksXZ * this.renderChunksTall * this.renderChunksXZ];
-
-        for (WorldRenderer wr : this.worldRenderersToUpdate)
-        {
-            wr.needsUpdate = false;
-        }
-
-        this.worldRenderersToUpdate.clear();
-        
-        int var2 = 0;
-        int chunkIndex = 0;
-
-        for (int x = 0; x < this.renderChunksXZ; ++x)
-        {
-            for (int y = 0; y < this.renderChunksTall; ++y)
-            {
-                for (int z = 0; z < this.renderChunksXZ; ++z)
+                for (int z = 0; z < this.w; z++)
                 {
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x] = new WorldRenderer(x, y, z, this.glRenderListBase + var2, chunkIndex++);
-                    this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x].markDirty();
-                    this.worldRenderersToUpdate.add(this.worldRenderers[(z * this.renderChunksTall + y) * this.renderChunksXZ + x]);
-                    var2 += 3;
+                    this.crs[x][y][z] = new ChunkRenderer(x, y, z, this.glRenderListBase + (listOff++));
+                    this.crUpdate.add(this.crs[x][y][z]);
                 }
             }
         }
@@ -87,65 +61,29 @@ public class RenderGlobal
      */
     public void sortAndRender(EntityPlayer player, Vec3 ppos)
     {
-        for (int i = 0; i < 10; ++i)
+    	IntBuffer glLists = ByteBuffer.allocateDirect(this.w * this.h * this.w * 4)
+        		.order(ByteOrder.nativeOrder()).asIntBuffer();
+    	
+    	int px = player.getChunkCoordX() - this.r;
+		int pz = player.getChunkCoordZ() - this.r;
+
+        for (int x = 0; x < this.w; x++)
         {
-            this.worldRenderersCheckIndex = (this.worldRenderersCheckIndex + 1) % this.worldRenderers.length;
-            WorldRenderer wr = this.worldRenderers[this.worldRenderersCheckIndex];
-
-            if (wr.needsUpdate)
+            for (int z = 0; z < this.w; z++)
             {
-                this.worldRenderersToUpdate.add(wr);
-            }
-        }
-
-        if (this.prevChunkSortX != player.getChunkCoordX() || this.prevChunkSortY != player.getChunkCoordY() || this.prevChunkSortZ != player.getChunkCoordZ())
-        {
-            this.prevChunkSortX = player.getChunkCoordX();
-            this.prevChunkSortY = player.getChunkCoordY();
-            this.prevChunkSortZ = player.getChunkCoordZ();
-
-            for (int cx = 0; cx < this.renderChunksXZ; ++cx)
-            {
-                for (int cz = 0; cz < this.renderChunksXZ; ++cz)
+                for (int y = 0; y < this.h; y++)
                 {
-                    for (int cy = 0; cy < this.renderChunksTall; ++cy)
+                	ChunkRenderer cr = this.crs[x][y][z];
+
+                    if (cr.setPosition(px + Math.floorMod(x - px, this.w), y, pz + Math.floorMod(z - pz, this.w)))
                     {
-                        int dx = (cx * 16) + ((this.renderChunksXZ + 1) * 8) - MathHelper.floor_double(player.getPosX());
-                        int dz = (cz * 16) + ((this.renderChunksXZ + 1) * 8) - MathHelper.floor_double(player.getPosZ());
-
-                        if (dx < 0)
-                        {
-                            dx -= (this.renderChunksXZ * 16) - 1;
-                        }
-                        
-                        if (dz < 0)
-                        {
-                            dz -= (this.renderChunksXZ * 16) - 1;
-                        }
-                        
-                        dx /= 16;
-                        dz /= 16;
-                        
-                        WorldRenderer var14 = this.worldRenderers[(cz * this.renderChunksTall + cy) * this.renderChunksXZ + cx];
-                        boolean var15 = var14.needsUpdate;
-                        var14.setPosition(cx - (dx / this.renderChunksXZ) * this.renderChunksXZ, cy, cz - (dz / this.renderChunksXZ) * this.renderChunksXZ);
-
-                        if (!var15 && var14.needsUpdate)
-                        {
-                            this.worldRenderersToUpdate.add(var14);
-                        }
+                        this.crUpdate.add(cr);
                     }
+                    
+                    glLists.put(cr.getGLCallList());
                 }
             }
         }
-        
-        IntBuffer glLists = ByteBuffer.allocateDirect(this.renderChunksXZ * this.renderChunksTall * this.renderChunksXZ * 4)
-        		.order(ByteOrder.nativeOrder()).asIntBuffer();
-        
-        Arrays
-		.stream(this.worldRenderers)
-		.filter(WorldRenderer::shouldRender)
-		.forEach(r->glLists.put(r.getGLCallList()));
         
         glLists.flip();
         
@@ -160,48 +98,17 @@ public class RenderGlobal
      */
     public void updateRenderers(World world, EntityPlayer player, Vec3 ppos)
     {
-    	for (int i = 0; i < this.worldRenderers.length; ++i)
-        {
-            this.worldRenderers[i].setInFrustum();
-        }
-    	
-        WorldRenderer rendererArray = null;
-        Set<WorldRenderer> rendererList = new HashSet<WorldRenderer>();
-
-        for (WorldRenderer wr : this.worldRenderersToUpdate)
-        {
-        	if (wr.quadranceToPlayer(player) > 272.0F)
-            {
-        		if (rendererArray == null || this.rscompare(rendererArray, wr, player))
-        		{
-                	rendererArray = wr;
-        		}
-            }
-        	else
-        	{
-        		rendererList.add(wr);
+    	this.crUpdate.removeAll(this.crUpdate.stream()
+    			.filter(cr->cr.quadranceToPlayer(player) <= 272D)
+    			.map(cr->cr.updateRenderer(world))
+    			.collect(Collectors.toSet()));
+        
+        this.crUpdate.remove(this.crUpdate.stream().min(new Comparator<ChunkRenderer>(){
+        	public int compare(ChunkRenderer cr1, ChunkRenderer cr2){
+        		double d = cr1.quadranceToPlayer(player) - cr2.quadranceToPlayer(player);
+        		return d > 0 ? 1 : d < 0 ? -1 : 0;
         	}
-        }
-        
-        this.worldRenderersToUpdate.removeAll(rendererList);
-        this.worldRenderersToUpdate.remove(rendererArray);
-
-        for (WorldRenderer wr : rendererList)
-        {
-        	wr.updateRenderer(world);
-            wr.needsUpdate = false;
-        }
-
-        rendererArray.updateRenderer(world);
-        rendererArray.needsUpdate = false;
-    }
-    
-    private boolean rscompare(WorldRenderer renderArray, WorldRenderer wr, EntityPlayer player)
-    {
-        float quad1 = renderArray.quadranceToPlayer(player);
-        float quad2 = wr.quadranceToPlayer(player);
-        
-        return quad1 > quad2 || (quad1 == quad2 && renderArray.chunkIndex >= wr.chunkIndex);
+        }).get().updateRenderer(world));
     }
 
     /**
@@ -209,40 +116,13 @@ public class RenderGlobal
      */
     public void markChunksForUpdate(int x1, int y1, int z1, int x2, int y2, int z2)
     {
-        for (int x = x1; x <= x2; ++x)
+        for (int x = x1; x <= x2; x++)
         {
-            int var14 = x % this.renderChunksXZ;
-
-            if (var14 < 0)
+            for (int y = y1; y <= y2; y++)
             {
-                var14 += this.renderChunksXZ;
-            }
-
-            for (int y = y1; y <= y2; ++y)
-            {
-                int var16 = y % this.renderChunksTall;
-
-                if (var16 < 0)
+                for (int z = z1; z <= z2; z++)
                 {
-                    var16 += this.renderChunksTall;
-                }
-
-                for (int z = z1; z <= z2; ++z)
-                {
-                    int var18 = z % this.renderChunksXZ;
-
-                    if (var18 < 0)
-                    {
-                        var18 += this.renderChunksXZ;
-                    }
-
-                    WorldRenderer renderer = this.worldRenderers[(var18 * this.renderChunksTall + var16) * this.renderChunksXZ + var14];
-
-                    if (renderer != null && !renderer.needsUpdate)
-                    {
-                        this.worldRenderersToUpdate.add(renderer);
-                        renderer.markDirty();
-                    }
+                    this.crUpdate.add(this.crs[Math.floorMod(x, this.w)][Math.floorMod(y, this.h)][Math.floorMod(z, this.w)]);
                 }
             }
         }

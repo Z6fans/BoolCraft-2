@@ -9,11 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,11 +20,8 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;
 
 public class World {
-	private final HashSet<NextTickListEntry> pendingTickListEntriesHashSet = new HashSet<NextTickListEntry>();
-
-	/** All work to do in future ticks. */
-	private final TreeSet<NextTickListEntry> pendingTickListEntriesTreeSet = new TreeSet<NextTickListEntry>();
-	private final List<NextTickListEntry> pendingTickListEntriesThisTick = new ArrayList<NextTickListEntry>();
+	private final Set<NextTickListEntry> pendingEntries = new HashSet<NextTickListEntry>();
+	private final List<NextTickListEntry> pendingEntriesThisTick = new ArrayList<NextTickListEntry>();
 
 	/** The directory in which to save world data. */
 	private final File worldDirectory;
@@ -45,7 +40,7 @@ public class World {
 	 * Number of chunks the server sends to the client. Valid 3<=x<=15. In
 	 * server.properties.
 	 */
-	private final int viewRadius = 16;
+	private final int r = 16;
 
 	private final RenderGlobal render;
 
@@ -65,168 +60,69 @@ public class World {
 				}
 			}
 		}
-
-		System.out.println("Preparing start region");
-
-		for (int x = -12; x <= 12; x++) {
-			for (int z = -12; z <= 12; z++) {
-				this.loadChunk(x, z);
-			}
-		}
 	}
 
 	/**
 	 * Runs a single tick for the world
 	 */
 	public void tick(int chunkX, int chunkZ) {
-		for (Long hash : this.chunksToUnload) {
-			Chunk chunk = this.loadedChunkHashMap.get(hash);
-
-			if (chunk != null && chunk.isModified) {
-				this.safeSaveChunk(chunk);
-				chunk.isModified = false;
-			}
-
-			this.loadedChunkHashMap.remove(hash);
-		}
+		this.chunksToUnload.stream().map(this.loadedChunkHashMap::remove).filter(c -> c != null && c.isModified).forEach(this::safeSaveChunk);
 
 		this.chunksToUnload.clear();
 
 		this.totalTime = this.totalTime + 1L;
 
-		int numEntries = this.pendingTickListEntriesTreeSet.size();
+		this.pendingEntriesThisTick.addAll(this.pendingEntries.stream().filter(e -> e.t <= this.totalTime).collect(Collectors.toList()));
+		this.pendingEntries.removeAll(this.pendingEntriesThisTick);
 
-		if (numEntries != this.pendingTickListEntriesHashSet.size()) {
-			throw new IllegalStateException("TickNextTick list out of synch");
-		} else {
-			if (numEntries > 1000) {
-				numEntries = 1000;
-			}
-
-			for (int i = 0; i < numEntries; ++i) {
-				NextTickListEntry entry = this.pendingTickListEntriesTreeSet.first();
-
-				if (entry.scheduledTime > this.totalTime) {
-					break;
-				}
-
-				this.pendingTickListEntriesTreeSet.remove(entry);
-				this.pendingTickListEntriesHashSet.remove(entry);
-				this.pendingTickListEntriesThisTick.add(entry);
-			}
-
-			Iterator<NextTickListEntry> entryListIterator = this.pendingTickListEntriesThisTick.iterator();
-
-			while (entryListIterator.hasNext()) {
-				NextTickListEntry entry = entryListIterator.next();
-				entryListIterator.remove();
-				byte var5 = 0;
-
-				if (this.checkChunksExist(entry.xCoord - var5, entry.yCoord - var5, entry.zCoord - var5,
-						entry.xCoord + var5, entry.yCoord + var5, entry.zCoord + var5)) {
-					try {
-						this.getBlock(entry.xCoord, entry.yCoord, entry.zCoord).updateTick(this, entry.xCoord,
-								entry.yCoord, entry.zCoord);
-					} catch (Throwable t) {
-						throw new RuntimeException("Exception while ticking a block", t);
-					}
-				} else {
-					this.scheduleBlockUpdate(entry.xCoord, entry.yCoord, entry.zCoord, 0);
-				}
-			}
-			this.pendingTickListEntriesThisTick.clear();
-		}
-
-		for (int xOff = -this.viewRadius; xOff <= this.viewRadius; ++xOff) {
-			for (int zOff = -this.viewRadius; zOff <= this.viewRadius; ++zOff) {
-				this.loadChunk(xOff + chunkX, zOff + chunkZ);
+		for (NextTickListEntry e : this.pendingEntriesThisTick) {
+			if (e.y >= 0 && e.y < 256 && this.loadedChunkHashMap.containsKey(chunkXZ2Long(e.x >> 4, e.z >> 4))) {
+				this.getBlock(e.x, e.y, e.z).updateTick(this, e.x, e.y, e.z);
+			} else {
+				this.scheduleBlockUpdate(e.x, e.y, e.z, 0);
 			}
 		}
+		
+		this.pendingEntriesThisTick.clear();
 	}
 
 	/**
 	 * Schedules a tick to a block with a delay (Most commonly the tick rate)
 	 */
 	public void scheduleBlockUpdate(int x, int y, int z, long delay) {
-		NextTickListEntry entry = new NextTickListEntry(x, y, z, delay + this.totalTime);
-
-		if (!this.pendingTickListEntriesHashSet.contains(entry)) {
-			this.pendingTickListEntriesHashSet.add(entry);
-			this.pendingTickListEntriesTreeSet.add(entry);
-		}
+		this.pendingEntries.add(new NextTickListEntry(x, y, z, delay + this.totalTime));
 	}
 
-	/**
-	 * Checks between a min and max all the chunks inbetween actually exist. Args:
-	 * minX, minY, minZ, maxX, maxY, maxZ
-	 */
-	private final boolean checkChunksExist(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-		if (maxY >= 0 && minY < 256) {
-			minX >>= 4;
-			minZ >>= 4;
-			maxX >>= 4;
-			maxZ >>= 4;
-
-			for (int x = minX; x <= maxX; ++x) {
-				for (int z = minZ; z <= maxZ; ++z) {
-					if (!this.chunkExists(x, z)) {
-						return false;
-					}
-				}
+	public void saveAllChunks(int cx, int cz) {
+		for (Chunk c : this.loadedChunkHashMap.values()) {
+			if (c.isModified) {
+				this.safeSaveChunk(c);
 			}
 
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public void saveAllChunks(int chunkX, int chunkZ) {
-		for (Chunk chunk : this.loadedChunkHashMap.values()) {
-			if (chunk.isModified) {
-				this.safeSaveChunk(chunk);
-				chunk.isModified = false;
-			}
-
-			if (chunk.xPosition - chunkX < -this.viewRadius || chunk.xPosition - chunkX > this.viewRadius
-			 || chunk.zPosition - chunkZ < -this.viewRadius || chunk.zPosition - chunkZ > this.viewRadius) {
-				if (chunk.xPosition < -8 || chunk.xPosition > 8 || chunk.zPosition < -8 || chunk.zPosition > 8) // keep spawn loaded
+			if (c.x - cx < -this.r || c.x - cx > this.r
+			 || c.z - cz < -this.r || c.z - cz > this.r) {
+				if (c.x < -8 || c.x > 8 || c.z < -8 || c.z > 8) // keep spawn loaded
 				{
-					this.chunksToUnload.add(Long.valueOf(chunkXZ2Int(chunk.xPosition, chunk.zPosition)));
+					this.chunksToUnload.add(Long.valueOf(chunkXZ2Long(c.x, c.z)));
 				}
 			}
-		}
-	}
-
-	private void notifyBlockOfNeighborChange(int x, int y, int z) {
-		try {
-			this.getBlock(x, y, z).onNeighborBlockChange(this, x, y, z);
-		} catch (Throwable t) {
-			throw new RuntimeException("Exception while updating neighbors", t);
 		}
 	}
 
 	public void notifyBlocksOfNeighborChange(int x, int y, int z) {
-		this.notifyBlockOfNeighborChange(x - 1, y, z);
-		this.notifyBlockOfNeighborChange(x + 1, y, z);
-		this.notifyBlockOfNeighborChange(x, y - 1, z);
-		this.notifyBlockOfNeighborChange(x, y + 1, z);
-		this.notifyBlockOfNeighborChange(x, y, z - 1);
-		this.notifyBlockOfNeighborChange(x, y, z + 1);
-	}
-
-	/**
-	 * Checks to see if a chunk exists at x, y
-	 */
-	private boolean chunkExists(int p_73149_1_, int p_73149_2_) {
-		return this.loadedChunkHashMap.containsKey(chunkXZ2Int(p_73149_1_, p_73149_2_));
+		this.getBlock(x - 1, y, z).onNeighborBlockChange(this, x - 1, y, z);
+		this.getBlock(x + 1, y, z).onNeighborBlockChange(this, x + 1, y, z);
+		this.getBlock(x, y - 1, z).onNeighborBlockChange(this, x, y - 1, z);
+		this.getBlock(x, y + 1, z).onNeighborBlockChange(this, x, y + 1, z);
+		this.getBlock(x, y, z - 1).onNeighborBlockChange(this, x, y, z - 1);
+		this.getBlock(x, y, z + 1).onNeighborBlockChange(this, x, y, z + 1);
 	}
 
 	/**
 	 * loads or generates the chunk at the chunk location specified
 	 */
 	private Chunk loadChunk(int x, int z) {
-		long posHash = chunkXZ2Int(x, z);
+		long posHash = chunkXZ2Long(x, z);
 		this.chunksToUnload.remove(Long.valueOf(posHash));
 		Chunk chunk = this.loadedChunkHashMap.get(posHash);
 
@@ -273,33 +169,33 @@ public class World {
 	 */
 	private void safeSaveChunk(Chunk chunk) {
 		try {
-			DataOutputStream stream = new DataOutputStream(new FileOutputStream(
-					new File(this.worldDirectory, "c." + chunk.xPosition + "." + chunk.zPosition + ".mca")));
+			DataOutputStream stream = new DataOutputStream(new FileOutputStream(new File(this.worldDirectory, "c." + chunk.x + "." + chunk.z + ".mca")));
 			byte[] byteArray = chunk.getBlockStorageArray();
 			stream.writeInt(byteArray.length);
 			stream.write(byteArray);
 
-			int xmin = (chunk.xPosition << 4) - 2;
+			int xmin = (chunk.x << 4) - 2;
 			int xmax = xmin + 16 + 2;
-			int zmin = (chunk.zPosition << 4) - 2;
+			int zmin = (chunk.z << 4) - 2;
 			int zmax = zmin + 16 + 2;
 
-			List<NextTickListEntry> tickTags = Stream
-					.concat(this.pendingTickListEntriesTreeSet.stream(), this.pendingTickListEntriesThisTick.stream())
-					.filter(entry -> entry.xCoord >= xmin && entry.xCoord < xmax && entry.zCoord >= zmin
-							&& entry.zCoord < zmax)
+			List<NextTickListEntry> entries = Stream
+					.concat(this.pendingEntries.stream(), this.pendingEntriesThisTick.stream())
+					.filter(entry -> entry.x >= xmin && entry.x < xmax && entry.z >= zmin && entry.z < zmax)
 					.collect(Collectors.toList());
 
-			stream.writeInt(tickTags.size());
+			stream.writeInt(entries.size());
 
-			for (NextTickListEntry entry : tickTags) {
-				stream.writeInt(entry.xCoord);
-				stream.writeInt(entry.yCoord);
-				stream.writeInt(entry.zCoord);
-				stream.writeLong(entry.scheduledTime - this.totalTime);
+			for (NextTickListEntry entry : entries) {
+				stream.writeInt(entry.x);
+				stream.writeInt(entry.y);
+				stream.writeInt(entry.z);
+				stream.writeLong(entry.t - this.totalTime);
 			}
 
 			stream.close();
+			
+			chunk.isModified = false;
 		} catch (Exception e) {
 			System.out.println("Couldn\'t save chunk");
 			e.printStackTrace(System.out);
@@ -316,8 +212,7 @@ public class World {
 			int[] yOff = {-1, 1, 0, 0, 0, 0};
 			int[] zOff = {0, 0, -1, 1, 0, 0};
 			for (int i = 0; i < 6; i++) {
-				power = Math.max(power,
-						this.getBlock(x + xOff[i], y + yOff[i], z + zOff[i])
+				power = Math.max(power, this.getBlock(x + xOff[i], y + yOff[i], z + zOff[i])
 						    .isProvidingStrongPower(this, x + xOff[i], y + yOff[i], z + zOff[i], i));
 			}
 			return power;
@@ -342,7 +237,7 @@ public class World {
 				Block.getBlockById(newbm & 0xF).onBlockAdded(this, x, y, z);
 			}
 
-			this.markBlockForUpdate(x, y, z);
+			this.render.markChunksForUpdate((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4, (x + 1) >> 4, (y + 1) >> 4, (z + 1) >> 4);
 
 			this.notifyBlocksOfNeighborChange(x, y, z);
 			return true;
@@ -362,17 +257,12 @@ public class World {
 		return this.getBlocMeta(x, y, z) >> 4;
 	}
 
-	private void markBlockForUpdate(int x, int y, int z) {
-		this.render.markChunksForUpdate((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4, (x + 1) >> 4, (y + 1) >> 4,
-				(z + 1) >> 4);
-	}
-
 	public boolean isSolid(int x, int y, int z) {
-		return y >= 0 && y <= 255 && (this.getBlocMeta(x, y, z) & 0xF) == 1;
+		return (this.getBlocMeta(x, y, z) & 0xF) == 1;
 	}
 
 	public boolean isAir(int x, int y, int z) {
-		return y < 0 || y > 255 || (this.getBlocMeta(x, y, z) & 0xF) == 0;
+		return (this.getBlocMeta(x, y, z) & 0xF) == 0;
 	}
 
 	public boolean isWire(int x, int y, int z) {
@@ -385,12 +275,11 @@ public class World {
 	}
 
 	public int getBlocMeta(int x, int y, int z) {
-		if (y < 0 || y > 255) throw new RuntimeException("big poop " + y);
-		return this.loadChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y & 255, z & 15);
+		return y >= 0 && y <= 255 ? this.loadChunk(x >> 4, z >> 4).getBlocMeta(x & 15, y & 255, z & 15) : 0;
 	}
 	
-	private static long chunkXZ2Int(int p_77272_0_, int p_77272_1_)
+	private static long chunkXZ2Long(int cx, int cz)
     {
-        return (long)p_77272_0_ & 4294967295L | ((long)p_77272_1_ & 4294967295L) << 32;
+        return (long)cx & 4294967295L | ((long)cz & 4294967295L) << 32;
     }
 }

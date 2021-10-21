@@ -643,7 +643,7 @@ public class Minecraft
 
             if (this.render != null)
             {
-                this.render.setWorldAndLoadRenderers();
+                this.render.loadRenderers();
             }
 
             this.player = new EntityPlayer(this.world);
